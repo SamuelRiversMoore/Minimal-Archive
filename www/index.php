@@ -1,7 +1,6 @@
 <?php
-    define('DS', '/');
-    define('LIB', './lib/');
-    include_once LIB . 'functions.php';
+    define('minimalarchive', TRUE);
+    include_once('./lib/_loader.php');
 
     $meta = textFileToArray('./meta.txt');
     $imagesdir = array_key_exists('imagesfolder', $meta) ? $meta['imagesfolder'] : null;

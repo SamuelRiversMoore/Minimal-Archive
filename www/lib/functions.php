@@ -1,4 +1,9 @@
 <?php
+if (!defined('minimalarchive'))
+{
+    header('location: /');
+    exit();
+}
 
 function url(string $path = '')
 {
