@@ -1,15 +1,3 @@
-export const openExternalLinksInNewWindow = () => {
-  const links = document.links
-  let i = -1
-
-  while (++i < links.length) {
-    if (links[i].hostname !== window.location.hostname) {
-      links[i].target = '_blank'
-      links[i].setAttribute('rel', 'noopener noreferrer')
-    }
-  }
-}
-
 export const isDomNode = (element) => {
   return element instanceof Element || element instanceof HTMLDocument
 }

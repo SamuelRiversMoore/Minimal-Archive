@@ -1,9 +1,10 @@
-import { openExternalLinksInNewWindow } from './lib/Helpers.js'
 import Gallery from './lib/Gallery.js'
 
 document.addEventListener('DOMContentLoaded', () => {
-  openExternalLinksInNewWindow()
-  const gallery = new Gallery()
+  const gallery = new Gallery({
+    image_selector: '.Image',
+    lazyload_selector: '.lazy'
+  })
 
   gallery.reset()
 })

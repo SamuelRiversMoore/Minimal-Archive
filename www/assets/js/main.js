@@ -1,64 +1,6 @@
 (function () {
   'use strict';
 
-  const openExternalLinksInNewWindow = () => {
-    const links = document.links;
-    let i = -1;
-
-    while (++i < links.length) {
-      if (links[i].hostname !== window.location.hostname) {
-        links[i].target = '_blank';
-        links[i].setAttribute('rel', 'noopener noreferrer');
-      }
-    }
-  };
-
-  const isDomNode = (element) => {
-    return element instanceof Element || element instanceof HTMLDocument
-  };
-
-  const scrollTo = (destination, duration = 200, easing = 'linear', callback) => {
-    const easings = {
-      linear (t) {
-        return t
-      }
-    };
-
-    const start = window.pageYOffset;
-    const startTime = 'now' in window.performance ? performance.now() : new Date().getTime();
-
-    const documentHeight = Math.max(document.body.scrollHeight, document.body.offsetHeight, document.documentElement.clientHeight, document.documentElement.scrollHeight, document.documentElement.offsetHeight);
-    const windowHeight = window.innerHeight || document.documentElement.clientHeight || document.getElementsByTagName('body')[0].clientHeight;
-    const destinationOffset = typeof destination === 'number' ? destination : destination.offsetTop;
-    const destinationOffsetToScroll = Math.round(documentHeight - destinationOffset < windowHeight ? documentHeight - windowHeight : destinationOffset);
-
-    if ('requestAnimationFrame' in window === false) {
-      window.scroll(0, destinationOffsetToScroll);
-      if (callback) {
-        callback();
-      }
-      return
-    }
-
-    function scroll () {
-      const now = 'now' in window.performance ? performance.now() : new Date().getTime();
-      const time = Math.min(1, ((now - startTime) / duration));
-      const timeFunction = easings[easing](time);
-      window.scroll(0, Math.ceil((timeFunction * (destinationOffsetToScroll - start)) + start));
-
-      if (window.pageYOffset === destinationOffsetToScroll) {
-        if (callback) {
-          callback();
-        }
-        return
-      }
-
-      requestAnimationFrame(scroll);
-    }
-
-    scroll();
-  };
-
   const runningOnBrowser = typeof window !== "undefined";
 
   const isBot =
@@ -488,6 +430,52 @@
     autoInitialize(LazyLoad, window.lazyLoadOptions);
   }
 
+  const isDomNode = (element) => {
+    return element instanceof Element || element instanceof HTMLDocument
+  };
+
+  const scrollTo = (destination, duration = 200, easing = 'linear', callback) => {
+    const easings = {
+      linear (t) {
+        return t
+      }
+    };
+
+    const start = window.pageYOffset;
+    const startTime = 'now' in window.performance ? performance.now() : new Date().getTime();
+
+    const documentHeight = Math.max(document.body.scrollHeight, document.body.offsetHeight, document.documentElement.clientHeight, document.documentElement.scrollHeight, document.documentElement.offsetHeight);
+    const windowHeight = window.innerHeight || document.documentElement.clientHeight || document.getElementsByTagName('body')[0].clientHeight;
+    const destinationOffset = typeof destination === 'number' ? destination : destination.offsetTop;
+    const destinationOffsetToScroll = Math.round(documentHeight - destinationOffset < windowHeight ? documentHeight - windowHeight : destinationOffset);
+
+    if ('requestAnimationFrame' in window === false) {
+      window.scroll(0, destinationOffsetToScroll);
+      if (callback) {
+        callback();
+      }
+      return
+    }
+
+    function scroll () {
+      const now = 'now' in window.performance ? performance.now() : new Date().getTime();
+      const time = Math.min(1, ((now - startTime) / duration));
+      const timeFunction = easings[easing](time);
+      window.scroll(0, Math.ceil((timeFunction * (destinationOffsetToScroll - start)) + start));
+
+      if (window.pageYOffset === destinationOffsetToScroll) {
+        if (callback) {
+          callback();
+        }
+        return
+      }
+
+      requestAnimationFrame(scroll);
+    }
+
+    scroll();
+  };
+
   class Image {
     constructor (image) {
       if (!isDomNode(image)) {
@@ -550,18 +538,8 @@
 
   const mergeSettings = (options) => {
     const settings = {
-      el: document.querySelector('.Gallery'),
-      nextBtn: document.querySelector('.GalleryNavigation--next'),
-      prevBtn: document.querySelector('.GalleryNavigation--prev'),
-      startSlide: 0,
-      speed: 400,
-      auto: false,
-      draggable: false,
-      continuous: true,
-      disableScroll: false,
-      stopPropagation: false,
-      callback: (index, elem, dir) => {},
-      transitionEnd: (index, elem) => {}
+      image_selector: '.Image',
+      lazyload_selector: '.lazy'
     };
 
     for (const attrName in options) {
@@ -578,7 +556,7 @@
     }
 
     init () {
-      const images = document.querySelectorAll('.Image');
+      const images = document.querySelectorAll(this.config.image_selector);
 
       this.currentImage = null;
 
@@ -589,7 +567,7 @@
       }
 
       this.lazyload = new LazyLoad({
-        elements_selector: '.lazy'
+        elements_selector: this.config.lazyload_selector
       });
 
       this.initListeners();
@@ -680,8 +658,10 @@
   }
 
   document.addEventListener('DOMContentLoaded', () => {
-    openExternalLinksInNewWindow();
-    const gallery = new Gallery();
+    const gallery = new Gallery({
+      image_selector: '.Image',
+      lazyload_selector: '.lazy'
+    });
 
     gallery.reset();
   });

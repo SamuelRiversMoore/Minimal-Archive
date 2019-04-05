@@ -6,18 +6,8 @@ import {
 
 const mergeSettings = (options) => {
   const settings = {
-    el: document.querySelector('.Gallery'),
-    nextBtn: document.querySelector('.GalleryNavigation--next'),
-    prevBtn: document.querySelector('.GalleryNavigation--prev'),
-    startSlide: 0,
-    speed: 400,
-    auto: false,
-    draggable: false,
-    continuous: true,
-    disableScroll: false,
-    stopPropagation: false,
-    callback: (index, elem, dir) => {},
-    transitionEnd: (index, elem) => {}
+    image_selector: '.Image',
+    lazyload_selector: '.lazy'
   }
 
   for (const attrName in options) {
@@ -34,7 +24,7 @@ class Gallery {
   }
 
   init () {
-    const images = document.querySelectorAll('.Image')
+    const images = document.querySelectorAll(this.config.image_selector)
 
     this.currentImage = null
 
@@ -45,7 +35,7 @@ class Gallery {
     }
 
     this.lazyload = new LazyLoad({
-      elements_selector: '.lazy'
+      elements_selector: this.config.lazyload_selector
     })
 
     this.initListeners()
