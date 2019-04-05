@@ -21,7 +21,9 @@
         <meta property="og:image" content="<?= url($socialimage) ?>">
         <meta property="og:url" content="<?= url() ?>">
 
-    	<link rel="stylesheet" href="<?php echo url('assets/css/style.css')?>" type="text/css" media="screen"/>
+        <link rel="shortcut icon" href="<?= url('assets/images/favicon.ico') ?>"/>
+        <link rel="icon" type="image/png" href="<?= url('assets/images/favicon.png') ?>"/>
+    	<link rel="stylesheet" href="<?= url('assets/css/style.css') ?>" type="text/css" media="screen"/>
 
 	</head>
 	<body>
