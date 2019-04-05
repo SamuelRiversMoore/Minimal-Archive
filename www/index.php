@@ -1,7 +1,7 @@
 <?php
-	define('DS', '/');
-	define('LIB', './lib/');
-	include_once LIB . 'functions.php';
+    define('DS', '/');
+    define('LIB', './lib/');
+    include_once LIB . 'functions.php';
 
     $meta = textFileToArray('./meta.txt');
     $imagesdir = array_key_exists('imagesfolder', $meta) ? $meta['imagesfolder'] : null;
@@ -11,9 +11,9 @@
     $note = array_key_exists('note', $meta) ? $meta['note'] : '';
 ?>
 <html>
-	<head>
-    	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    	<title><?= $title; ?></title>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <title><?= $title; ?></title>
         <meta name="description" content="<?= $description ?>" />
 
         <meta property="og:title" content="<?= $title ?>">
@@ -23,18 +23,18 @@
 
         <link rel="shortcut icon" href="<?= url('assets/images/favicon.ico') ?>"/>
         <link rel="icon" type="image/png" href="<?= url('assets/images/favicon.png') ?>"/>
-    	<link rel="stylesheet" href="<?= url('assets/css/style.css') ?>" type="text/css" media="screen"/>
+        <link rel="stylesheet" href="<?= url('assets/css/style.css') ?>" type="text/css" media="screen"/>
 
-	</head>
-	<body>
-		<header>
-		    <section class="title"><?= $title ?></section>
-		</header>
-		<main>
+    </head>
+    <body>
+        <header>
+            <section class="title"><?= $title ?></section>
+        </header>
+        <main>
             <section class="Gallery">
                 <?php
                 $images = getImagesInFolder($imagesdir);
-                foreach ($images as $image){
+                foreach ($images as $image) {
                     $output = "<div class='Image'>";
                     $output .= "<div class='Image__container'>";
                     $output .= "<img class='lazy miniarch' src='" . url('assets/css/loading.gif') . "' data-src='" .  url("${imagesdir}/${image}") ."' title='" . $image . "'/>";
@@ -46,13 +46,13 @@
 
                 ?>
             </section>
-		    <span id="breaker"></span>
-		</main>
-		<footer>
+            <span id="breaker"></span>
+        </main>
+        <footer>
             <section class="note">
                 <?= $note ?>
             </section>
-		</footer>
-		<script src="<?php echo url('assets/js/main.js')?>"></script>
-	</body>
+        </footer>
+        <script src="<?php echo url('assets/js/main.js')?>"></script>
+    </body>
 </html>

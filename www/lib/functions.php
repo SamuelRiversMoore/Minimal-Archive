@@ -16,14 +16,14 @@ function url(string $path = '')
     return "${protocol}://${domain}${disp_port}" . ($path ? "/" . htmlspecialchars($path) : '');
 }
 
-function getFilenamesInFolder (string $folder = null, array $supported = [])
+function getFilenamesInFolder(string $folder = null, array $supported = [])
 {
     if (!$folder || !is_dir($folder)) {
-        throw new Exception ('no_folder');
+        throw new Exception('no_folder');
         return array();
     }
     if (!is_array($supported)) {
-        throw new Exception ('no_supported_files_provided');
+        throw new Exception('no_supported_files_provided');
         return array();
     }
     $result = array();
@@ -55,7 +55,7 @@ function getImagesInFolder(string $folder = null)
     }
 }
 
-function textFileToArray (string $file)
+function textFileToArray(string $file)
 {
     $result = array();
     if (file_exists($file)) {
