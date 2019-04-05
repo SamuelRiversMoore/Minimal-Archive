@@ -1,0 +1,7 @@
+title: Minimal-Archive
+
+description: A minimal tool (javascript with no dependencies, php) to display images on a web page.
+
+socialimage: share.jpg
+
+note: A minimal tool (javascript with no dependencies, php) to display images on a web page. Made by samuelriversmoore, tbayri.
