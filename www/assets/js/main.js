@@ -1,31 +1,31 @@
 (function () {
   'use strict';
 
-  const runningOnBrowser = typeof window !== "undefined";
+  const runningOnBrowser = typeof window !== 'undefined';
 
   const isBot =
-    (runningOnBrowser && !("onscroll" in window)) ||
-    (typeof navigator !== "undefined" &&
+    (runningOnBrowser && !('onscroll' in window)) ||
+    (typeof navigator !== 'undefined' &&
       /(gle|ing|ro)bot|crawl|spider/i.test(navigator.userAgent));
 
   const supportsIntersectionObserver =
-    runningOnBrowser && "IntersectionObserver" in window;
+    runningOnBrowser && 'IntersectionObserver' in window;
 
   const supportsClassList =
-    runningOnBrowser && "classList" in document.createElement("p");
+    runningOnBrowser && 'classList' in document.createElement('p');
 
   const defaultSettings = {
-    elements_selector: "img",
+    elements_selector: 'img',
     container: isBot || runningOnBrowser ? document : null,
     threshold: 300,
     thresholds: null,
-    data_src: "src",
-    data_srcset: "srcset",
-    data_sizes: "sizes",
-    data_bg: "bg",
-    class_loading: "loading",
-    class_loaded: "loaded",
-    class_error: "error",
+    data_src: 'src',
+    data_srcset: 'srcset',
+    data_sizes: 'sizes',
+    data_bg: 'bg',
+    class_loading: 'loading',
+    class_loaded: 'loaded',
+    class_error: 'error',
     load_delay: 0,
     auto_unobserve: true,
     callback_enter: null,
@@ -37,23 +37,23 @@
   };
 
   var getInstanceSettings = customSettings => {
-    return Object.assign({}, defaultSettings, customSettings);
+    return Object.assign({}, defaultSettings, customSettings)
   };
 
-  const dataPrefix = "data-";
-  const processedDataName = "was-processed";
-  const timeoutDataName = "ll-timeout";
-  const trueString = "true";
+  const dataPrefix = 'data-';
+  const processedDataName = 'was-processed';
+  const timeoutDataName = 'll-timeout';
+  const trueString = 'true';
 
   const getData = (element, attribute) => {
-    return element.getAttribute(dataPrefix + attribute);
+    return element.getAttribute(dataPrefix + attribute)
   };
 
   const setData = (element, attribute, value) => {
     var attrName = dataPrefix + attribute;
     if (value === null) {
       element.removeAttribute(attrName);
-      return;
+      return
     }
     element.setAttribute(attrName, value);
   };
@@ -70,24 +70,24 @@
   const getTimeoutData = element => getData(element, timeoutDataName);
 
   const purgeProcessedElements = elements => {
-    return elements.filter(element => !getWasProcessedData(element));
+    return elements.filter(element => !getWasProcessedData(element))
   };
 
   const purgeOneElement = (elements, elementToPurge) => {
-    return elements.filter(element => element !== elementToPurge);
+    return elements.filter(element => element !== elementToPurge)
   };
 
   /* Creates instance and notifies it through the window element */
-  const createInstance = function(classObj, options) {
+  const createInstance = function (classObj, options) {
     var event;
-    let eventString = "LazyLoad::Initialized";
+    let eventString = 'LazyLoad::Initialized';
     let instance = new classObj(options);
     try {
       // Works in modern browsers
       event = new CustomEvent(eventString, { detail: { instance } });
     } catch (err) {
       // Works in Internet Explorer (all versions)
-      event = document.createEvent("CustomEvent");
+      event = document.createEvent('CustomEvent');
       event.initCustomEvent(eventString, false, false, { instance });
     }
     window.dispatchEvent(event);
@@ -95,9 +95,9 @@
 
   /* Auto initialization of one or more instances of lazyload, depending on the
       options passed in (plain object or an array) */
-  function autoInitialize(classObj, options) {
+  function autoInitialize (classObj, options) {
     if (!options) {
-      return;
+      return
     }
     if (!options.length) {
       // Plain object
@@ -126,16 +126,16 @@
   const getSourceTags = parentTag => {
     let sourceTags = [];
     for (let i = 0, childTag; (childTag = parentTag.children[i]); i += 1) {
-      if (childTag.tagName === "SOURCE") {
+      if (childTag.tagName === 'SOURCE') {
         sourceTags.push(childTag);
       }
     }
-    return sourceTags;
+    return sourceTags
   };
 
   const setAttributeIfValue = (element, attrName, value) => {
     if (!value) {
-      return;
+      return
     }
     element.setAttribute(attrName, value);
   };
@@ -143,21 +143,21 @@
   const setImageAttributes = (element, settings) => {
     setAttributeIfValue(
       element,
-      "sizes",
+      'sizes',
       getData(element, settings.data_sizes)
     );
     setAttributeIfValue(
       element,
-      "srcset",
+      'srcset',
       getData(element, settings.data_srcset)
     );
-    setAttributeIfValue(element, "src", getData(element, settings.data_src));
+    setAttributeIfValue(element, 'src', getData(element, settings.data_src));
   };
 
   const setSourcesImg = (element, settings) => {
     const parent = element.parentNode;
 
-    if (parent && parent.tagName === "PICTURE") {
+    if (parent && parent.tagName === 'PICTURE') {
       let sourceTags = getSourceTags(parent);
       sourceTags.forEach(sourceTag => {
         setImageAttributes(sourceTag, settings);
@@ -168,7 +168,7 @@
   };
 
   const setSourcesIframe = (element, settings) => {
-    setAttributeIfValue(element, "src", getData(element, settings.data_src));
+    setAttributeIfValue(element, 'src', getData(element, settings.data_src));
   };
 
   const setSourcesVideo = (element, settings) => {
@@ -176,11 +176,11 @@
     sourceTags.forEach(sourceTag => {
       setAttributeIfValue(
         sourceTag,
-        "src",
+        'src',
         getData(sourceTag, settings.data_src)
       );
     });
-    setAttributeIfValue(element, "src", getData(element, settings.data_src));
+    setAttributeIfValue(element, 'src', getData(element, settings.data_src));
     element.load();
   };
 
@@ -211,7 +211,7 @@
       setSourcesFunction(element, settings);
       updateLoadingCount(instance, 1);
       instance._elements = purgeOneElement(instance._elements, element);
-      return;
+      return
     }
     setSourcesBgImage(element, settings);
   };
@@ -219,25 +219,25 @@
   const addClass = (element, className) => {
     if (supportsClassList) {
       element.classList.add(className);
-      return;
+      return
     }
-    element.className += (element.className ? " " : "") + className;
+    element.className += (element.className ? ' ' : '') + className;
   };
 
   const removeClass = (element, className) => {
     if (supportsClassList) {
       element.classList.remove(className);
-      return;
+      return
     }
-    element.className = element.className.
-      replace(new RegExp("(^|\\s+)" + className + "(\\s+|$)"), " ").
-      replace(/^\s+/, "").
-      replace(/\s+$/, "");
+    element.className = element.className
+      .replace(new RegExp('(^|\\s+)' + className + '(\\s+|$)'), ' ')
+      .replace(/^\s+/, '')
+      .replace(/\s+$/, '');
   };
 
-  const genericLoadEventName = "load";
-  const mediaLoadEventName = "loadeddata";
-  const errorEventName = "error";
+  const genericLoadEventName = 'load';
+  const mediaLoadEventName = 'loadeddata';
+  const errorEventName = 'error';
 
   const addEventListener = (element, eventName, handler) => {
     element.addEventListener(eventName, handler);
@@ -259,7 +259,7 @@
     removeEventListener(element, errorEventName, errorHandler);
   };
 
-  const eventHandler = function(event, success, instance) {
+  const eventHandler = function (event, success, instance) {
     var settings = instance._settings;
     const className = success ? settings.class_loaded : settings.class_error;
     const callback = success
@@ -286,14 +286,14 @@
     addEventListeners(element, loadHandler, errorHandler);
   };
 
-  const managedTags = ["IMG", "IFRAME", "VIDEO"];
+  const managedTags = ['IMG', 'IFRAME', 'VIDEO'];
 
   const onEnter = (element, instance) => {
     const settings = instance._settings;
     callbackIfSet(settings.callback_enter, element);
     if (!settings.load_delay) {
       revealAndUnobserve(element, instance);
-      return;
+      return
     }
     delayLoad(element, instance);
   };
@@ -310,7 +310,7 @@
     const settings = instance._settings;
     callbackIfSet(settings.callback_exit, element);
     if (!settings.load_delay) {
-      return;
+      return
     }
     cancelDelayLoad(element);
   };
@@ -318,7 +318,7 @@
   const cancelDelayLoad = element => {
     var timeoutId = getTimeoutData(element);
     if (!timeoutId) {
-      return; // do nothing if timeout doesn't exist
+      return // do nothing if timeout doesn't exist
     }
     clearTimeout(timeoutId);
     setTimeoutData(element, null);
@@ -328,9 +328,9 @@
     var loadDelay = instance._settings.load_delay;
     var timeoutId = getTimeoutData(element);
     if (timeoutId) {
-      return; // do nothing if timeout already set
+      return // do nothing if timeout already set
     }
-    timeoutId = setTimeout(function() {
+    timeoutId = setTimeout(function () {
       revealAndUnobserve(element, instance);
       cancelDelayLoad(element);
     }, loadDelay);
@@ -340,7 +340,7 @@
   const revealElement = (element, instance, force) => {
     var settings = instance._settings;
     if (!force && getWasProcessedData(element)) {
-      return; // element has already been processed and force wasn't true
+      return // element has already been processed and force wasn't true
     }
     if (managedTags.indexOf(element.tagName) > -1) {
       addOneShotEventListeners(element, instance);
@@ -357,12 +357,12 @@
 
   const getObserverSettings = settings => ({
     root: settings.container === document ? null : settings.container,
-    rootMargin: settings.thresholds || settings.threshold + "px"
+    rootMargin: settings.thresholds || settings.threshold + 'px'
   });
 
   const setObserver = instance => {
     if (!supportsIntersectionObserver) {
-      return false;
+      return false
     }
     instance._observer = new IntersectionObserver(entries => {
       entries.forEach(entry =>
@@ -371,10 +371,10 @@
           : onExit(entry.target, instance)
       );
     }, getObserverSettings(instance._settings));
-    return true;
+    return true
   };
 
-  const LazyLoad = function(customSettings, elements) {
+  const LazyLoad = function (customSettings, elements) {
     this._settings = getInstanceSettings(customSettings);
     this._loadingCount = 0;
     setObserver(this);
@@ -382,7 +382,7 @@
   };
 
   LazyLoad.prototype = {
-    update: function(elements) {
+    update: function (elements) {
       const settings = this._settings;
       const _elements =
         elements ||
@@ -394,7 +394,7 @@
 
       if (isBot || !this._observer) {
         this.loadAll();
-        return;
+        return
       }
 
       this._elements.forEach(element => {
@@ -402,7 +402,7 @@
       });
     },
 
-    destroy: function() {
+    destroy: function () {
       if (this._observer) {
         this._elements.forEach(element => {
           this._observer.unobserve(element);
@@ -413,11 +413,11 @@
       this._settings = null;
     },
 
-    load: function(element, force) {
+    load: function (element, force) {
       revealElement(element, this, force);
     },
 
-    loadAll: function() {
+    loadAll: function () {
       var elements = this._elements;
       elements.forEach(element => {
         revealAndUnobserve(element, this);
