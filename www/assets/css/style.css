@@ -5,7 +5,7 @@ body {
   color: #333;
   text-align: left;
   font-size: 12px;
-  font-family: "Arcadia", "Zwizz", "IBM Plex Mono", "Bookman Old Style", monospace;
+  font-family: "Arcadia", "Zwizz", "IBM Plex Mono", monospace;
   width: 100%;
   overflow-x: hidden;
 }
