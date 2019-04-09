@@ -35,6 +35,11 @@ Minimal-Archive/
    └── index.php
 ```
 
+## Translation
+
+The translation file is located in `www/minimalarchive/engine/translations.php`.
+It's a simple array where the key is the language code.
+
 ## Compilation
 
 If you plan to edit the javascript, you need to compile it to iife. A simple way to do this would be to use `rollup` via `npx`.
