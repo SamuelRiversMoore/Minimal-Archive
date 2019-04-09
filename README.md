@@ -27,7 +27,11 @@ Minimal-Archive/
    │
    ├── assets/
    ├── images/
-   ├── lib/
+   ├── minimalarchive/
+   │
+   ├── meta.txt
+   │   # This file contains all the page info :)
+   │
    └── index.php
 ```
 
