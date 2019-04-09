@@ -5,4 +5,5 @@ if (!defined('minimalarchive'))
     exit();
 }
 
-include_once 'functions.php';
+echo "404"
+?>

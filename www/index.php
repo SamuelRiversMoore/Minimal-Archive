@@ -1,57 +1,26 @@
 <?php
-    define('minimalarchive', TRUE);
-    include_once('./lib/_loader.php');
 
-    $meta = textFileToArray('./meta.txt');
-    $imagesdir = array_key_exists('imagesfolder', $meta) ? $meta['imagesfolder'] : null;
-    $title = array_key_exists('title', $meta) ? $meta['title'] : '';
-    $description = array_key_exists('description', $meta) ? $meta['description'] : '';
-    $socialimage = array_key_exists('socialimage', $meta) ? $meta['socialimage'] : '';
-    $note = array_key_exists('note', $meta) ? $meta['note'] : '';
-?>
-<html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-        <title><?= $title; ?></title>
-        <meta name="description" content="<?= $description ?>" />
+function getIp()
+{
+    if (!empty($_SERVER['HTTP_CLIENT_IP'])) { //check ip
+        $ip = $_SERVER['HTTP_CLIENT_IP'];
+    } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) { //check proxy
+        $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
+    } else {
+        $ip = $_SERVER['REMOTE_ADDR'];
+    }
+    return $ip;
+}
 
-        <meta property="og:title" content="<?= $title ?>">
-        <meta property="og:description" content="<?= $description ?>">
-        <meta property="og:image" content="<?= url($socialimage) ?>">
-        <meta property="og:url" content="<?= url() ?>">
+$extensions = array("bmp", "webp", "jpg", "jpeg", "png", "gif", "css", "js", "sqlite", "eot", "svg", "ttf", "woff", "woff2");
 
-        <link rel="shortcut icon" href="<?= url('assets/images/favicon.ico') ?>"/>
-        <link rel="icon" type="image/png" href="<?= url('assets/images/favicon.png') ?>"/>
-        <link rel="stylesheet" href="<?= url('assets/css/style.css') ?>" type="text/css" media="screen"/>
+$path = parse_url($_SERVER["REQUEST_URI"], PHP_URL_PATH);
+$ext = pathinfo($path, PATHINFO_EXTENSION);
 
-    </head>
-    <body>
-        <header>
-            <section class="title"><?= $title ?></section>
-        </header>
-        <main>
-            <section class="Gallery">
-                <?php
-                $images = getImagesInFolder($imagesdir);
-                foreach ($images as $image) {
-                    $output = "<div class='Image'>";
-                    $output .= "<div class='Image__container'>";
-                    $output .= "<img class='lazy miniarch' src='" . url('assets/css/loading.gif') . "' data-src='" .  url("${imagesdir}/${image}") ."' title='" . $image . "'/>";
-                    $output .= "</div>";
-                    $output .= "<div class='Image__caption'><span>" . $image . "</span></div>";
-                    $output .= "</div>";
-                    echo $output;
-                }
-
-                ?>
-            </section>
-            <span id="breaker"></span>
-        </main>
-        <footer>
-            <section class="note">
-                <?= $note ?>
-            </section>
-        </footer>
-        <script src="<?php echo url('assets/js/main.js')?>"></script>
-    </body>
-</html>
+if (in_array($ext, $extensions)) {
+    // let the server handle the request as-is
+    return false;
+} else {
+    include_once "minimalarchive" . DIRECTORY_SEPARATOR . "engine" . DIRECTORY_SEPARATOR . "bootstrap.php";
+    return true;
+}
