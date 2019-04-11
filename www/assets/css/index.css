@@ -7,46 +7,33 @@ body {
   font-size: 12px;
   font-family: "Arcadia", "Zwizz", "IBM Plex Mono", monospace;
   width: 100%;
-  overflow-x: hidden;
-}
+  overflow-x: hidden; }
 
 *:focus {
   outline: none !important;
-  box-sizing: border-box;
-}
+  box-sizing: border-box; }
 
-.breaker {
+.Index .breaker {
   width: 0px;
   height: 0px;
-  display: block !important;
-}
-
-.title {
+  display: block !important; }
+.Index .title {
   font-size: 32px;
-  padding: 20px;
-}
-
-.note {
+  padding: 20px; }
+.Index .note {
   padding: 40px 20px;
-  color: rgba(120, 120, 120, 1);
-}
-
-p {
-  margin: 0px;
-}
-main {
+  color: #787878; }
+.Index p {
+  margin: 0px; }
+.Index main {
   padding: 0;
-  box-sizing: border-box;
-}
-
-.Gallery {
+  box-sizing: border-box; }
+.Index .Gallery {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
-  width: 100%;
-}
-
-.Image {
+  width: 100%; }
+.Index .Image {
   display: flex;
   flex-direction: column;
   width: 160px;
@@ -58,21 +45,15 @@ main {
   cursor: zoom-in;
   cursor: -moz-zoom-in;
   cursor: -webkit-zoom-in;
-  border-radius: 10px;
-}
-
-.Image img {
+  border-radius: 10px; }
+.Index .Image img {
   max-width: 100%;
   max-height: 90vh;
   height: auto;
-  border-radius: 1px;
-}
-
-.Image:hover {
-  background-color: rgba(200, 200, 200, 0.9);
-}
-
-.Image--active {
+  border-radius: 1px; }
+.Index .Image:hover {
+  background-color: rgba(200, 200, 200, 0.9); }
+.Index .Image--active {
   cursor: pointer;
   cursor: zoom-out;
   cursor: -moz-zoom-out;
@@ -81,42 +62,31 @@ main {
   height: auto;
   max-height: calc(100% - 250px);
   max-width: 100%;
-  flex: 100%;
-}
-
-.Image__container {
+  flex: 100%; }
+.Index .Image__container {
   overflow: hidden;
-  text-align: center;
-}
-
-.Image__container img {
+  text-align: center; }
+.Index .Image__container img {
   max-height: 100%;
-  max-width: 80%;
-}
-
-.Image__caption {
+  max-width: 80%; }
+.Index .Image__caption {
   flex: 1;
   display: flex;
   justify-content: center;
-  align-items: flex-end;
-}
-
-.Image__caption span {
+  align-items: flex-end; }
+.Index .Image__caption span {
   white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.Image--active img {
+  text-overflow: ellipsis; }
+.Index .Image--active img {
   max-width: 100%;
   max-height: 100%;
-  height: auto;
-}
-
-.caption {
+  height: auto; }
+.Index .caption {
   padding: 0 0 5px;
   text-align: left;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
-}
+  white-space: nowrap; }
+
+/*# sourceMappingURL=index.css.map */

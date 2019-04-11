@@ -1,0 +1,27 @@
+@import '../common/common';
+@import '../modules/base';
+@import '../modules/form';
+@import '../modules/buttons';
+
+main {
+  padding: 2em;
+  font-size: 14px;
+}
+
+legend {
+  font-size: 2em;
+}
+
+.notice {
+  width: auto;
+  display: inline-block;
+  padding: 1em;
+  margin: 0 0 2em 0;
+}
+.error {
+  background-color: pink;
+}
+
+.success {
+  background-color: #c0ffe3;
+}

@@ -1,0 +1,114 @@
+@import '../common/common';
+
+body {
+  background: silver;
+  color: #333;
+}
+
+.Index {
+  .breaker {
+    width: 0px;
+    height: 0px;
+    display: block !important;
+  }
+
+  .title {
+    font-size: 32px;
+    padding: 20px;
+  }
+
+  .note {
+    padding: 40px 20px;
+    color: rgba(120, 120, 120, 1);
+  }
+
+  p {
+    margin: 0px;
+  }
+  main {
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  .Gallery {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    width: 100%;
+  }
+
+  .Image {
+    display: flex;
+    flex-direction: column;
+    width: 160px;
+    height: 150px;
+    padding: 20px;
+    overflow: hidden;
+    transition: all 0.20s;
+    cursor: pointer;
+    cursor: zoom-in;
+    cursor: -moz-zoom-in;
+    cursor: -webkit-zoom-in;
+    border-radius: 10px;
+  }
+
+  .Image img {
+    max-width: 100%;
+    max-height: 90vh;
+    height: auto;
+    border-radius: 1px;
+  }
+
+  .Image:hover {
+    background-color: rgba(200, 200, 200, 0.9);
+  }
+
+  .Image--active {
+    cursor: pointer;
+    cursor: zoom-out;
+    cursor: -moz-zoom-out;
+    cursor: -webkit-zoom-out;
+    width: auto;
+    height: auto;
+    max-height: calc(100% - 250px);
+    max-width: 100%;
+    flex: 100%;
+  }
+
+  .Image__container {
+    overflow: hidden;
+    text-align: center;
+  }
+
+  .Image__container img {
+    max-height: 100%;
+    max-width: 80%;
+  }
+
+  .Image__caption {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+  }
+
+  .Image__caption span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .Image--active img {
+    max-width: 100%;
+    max-height: 100%;
+    height: auto;
+  }
+
+  .caption {
+    padding: 0 0 5px;
+    text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}

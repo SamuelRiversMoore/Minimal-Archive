@@ -5,7 +5,7 @@
         exit();
     }
 
-    $meta = textFileToArray('./meta.txt');
+    $meta = textFileToArray(ROOT_FOLDER . DS . 'meta.txt');
     $imagesdir = array_key_exists('imagesfolder', $meta) ? $meta['imagesfolder'] : null;
     $title = array_key_exists('title', $meta) ? $meta['title'] : '';
     $description = array_key_exists('description', $meta) ? $meta['description'] : '';
@@ -25,10 +25,10 @@
 
         <link rel="shortcut icon" href="<?= url('assets/images/favicon.ico') ?>"/>
         <link rel="icon" type="image/png" href="<?= url('assets/images/favicon.png') ?>"/>
-        <link rel="stylesheet" href="<?= url('assets/css/style.css') ?>" type="text/css" media="screen"/>
+        <link rel="stylesheet" href="<?= url('assets/css/index.css') ?>" type="text/css" media="screen"/>
 
     </head>
-    <body>
+    <body class="Index">
         <header>
             <section class="title"><?= $title ?></section>
         </header>

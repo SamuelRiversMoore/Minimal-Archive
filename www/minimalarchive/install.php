@@ -28,6 +28,9 @@ function checkForm($post)
     }
     return false;
 }
+$error = "";
+$success = "";
+
 if (isset($_GET['action'])
     && isset($_POST)
     && isset($_POST['csrf_token'])
@@ -38,85 +41,85 @@ if (isset($_GET['action'])
             if (checkForm($_POST) === true) {
                 $email = email_sanitize($_POST['email']);
                 $password = password_sanitize($_POST['password']);
+                try {
+                    create_account($email, $password);
+                    $success .= translate('account_created');
+                } catch (Exception $e) {
+                    $error .= translate($e->getMessage());
+                }
             }
         } catch (Exception $e) {
-            echo translate($e->getMessage());
-        }
-        try {
-            create_account($email, $password);
-            echo translate('account_created');
-        } catch (Exception $e) {
-            echo translate($e->getMessage());
+            $error .= translate($e->getMessage());
         }
     }
 }
 ?>
 <html>
-<head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Minimal-Archive installation</title>
-</head>
-<body>
-    <header>
-        <section class="title">Installation</section>
-    </header>
-    <main>
-        <section class="Form">
-            <form action="/install?action=confirm" method="post" accept-charset="utf-8">
-                <div class="field">
-                    <label class="label">Title</label>
-                    <div class="control">
-                        <input class="input" type="text" placeholder="Minimal-Archive" name="title">
-                    </div>
-                </div>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <title>Minimal-Archive installation</title>
+        <link rel="stylesheet" href="<?= url('assets/css/install.css') ?>">
+    </head>
+    <body>
+        <main>
+            <?php if (strlen($error)) {
+                echo "<aside class=\"notice error\">${error}</aside>";
+            }?>
 
-                <div class="field">
-                    <label class="label">Description</label>
-                    <div class="control">
-                        <textarea class="textarea" name="site-description" placeholder="Textarea"></textarea>
-                    </div>
-                </div>
+            <?php if (strlen($success)) {
+                echo "<aside class=\"notice success\">${success}</aside>";
+            }?>
 
-                <div class="field">
-                    <label class="label">Email</label>
-                    <div class="control">
-                        <input class="input is-danger" type="email" placeholder="Email input" name="email">
-                    </div>
-                </div>
+            <?php if (!strlen($success)): ?>
+            <section class="Form">
+                <form class="pure-form pure-form-stacked" action="/install?action=confirm" method="post" accept-charset="utf-8">
+                    <fieldset>
+                        <legend>Installation</legend>
 
-                <div class="field">
-                    <label class="label">Password</label>
-                    <div class="control">
-                        <input class="input is-danger" type="password" placeholder="Email input" name="password">
-                    </div>
-                </div>
+                        <div class="pure-control-group">
+                            <label for="foo">Site title *</label>
+                            <input id="foo" type="text" class="pure-input-1-2" placeholder="Enter something here..." required="true" name="title">
+                        </div>
 
-                <div class="field">
-                    <label class="label">Social Share Image</label>
-                    <div class="control">
-                        <input class="upload" type="file">
-                    </div>
-                </div>
+                        <div class="pure-control-group">
+                            <label for="description">Site description *</label>
+                            <textarea id="description" class="pure-input-1-2" placeholder="Description" name="description"></textarea>
+                        </div>
 
-                <div class="field">
-                    <label class="label">Images folder</label>
-                    <div class="control">
-                        <input class="folder" name="site-folder" type="text" placeholder="Folder name without trailing slash or ./">
-                    </div>
-                </div>
+                        <div class="pure-control-group">
+                            <label for="imagefolder">Custom Images Folder</label>
+                            <input id="imagefolder" type="text" class="pure-input-1-2" placeholder="Folder name without trailing slash (default: images)" name="imagefolder">
+                        </div>
 
-                <div class="field">
-                    <div class="control">
-                        <label class="checkbox">
-                            <input type="checkbox">
-                            Double checked everything ? (in case something is wrong, delete the files in ./config folder and the installation will be available again)
-                        </label>
-                    </div>
-                </div>
-                <input type="hidden" name="csrf_token" value="<?= get_token('install') ?>" />
-                <button type="submit">SUBMIT</button>
+                        <div class="pure-control-group">
+                            <label for="socialimage">Social Share Image</label>
+                            <input id="socialimage" type="file" accept="image/*" class="pure-input-1-2" name="socialimage">
+                        </div>
+
+                        <!-- ACCOUNT -->
+
+                        <div class="pure-control-group">
+                            <label for="email">Email Address *</label>
+                            <input id="email" type="email" placeholder="Email Address" required="true" name="email">
+                        </div>
+
+                        <div class="pure-control-group">
+                            <label for="password">Password *</label>
+                            <input id="password" type="password" placeholder="Password" required="true" name="password">
+                        </div>
+
+                        <div class="pure-controls">
+                            <label for="cb" class="pure-checkbox">
+                                <input id="cb" type="checkbox" required="true"> Double check everything and tick the box
+                            </label>
+                        </div>
+
+                        <input type="hidden" name="csrf_token" value="<?= get_token('install') ?>" />
+                        <button type="submit" class="pure-button pure-button-primary">Submit</button>
+                    </fieldset>
                 </form>
             </section>
+            <?php endif; ?>
         </main>
         <footer>
             <section class="note">

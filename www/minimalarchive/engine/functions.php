@@ -94,7 +94,7 @@ function textFileToArray(string $file)
 function create_token()
 {
     try {
-        $dir = __DIR__ . DS . '../temp';
+        $dir = VAR_FOLDER . DS;
         $filename = ".token";
         if (!file_exists($dir)) {
             mkdir($dir, 0777, true);
@@ -109,7 +109,7 @@ function create_token()
 
 function get_token($form_name)
 {
-    $file = __DIR__ . DS . '../var' . DS . '.token';
+    $file = VAR_FOLDER . DS . '.token';
     if (file_exists($file)) {
         $lines = explode("\n", file_get_contents($file));
         if (is_array($lines) && count($lines)) {
@@ -128,9 +128,11 @@ function check_password($password)
 {
     if (strlen($password) < 8) {
         throw new Exception("password_short.", 1);
+        return false;
     }
     if (!preg_match("/[0-9]{1,}/", $password) || !preg_match("/[A-Z]{1,}/", $password)) {
         throw new Exception("password_bad", 1);
+        return false;
     }
     return true;
 }
@@ -148,7 +150,7 @@ function password_sanitize($text)
 function create_account($email, $password)
 {
     try {
-        $dir = __DIR__ . DS . '../var';
+        $dir = VAR_FOLDER;
         $filename = ".account";
         $hashedPass = password_hash($password, PASSWORD_DEFAULT);
         $hashedEmail = password_hash($email, PASSWORD_DEFAULT);
@@ -170,6 +172,6 @@ function create_account($email, $password)
 
 function is_installed()
 {
-    $filename = __DIR__ . DS . '../var' . DS . ".account";
+    $filename = VAR_FOLDER . DS . ".account";
     return file_exists($filename);
 }
