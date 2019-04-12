@@ -4,6 +4,7 @@ return [
         'account_created'   => "😀 Account has been created",
         'account_exists'    => "There is already an account, you must delete it to create a new one.",
         'bad_credentials'   => 'Bad credentials...',
+        'edit_mode_welcome' => '✏️ Welcome to Edit mode !',
         'installation_complete' => "✅ Installation is complete!",
         'no_folder'         => "The folder doesn't exist",
         'password_short'    => "🙁 Password too short! you need at least 8 characters.",
