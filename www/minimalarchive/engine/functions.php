@@ -4,34 +4,29 @@ if (!defined('minimalarchive')) {
     exit();
 }
 
-function translate($string, $language = 'en')
+function file_to_lines(string $file)
 {
-    $translations = require 'translations.php';
-    if (!array_key_exists($language, $translations)) {
-        $language = 'en';
+    $result = array();
+    if (file_exists($file)) {
+        return explode("\n", file_get_contents($file));
     }
-    $mediaTranslation = $translations[$language];
-
-    if (array_key_exists($string, $mediaTranslation)) {
-        $string = $mediaTranslation[$string];
-    }
-    return $string;
+    return $result;
 }
 
-function url(string $path = '')
+function textFileToArray(string $file)
 {
-    // server protocol
-    $protocol = empty($_SERVER['HTTPS']) ? 'http' : 'https';
-
-    // domain name
-    $domain = $_SERVER['SERVER_NAME'];
-
-    // server port
-    $port = $_SERVER['SERVER_PORT'];
-    $disp_port = ($protocol == 'http' && $port == 80 || $protocol == 'https' && $port == 443) ? '' : ":$port";
-
-    // put em all together to get the complete base URL
-    return "${protocol}://${domain}${disp_port}" . ($path ? "/" . htmlspecialchars($path) : '');
+    $result = array();
+    $lines = file_to_lines($file);
+    if (is_array($lines) && count($lines)) {
+        $i = -1;
+        while (++$i < count($lines)) {
+            $tokens = explode(':', trim(htmlspecialchars($lines[$i])), 2);
+            if (is_array($tokens) && count($tokens) === 2) {
+                $result[trim($tokens[0])] = trim($tokens[1]);
+            }
+        }
+    }
+    return $result;
 }
 
 function getFilenamesInFolder(string $folder = null, array $supported = [])
@@ -73,109 +68,34 @@ function getImagesInFolder(string $folder = null)
     }
 }
 
-function file_to_lines(string $file)
+function check_imagesfolder(string $folder)
 {
-    $result = array();
-    if (file_exists($file)) {
-        return explode("\n", file_get_contents($file));
-    }
-    return $result;
-}
-
-function textFileToArray(string $file)
-{
-    $result = array();
-    $lines = file_to_lines($file);
-    if (is_array($lines) && count($lines)) {
-        $i = -1;
-        while (++$i < count($lines)) {
-            $tokens = explode(':', trim(htmlspecialchars($lines[$i])), 2);
-            if (is_array($tokens) && count($tokens) === 2) {
-                $result[trim($tokens[0])] = trim($tokens[1]);
-            }
+    if (file_exists($folder)) {
+        if (!is_writable($folder)) {
+            throw new Exception("no_rights", 1);
         }
     }
-    return $result;
 }
 
-function create_token()
+function check_uploadedfile($file, $uploadfolder = VAR_FOLDER, $max_filesize = 2097152)
 {
-    try {
-        $dir = VAR_FOLDER . DS;
-        $filename = ".token";
-        if (!file_exists($dir)) {
-            mkdir($dir, 0777, true);
+    if (!$file) {
+        throw new Exception('file_upload_error', 1);
+    }
+    if (!is_uploaded_file($file['tmp_name'])) {
+        throw new Exception("file_upload_error", 1);
+    }
+    if (filesize($file['tmp_name']) > $max_filesize) {
+        throw new Exception("file_too_large", 1);
+    }
+}
+
+function save_file($file, $name = null, $folder = VAR_FOLDER)
+{
+    if ($file) {
+        if (!move_uploaded_file($file['tmp_name'], $folder . DS. basename($name ? $name : $file['name']))) {
+            throw new Exception("file_upload_error", 1);
         }
-        $file = fopen($dir . DS . $filename, "w");
-        fwrite($file, bin2hex(random_bytes(32)) . "\n");
-        fclose($file);
-    } catch (Exception $e) {
-        throw new Exception($e->getMessage(), $e->getCode());
-    }
-}
-
-function get_token($form_name)
-{
-    $file = VAR_FOLDER . DS . '.token';
-    if (file_exists($file)) {
-        $lines = explode("\n", file_get_contents($file));
-        if (is_array($lines) && count($lines)) {
-            return hash('sha512', $lines[0] . session_id() . $form_name);
-        }
-    }
-    return false;
-}
-
-function check_token($token, $form_name)
-{
-    return $token === get_token($form_name);
-}
-
-function check_password($password)
-{
-    if (strlen($password) < 8) {
-        throw new Exception("password_short.", 1);
-        return false;
-    }
-    if (!preg_match("/[0-9]{1,}/", $password) || !preg_match("/[A-Z]{1,}/", $password)) {
-        throw new Exception("password_bad", 1);
-        return false;
-    }
-    return true;
-}
-
-function sanitize_email($text)
-{
-    return filter_var(strtolower(trim($text)), FILTER_SANITIZE_EMAIL);
-}
-
-function sanitize_password($text)
-{
-    return filter_var($text, FILTER_SANITIZE_STRING);
-}
-
-function has_meta()
-{
-    return file_exists(ROOT_FOLDER . DS . "meta.txt");
-}
-
-function has_account()
-{
-    return file_exists(VAR_FOLDER . DS . ".account");
-}
-
-function is_installed()
-{
-    return has_account() && has_meta();
-}
-
-function uninstall()
-{
-    if (has_account()) {
-        unlink(VAR_FOLDER . DS . ".account");
-    }
-    if (has_meta()) {
-        unlink(ROOT_FOLDER . DS . "meta.txt");
     }
 }
 
@@ -202,6 +122,70 @@ function check_credentials(string $email, string $password)
     return password_verify(sanitize_email($email), $credentials['email']) && password_verify(sanitize_password($password), $credentials['password']);
 }
 
+function check_password($password)
+{
+    if (strlen($password) < 8) {
+        throw new Exception("password_short.", 1);
+        return false;
+    }
+    if (!preg_match("/[0-9]{1,}/", $password) || !preg_match("/[A-Z]{1,}/", $password)) {
+        throw new Exception("password_bad", 1);
+        return false;
+    }
+    return true;
+}
+
+function get_token($form_name)
+{
+    $file = VAR_FOLDER . DS . '.token';
+    if (file_exists($file)) {
+        $lines = explode("\n", file_get_contents($file));
+        if (is_array($lines) && count($lines)) {
+            return hash('sha512', $lines[0] . session_id() . $form_name);
+        }
+    }
+    return false;
+}
+
+function check_token($token, $form_name)
+{
+    return $token === get_token($form_name);
+}
+
+function create_token()
+{
+    try {
+        $dir = VAR_FOLDER . DS;
+        $filename = ".token";
+        if (!file_exists($dir)) {
+            mkdir($dir, 0777, true);
+        }
+        $file = fopen($dir . DS . $filename, "w");
+        fwrite($file, bin2hex(random_bytes(32)) . "\n");
+        fclose($file);
+    } catch (Exception $e) {
+        throw new Exception($e->getMessage(), $e->getCode());
+    }
+}
+
+function clean_installation()
+{
+    $files = glob(VAR_FOLDER . DS . '*');
+    foreach ($files as $file) {
+        if (is_file($file) && $file !== DEFAULT_ACCOUNTFILE && $FILE !== DEFAULT_METAFILE) {
+            unlink($file);
+        }
+    }
+}
+
+function uninstall()
+{
+    $files = glob(VAR_FOLDER . DS . '{,.}[!.,!..]*', GLOB_MARK|GLOB_BRACE);
+    foreach ($files as $file) {
+        unlink($file);
+    }
+}
+
 function put_error(string $message)
 {
     echo "<aside class=\"notice error\">${message}</aside>";
@@ -210,4 +194,65 @@ function put_error(string $message)
 function put_success(string $message)
 {
     echo "<aside class=\"notice success\">${message}</aside>";
+}
+
+function sanitize_email($text)
+{
+    return filter_var(strtolower(trim($text)), FILTER_SANITIZE_EMAIL);
+}
+
+function sanitize_password($text)
+{
+    return filter_var($text, FILTER_SANITIZE_STRING);
+}
+
+function sanitize_text($text)
+{
+    return filter_var(trim($text), FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+}
+
+function has_account()
+{
+    return file_exists(VAR_FOLDER . DS . ".account");
+}
+
+function has_meta()
+{
+    return file_exists(ROOT_FOLDER . DS . "meta.txt");
+}
+
+function is_installed()
+{
+    return has_account() && has_meta();
+}
+
+function translate($string, $extra = "", $language = 'en')
+{
+    $translations = require 'translations.php';
+    if (!array_key_exists($language, $translations)) {
+        $language = 'en';
+    }
+    $mediaTranslation = $translations[$language];
+
+    if (array_key_exists($string, $mediaTranslation)) {
+        $string = $mediaTranslation[$string];
+    }
+    $string .= strlen($extra) ? "<br/>" . $extra : "";
+    return $string;
+}
+
+function url(string $path = '')
+{
+    // server protocol
+    $protocol = empty($_SERVER['HTTPS']) ? 'http' : 'https';
+
+    // domain name
+    $domain = $_SERVER['SERVER_NAME'];
+
+    // server port
+    $port = $_SERVER['SERVER_PORT'];
+    $disp_port = ($protocol == 'http' && $port == 80 || $protocol == 'https' && $port == 443) ? '' : ":$port";
+
+    // put em all together to get the complete base URL
+    return "${protocol}://${domain}${disp_port}" . ($path ? "/" . htmlspecialchars($path) : '');
 }

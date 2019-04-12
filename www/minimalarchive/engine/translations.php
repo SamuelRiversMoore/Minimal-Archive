@@ -5,8 +5,10 @@ return [
         'account_exists'    => "There is already an account, you must delete it to create a new one.",
         'bad_credentials'   => 'Bad credentials...',
         'installation_complete' => "✅ Installation is complete!",
+        'no_folder'         => "No folder",
         'password_short'    => "🙁 Password too short! you need at least 8 characters.",
-        'password_bad'      => '🙁 The password must contain at least one digit and at least one uppercase letter.'
+        'password_bad'      => '🙁 The password must contain at least one digit and at least one uppercase letter.',
+        'uninstall_complete'    => "✅ Successfully uninstalled the project"
     ],
     'fr' => [
         'account_created'   => "😀 Le compte a été crée",

@@ -1,50 +1,71 @@
 <?php
 
-function checkForm($post)
+function get_sanitizedform($args)
 {
-    if (null !== $post['email']
-    && null !== $post['password']) {
-        try {
-            check_password($post['password']);
-            return true;
-        } catch (Exception $e) {
-            throw $e;
-        }
-    }
-    return false;
+    return array(
+        'email' => isset($args['email']) ? sanitize_email($args['email']) : null,
+        'password' => isset($args['password']) ? sanitize_password($args['password']) : null,
+        'title' => isset($args['title']) ? sanitize_text($args['title']) : null,
+        'imagesfolder' => isset($args['imagesfolder']) ? rtrim(ltrim(sanitize_text($args['imagesfolder']), '/')) : pathinfo(DEFAULT_IMAGEFOLDER, PATHINFO_FILENAME),
+        'description' => isset($args['description']) ? sanitize_text($args['description']) : null,
+        'note' => isset($args['note']) ? sanitize_text($args['note']) : null,
+        'favicon' => isset($_FILES['favicon']) ? $_FILES['favicon'] : null,
+        'socialimage' => isset($_FILES['socialimage']) ? $_FILES['socialimage'] : null,
+    );
 }
 
 function check_form($args)
 {
-    if (!isset($args['email']) || null === $args['email']) {
-        throw new Exception("no_email", 1);
-    }
-    if (!isset($args['password']) || null === $args['password']) {
-        throw new Exception("no_password", 1);
+    $required = array(
+        'email',
+        'password',
+        'title'
+    );
+    foreach ($required as $item) {
+        if (null === $args[$item]) {
+            throw new Exception("no_${item}", 1);
+        }
     }
     try {
         check_password($args['password']);
-        return true;
     } catch (Exception $e) {
         throw $e;
     }
-    return false;
+    try {
+        check_imagesfolder(ROOT_FOLDER . DS . $args['imagesfolder']);
+    } catch (Exception $e) {
+        throw $e;
+    }
+    if (null !== $args['socialimage']) {
+        try {
+            check_uploadedfile($args['socialimage']);
+        } catch (Exception $e) {
+            throw $e;
+        }
+    }
+    if (null !== $args['favicon']) {
+        try {
+            check_uploadedfile($args['favicon']);
+        } catch (Exception $e) {
+            throw $e;
+        }
+    }
 }
 
 function create_accountfile($email, $password)
 {
     try {
         $dir = VAR_FOLDER;
-        $filename = ".account";
+        $filename = DEFAULT_ACCOUNTFILE;
         $hashedPass = password_hash($password, PASSWORD_DEFAULT);
         $hashedEmail = password_hash($email, PASSWORD_DEFAULT);
         if (!file_exists($dir)) {
             mkdir($dir, 0777, true);
         }
-        if (file_exists($dir . DS . $filename)) {
+        if (file_exists($filename)) {
             throw new Exception("account_exists", 1);
         }
-        $file = fopen($dir . DS . $filename, "w");
+        $file = fopen($filename, "w");
         fwrite($file, $hashedEmail. "\n");
         fwrite($file, $hashedPass . "\n");
         fclose($file);
@@ -54,53 +75,60 @@ function create_accountfile($email, $password)
     }
 }
 
-function create_account($email, $password)
+function create_metafile($args)
 {
-    if (null === $email) {
-        throw new Exception("no_email", 1);
-    }
-    if (null === $password) {
-        throw new Exception("no_password", 1);
-    }
     try {
-        $password = sanitize_password($password);
-        $email = sanitize_email($email);
-        create_accountfile($email, $password);
+        $exclusion = array(
+            'email',
+            'password'
+        );
+        $images = array(
+            'favicon',
+            'socialimage'
+        );
+        $dir = ROOT_FOLDER;
+        $filename = DEFAULT_METAFILE;
+        if (!file_exists($dir)) {
+            mkdir($dir, 0777, true);
+        }
+        $file = fopen($filename, "w");
+        foreach ($args as $key => $value) {
+            if (!in_array($key, $exclusion)) {
+                if (in_array($key, $images)) {
+                    fwrite($file, "${key}: " . $key . "." . pathinfo($args[$key]['name'], PATHINFO_EXTENSION)."\n");
+                } else {
+                    fwrite($file, "${key}: ${value}\n");
+                }
+            }
+        }
+        fclose($file);
         return true;
     } catch (Exception $e) {
-        throw $e;
+        throw new Exception($e->getMessage(), $e->getCode());
     }
-    return false;
 }
 
-function create_meta($args)
+function save_uploadedfiles($args)
 {
-    # TODO
-}
-
-function clean_install()
-{
-    uninstall();
+    try {
+        save_file($args['favicon'], 'favicon.' . pathinfo($args['favicon']['name'], PATHINFO_EXTENSION), ASSETS_FOLDER . DS . 'images');
+        save_file($args['socialimage'], 'socialimage.' . pathinfo($args['socialimage']['name'], PATHINFO_EXTENSION), ASSETS_FOLDER . DS . 'images');
+    } catch (Exception $e) {
+        throw new Exception();
+    }
 }
 
 function process_form($args)
 {
     try {
-        check_form($args);
+        $form = get_sanitizedform($args);
+        check_form($form);
+        save_uploadedfiles($form);
+        create_accountfile($form['email'], $form['password']);
+        create_metafile($form);
     } catch (Exception $e) {
+        uninstall();
         throw $e;
     }
-    try {
-        create_account($args['email'], $args['password']);
-    } catch (Exception $e) {
-        clean_install();
-        throw $e;
-    }
-    // try {
-    //     create_meta($args);
-    // } catch (Exception $e) {
-    //     clean_install();
-    //     throw $e;
-    // }
-    return true;
+    clean_installation();
 }

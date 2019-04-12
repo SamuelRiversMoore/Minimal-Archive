@@ -10,6 +10,18 @@ body {
   outline: none !important;
   box-sizing: border-box; }
 
+.notice {
+  width: auto;
+  display: inline-block;
+  padding: 1em;
+  margin: 0 0 2em 0; }
+
+.error {
+  background-color: pink; }
+
+.success {
+  background-color: #c0ffe3; }
+
 /*!
 
 Pure v1.0.0
@@ -452,18 +464,14 @@ main {
   font-size: 14px; }
 
 legend {
-  font-size: 2em; }
+  font-size: 1.25em; }
 
-.notice {
-  width: auto;
-  display: inline-block;
-  padding: 1em;
-  margin: 0 0 2em 0; }
+header {
+  font-size: 2em;
+  margin-bottom: 1em;
+  color: #333; }
 
-.error {
-  background-color: pink; }
-
-.success {
-  background-color: #c0ffe3; }
+.separator {
+  margin: 2.5em; }
 
 /*# sourceMappingURL=install.css.map */

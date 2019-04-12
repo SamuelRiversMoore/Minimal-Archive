@@ -1,6 +1,11 @@
 <?php
-if (!defined('minimalarchive') || !has_account()) {
+if (!defined('minimalarchive')) {
     header('location: /');
+    exit();
+}
+
+if (!has_account()) {
+    header('location: /install');
     exit();
 }
 

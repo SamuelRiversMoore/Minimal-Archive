@@ -12,8 +12,16 @@
     $imagesdir = array_key_exists('imagesfolder', $meta) ? $meta['imagesfolder'] : null;
     $title = array_key_exists('title', $meta) ? $meta['title'] : '';
     $description = array_key_exists('description', $meta) ? $meta['description'] : '';
-    $socialimage = array_key_exists('socialimage', $meta) ? $meta['socialimage'] : '';
+    $socialimage = array_key_exists('socialimage', $meta) ? 'assets/images/' . $meta['socialimage'] : '';
+    $favicon = array_key_exists('favicon', $meta) ? 'assets/images/' . $meta['favicon'] : '';
     $note = array_key_exists('note', $meta) ? $meta['note'] : '';
+
+    $error = null;
+    try {
+        $images = getImagesInFolder($imagesdir);
+    } catch (Exception $e) {
+        $error = translate($e->getMessage(), $imagesdir);
+    }
 ?>
 <html>
     <head>
@@ -26,19 +34,22 @@
         <meta property="og:image" content="<?= url($socialimage) ?>">
         <meta property="og:url" content="<?= url() ?>">
 
-        <link rel="shortcut icon" href="<?= url('assets/images/favicon.ico') ?>"/>
-        <link rel="icon" type="image/png" href="<?= url('assets/images/favicon.png') ?>"/>
+        <link rel="icon" type="image/png" href="<?= url($favicon) ?>"/>
         <link rel="stylesheet" href="<?= url('assets/css/index.css') ?>" type="text/css" media="screen"/>
 
     </head>
     <body class="Index">
+        <?php
+        if ($error && strlen($error)) {
+            put_error($error);
+        } else {
+        ?>
         <header>
             <section class="title"><?= $title ?></section>
         </header>
         <main>
             <section class="Gallery">
                 <?php
-                $images = getImagesInFolder($imagesdir);
                 foreach ($images as $image) {
                     $output = "<div class='Image'>";
                     $output .= "<div class='Image__container'>";
@@ -58,6 +69,9 @@
                 <?= $note ?>
             </section>
         </footer>
+        <?php
+        }
+        ?>
         <script src="<?= url('assets/js/main.js')?>"></script>
     </body>
 </html>
