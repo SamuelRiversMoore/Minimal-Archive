@@ -10,7 +10,7 @@ A minimal tool (javascript with no dependencies, php) to display images on a web
 ## Installation
 1. Put everything inside the `./www` folder in your server
 2. Head to `{your-url}/install`
-3. Add a title, description, social image, email and password
+3. Add a title, description, favicon, social image, email and password.
 6. Enjoy `{your-url}` (+ keyboard navigation)
 7. Uninstall using `{your-url}/uninstall`. This will remove the account and the meta file.
 
