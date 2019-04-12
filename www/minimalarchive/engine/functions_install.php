@@ -9,8 +9,8 @@ function get_sanitizedform($args)
         'imagesfolder' => isset($args['imagesfolder']) ? rtrim(ltrim(sanitize_text($args['imagesfolder']), '/')) : pathinfo(DEFAULT_IMAGEFOLDER, PATHINFO_FILENAME),
         'description' => isset($args['description']) ? sanitize_text($args['description']) : null,
         'note' => isset($args['note']) ? sanitize_text($args['note']) : null,
-        'favicon' => isset($_FILES['favicon']) ? $_FILES['favicon'] : null,
-        'socialimage' => isset($_FILES['socialimage']) ? $_FILES['socialimage'] : null,
+        'favicon' => isset($_FILES['favicon']) && strlen($_FILES['favicon']['name'])? $_FILES['favicon'] : null,
+        'socialimage' => isset($_FILES['socialimage']) && $_FILES['socialimage']['name'] ? $_FILES['socialimage'] : null,
     );
 }
 
@@ -94,7 +94,7 @@ function create_metafile($args)
         $file = fopen($filename, "w");
         foreach ($args as $key => $value) {
             if (!in_array($key, $exclusion)) {
-                if (in_array($key, $images)) {
+                if (in_array($key, $images) && $args[$key]) {
                     fwrite($file, "${key}: " . $key . "." . pathinfo($args[$key]['name'], PATHINFO_EXTENSION)."\n");
                 } else {
                     fwrite($file, "${key}: ${value}\n");
@@ -114,7 +114,7 @@ function save_uploadedfiles($args)
         save_file($args['favicon'], 'favicon.' . pathinfo($args['favicon']['name'], PATHINFO_EXTENSION), ASSETS_FOLDER . DS . 'images');
         save_file($args['socialimage'], 'socialimage.' . pathinfo($args['socialimage']['name'], PATHINFO_EXTENSION), ASSETS_FOLDER . DS . 'images');
     } catch (Exception $e) {
-        throw new Exception();
+        throw $e;
     }
 }
 

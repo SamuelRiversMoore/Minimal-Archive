@@ -79,14 +79,13 @@ function check_imagesfolder(string $folder)
 
 function check_uploadedfile($file, $uploadfolder = VAR_FOLDER, $max_filesize = 2097152)
 {
-    if (!$file) {
-        throw new Exception('file_upload_error', 1);
-    }
-    if (!is_uploaded_file($file['tmp_name'])) {
-        throw new Exception("file_upload_error", 1);
-    }
-    if (filesize($file['tmp_name']) > $max_filesize) {
-        throw new Exception("file_too_large", 1);
+    if ($file) {
+        if (!is_uploaded_file($file['tmp_name'])) {
+            throw new Exception("file_upload_error", 1);
+        }
+        if (filesize($file['tmp_name']) > $max_filesize) {
+            throw new Exception("file_too_large", 1);
+        }
     }
 }
 

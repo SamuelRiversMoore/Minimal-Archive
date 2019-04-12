@@ -12,8 +12,8 @@
     $imagesdir = array_key_exists('imagesfolder', $meta) ? $meta['imagesfolder'] : null;
     $title = array_key_exists('title', $meta) ? $meta['title'] : '';
     $description = array_key_exists('description', $meta) ? $meta['description'] : '';
-    $socialimage = array_key_exists('socialimage', $meta) ? 'assets/images/' . $meta['socialimage'] : '';
-    $favicon = array_key_exists('favicon', $meta) ? 'assets/images/' . $meta['favicon'] : '';
+    $socialimage = array_key_exists('socialimage', $meta) && null !== $meta['socialimage'] ? 'assets/images/' . $meta['socialimage'] : '';
+    $favicon = array_key_exists('favicon', $meta)  && null !== $meta['favicon'] ? 'assets/images/' . $meta['favicon'] : '';
     $note = array_key_exists('note', $meta) ? $meta['note'] : '';
 
     $error = null;
@@ -23,6 +23,7 @@
         $error = translate($e->getMessage(), $imagesdir);
     }
 ?>
+<!DOCTYPE html>
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
