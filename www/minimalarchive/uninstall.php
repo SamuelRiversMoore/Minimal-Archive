@@ -37,6 +37,7 @@ if (isset($_POST['email']) && isset($_POST['password']) && check_token($_POST['c
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta name="robots" content="noindex, nofollow">
         <title>Uninstallation</title>
         <link rel="stylesheet" href="<?= url('assets/css/install.css') ?>">
     </head>

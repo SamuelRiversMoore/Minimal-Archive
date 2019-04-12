@@ -15,7 +15,8 @@ if (!isset($_POST['csrf_token'])) {
 <!DOCTYPE html>
 <html>
 <head>
-    <title></title>
+    <title>Edit</title>
+    <meta name="robots" content="noindex, nofollow">
 </head>
 <body>
     <?php echo "Hello this is the editor" ?>

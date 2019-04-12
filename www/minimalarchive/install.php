@@ -30,7 +30,8 @@ if (isset($_POST['confirm']) && check_token($_POST['csrf_token'], 'install')) {
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-        <title>Minimal-Archive installation</title>
+        <meta name="robots" content="noindex, nofollow">
+        <title>Installation</title>
         <link rel="stylesheet" href="<?= url('assets/css/install.css') ?>">
     </head>
     <body>
