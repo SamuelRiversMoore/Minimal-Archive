@@ -73,18 +73,25 @@ function getImagesInFolder(string $folder = null)
     }
 }
 
-function textFileToArray(string $file)
+function file_to_lines(string $file)
 {
     $result = array();
     if (file_exists($file)) {
-        $lines = explode("\n", file_get_contents($file));
-        if (is_array($lines) && count($lines)) {
-            $i = -1;
-            while (++$i < count($lines)) {
-                $tokens = explode(':', trim(htmlspecialchars($lines[$i])), 2);
-                if (is_array($tokens) && count($tokens) === 2) {
-                    $result[trim($tokens[0])] = trim($tokens[1]);
-                }
+        return explode("\n", file_get_contents($file));
+    }
+    return $result;
+}
+
+function textFileToArray(string $file)
+{
+    $result = array();
+    $lines = file_to_lines($file);
+    if (is_array($lines) && count($lines)) {
+        $i = -1;
+        while (++$i < count($lines)) {
+            $tokens = explode(':', trim(htmlspecialchars($lines[$i])), 2);
+            if (is_array($tokens) && count($tokens) === 2) {
+                $result[trim($tokens[0])] = trim($tokens[1]);
             }
         }
     }
@@ -121,7 +128,7 @@ function get_token($form_name)
 
 function check_token($token, $form_name)
 {
-    return $token === get_token('install');
+    return $token === get_token($form_name);
 }
 
 function check_password($password)
@@ -137,41 +144,70 @@ function check_password($password)
     return true;
 }
 
-function email_sanitize($text)
+function sanitize_email($text)
 {
     return filter_var(strtolower(trim($text)), FILTER_SANITIZE_EMAIL);
 }
 
-function password_sanitize($text)
+function sanitize_password($text)
 {
     return filter_var($text, FILTER_SANITIZE_STRING);
 }
 
-function create_account($email, $password)
+function has_meta()
 {
-    try {
-        $dir = VAR_FOLDER;
-        $filename = ".account";
-        $hashedPass = password_hash($password, PASSWORD_DEFAULT);
-        $hashedEmail = password_hash($email, PASSWORD_DEFAULT);
-        if (!file_exists($dir)) {
-            mkdir($dir, 0777, true);
-        }
-        if (file_exists($dir . DS . $filename)) {
-            throw new Exception("account_exists", 1);
-        }
-        $file = fopen($dir . DS . $filename, "w");
-        fwrite($file, $hashedEmail. "\n");
-        fwrite($file, $hashedPass . "\n");
-        fclose($file);
-        return true;
-    } catch (Exception $e) {
-        throw new Exception($e->getMessage(), $e->getCode());
-    }
+    return file_exists(ROOT_FOLDER . DS . "meta.txt");
+}
+
+function has_account()
+{
+    return file_exists(VAR_FOLDER . DS . ".account");
 }
 
 function is_installed()
 {
-    $filename = VAR_FOLDER . DS . ".account";
-    return file_exists($filename);
+    return has_account() && has_meta();
+}
+
+function uninstall()
+{
+    if (has_account()) {
+        unlink(VAR_FOLDER . DS . ".account");
+    }
+    if (has_meta()) {
+        unlink(ROOT_FOLDER . DS . "meta.txt");
+    }
+}
+
+function get_credentials()
+{
+    $credentials = array(
+        'email' => null,
+        'password' => null
+    );
+    $lines = file_to_lines(VAR_FOLDER . DS . '.account');
+    if ($lines && count($lines) >= 2) {
+        $credentials['email'] = $lines[0];
+        $credentials['password'] = $lines[1];
+    }
+    return $credentials;
+}
+
+function check_credentials(string $email, string $password)
+{
+    if (!has_account() || !$email || !$password) {
+        return false;
+    }
+    $credentials = get_credentials();
+    return password_verify(sanitize_email($email), $credentials['email']) && password_verify(sanitize_password($password), $credentials['password']);
+}
+
+function put_error(string $message)
+{
+    echo "<aside class=\"notice error\">${message}</aside>";
+}
+
+function put_success(string $message)
+{
+    echo "<aside class=\"notice success\">${message}</aside>";
 }

@@ -1,9 +1,10 @@
 <?php
 
-define('DS', DIRECTORY_SEPARATOR);
 define('minimalarchive', TRUE);
+define('DS', DIRECTORY_SEPARATOR);
 define('ROOT_FOLDER', __DIR__ . DS . '../..');
-define('VAR_FOLDER', __DIR__ . DS . '../var');
+define('BASE_FOLDER', __DIR__ . DS . '..');
+define('VAR_FOLDER', BASE_FOLDER . DS . 'var');
 
 session_start();
 

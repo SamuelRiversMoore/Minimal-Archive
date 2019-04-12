@@ -1,9 +1,6 @@
 body {
   margin: 0;
   padding: 0;
-  background: silver;
-  color: #333;
-  text-align: left;
   font-size: 12px;
   font-family: "Arcadia", "Zwizz", "IBM Plex Mono", monospace;
   width: 100%;
@@ -12,6 +9,10 @@ body {
 *:focus {
   outline: none !important;
   box-sizing: border-box; }
+
+body {
+  background: silver;
+  color: #333; }
 
 .Index .breaker {
   width: 0px;

@@ -1,10 +1,13 @@
 <?php
-    if (!defined('minimalarchive'))
-    {
+    if (!defined('minimalarchive')) {
         header('location: /');
         exit();
     }
 
+    if (!has_meta()) {
+        header('location: /install');
+        exit();
+    }
     $meta = textFileToArray(ROOT_FOLDER . DS . 'meta.txt');
     $imagesdir = array_key_exists('imagesfolder', $meta) ? $meta['imagesfolder'] : null;
     $title = array_key_exists('title', $meta) ? $meta['title'] : '';

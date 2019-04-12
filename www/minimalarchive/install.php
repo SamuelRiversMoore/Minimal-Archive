@@ -11,46 +11,20 @@ if (!isset($_POST['csrf_token'])) {
         create_token();
     }
 }
+
+include_once(BASE_FOLDER . DS . 'engine' . DS . 'functions_install.php');
 ?>
 
 <?php
-
-function checkForm($post)
-{
-    if (null !== $post['email']
-    && null !== $post['password']) {
-        try {
-            check_password($post['password']);
-            return true;
-        } catch (Exception $e) {
-            throw $e;
-        }
-    }
-    return false;
-}
 $error = "";
 $success = "";
-
-if (isset($_GET['action'])
-    && isset($_POST)
-    && isset($_POST['csrf_token'])
-    && isset($_POST['email'])
-    && isset($_POST['password'])) {
-    if ($_GET['action'] === "confirm") {
-        try {
-            if (checkForm($_POST) === true) {
-                $email = email_sanitize($_POST['email']);
-                $password = password_sanitize($_POST['password']);
-                try {
-                    create_account($email, $password);
-                    $success .= translate('account_created');
-                } catch (Exception $e) {
-                    $error .= translate($e->getMessage());
-                }
-            }
-        } catch (Exception $e) {
-            $error .= translate($e->getMessage());
+if (isset($_POST['confirm']) && check_token($_POST['csrf_token'], 'install')) {
+    try {
+        if (process_form($_POST) === true) {
+            $success .= translate("installation_complete");
         }
+    } catch (Exception $e) {
+        $error .= translate($e->getMessage());
     }
 }
 ?>
@@ -63,12 +37,12 @@ if (isset($_GET['action'])
     <body>
         <main>
             <?php if (strlen($error)) {
-                echo "<aside class=\"notice error\">${error}</aside>";
-            }?>
+    put_error($error);
+}?>
 
             <?php if (strlen($success)) {
-                echo "<aside class=\"notice success\">${success}</aside>";
-            }?>
+    put_success($success);
+}?>
 
             <?php if (!strlen($success)): ?>
             <section class="Form">
@@ -110,7 +84,7 @@ if (isset($_GET['action'])
 
                         <div class="pure-controls">
                             <label for="cb" class="pure-checkbox">
-                                <input id="cb" type="checkbox" required="true"> Double check everything and tick the box
+                                <input id="cb" type="checkbox" name="confirm" required="true"> Double check everything and tick the box
                             </label>
                         </div>
 
