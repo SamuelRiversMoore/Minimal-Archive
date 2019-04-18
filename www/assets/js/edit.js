@@ -94,7 +94,8 @@
       dropAreaSelector: '#drop-area',
       fileInputSelector: '#file-input',
       progressBarSelector: '.progress-bar',
-      gallery: null
+      gallery: null,
+      fullscreenDropZone: true
     };
 
     for (const attrName in options) {
@@ -117,6 +118,7 @@
       const {
         gallery,
         dropAreaSelector,
+        fullscreenDropZone,
         fileInputSelector,
         progressBarSelector
       } = this.config;
@@ -124,17 +126,18 @@
       this.gallery = gallery;
       this.dropArea = document.querySelector(dropAreaSelector);
       this.fileInput = document.querySelector(fileInputSelector);
+      this.fullscreenDropZone = Boolean(fullscreenDropZone);
+
       if (!this.gallery) {
         console.warn(`\nModule: Editor.js\nError: Can't create editor.\nCause: No Gallery provided.\nResult: Editor can't initialize.`);
-        return
-      }
-      if (!this.fileInput) {
-        console.warn(`\nModule: Editor.js\nError: Can't create editor.\nCause: No file input with selector [${fileInputSelector}] found in document.\nResult: Editor can't initialize.`);
         return
       }
       if (!this.dropArea) {
         console.warn(`\nModule: Editor.js\nError: Can't create editor.\nCause: No drop area with selector [${dropAreaSelector}] found in document.\nResult: Editor can't initialize.`);
         return
+      }
+      if (!this.fileInput) {
+        console.warn(`\nModule: Editor.js\nWarning: Can't create file input listener.\nCause: No file input with selector [${fileInputSelector}] found in document.\nResult: Upload by file input button is disabled.`);
       }
       this.progressbar = new ProgressBar(progressBarSelector);
       this.initListeners();
@@ -144,10 +147,21 @@
   ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
         this.dropArea.addEventListener(eventName, this.preventDefaults, false);
         document.body.addEventListener(eventName, this.preventDefaults, false);
-      })
+      });
 
-      // Highlight drop area when item is dragged over it
-      ;['dragenter', 'dragover'].forEach(eventName => {
+      if (this.fullscreenDropZone) {
+  ['dragenter'].forEach(eventName => {
+          document.addEventListener(eventName, (e) => {
+            this.dropArea.classList.add('active');
+          }, true);
+        })
+        ;['dragleave', 'drop'].forEach(eventName => {
+          this.dropArea.addEventListener(eventName, (e) => {
+            this.dropArea.classList.remove('active');
+          }, true);
+        });
+      }
+  ['dragenter', 'dragover'].forEach(eventName => {
         this.dropArea.addEventListener(eventName, () => {
           this.highlight();
         }, false);
@@ -164,11 +178,13 @@
         this.handleDrop(e);
       }, false);
 
-      this.fileInput.addEventListener('change', (e) => {
-        if (e.target && e.target.files) {
-          this.handleFiles(e.target.files);
-        }
-      });
+      if (this.fileInput) {
+        this.fileInput.addEventListener('change', (e) => {
+          if (e.target && e.target.files) {
+            this.handleFiles(e.target.files);
+          }
+        });
+      }
     }
 
     uploadFile (file, i) {
@@ -221,10 +237,16 @@
     }
 
     handleDrop (e) {
-      const dt = e.dataTransfer;
-      const files = dt.files;
+      const files = e.dataTransfer.files;
+      const imageFiles = [];
 
-      this.handleFiles(files);
+      let i = -1;
+      while (++i < files.length) {
+        if (files[i].type.match(/image.*/)) {
+          imageFiles.push(files[i]);
+        }
+      }
+      this.handleFiles(imageFiles);
     }
 
     preventDefaults (e) {
@@ -237,7 +259,7 @@
     }
 
     unhighlight (e) {
-      this.dropArea.classList.remove('active');
+      this.dropArea.classList.remove('highlight');
     }
   }
 

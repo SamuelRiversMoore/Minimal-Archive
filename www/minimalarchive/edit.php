@@ -118,10 +118,11 @@ try {
         ?>
 
         <div id="drop-area">
+            <span class="drop-message"><?= translate('edit_dragzone') ?></span>
             <form class="my-form">
-                <p>Upload multiple files with the file dialog or by dragging and dropping images onto the dashed region</p>
-                <input type="file" id="file-input" multiple accept="image/*">
-                <label class="button" for="file-input">Select some files</label>
+                <!-- <p>Upload multiple files with the file dialog or by dragging and dropping images onto the dashed region</p> -->
+                <!-- <input type="file" id="file-input" multiple accept="image/*"> -->
+                <!-- <label class="button" for="file-input">Select some files</label> -->
             </form>
         </div>
         <input class="modal-state" id="modal-1" type="checkbox" checked />
