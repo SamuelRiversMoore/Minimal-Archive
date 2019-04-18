@@ -35,7 +35,6 @@ class Editor {
       progressBarSelector
     } = this.config
 
-    console.log(gallery)
     this.gallery = gallery
     this.dropArea = document.querySelector(dropAreaSelector)
     this.fileInput = document.querySelector(fileInputSelector)
@@ -116,9 +115,7 @@ class Editor {
     reader.readAsDataURL(file)
 
     reader.onloadend = () => {
-      const dom = this.getPreviewDom(reader.result)
-      console.log(dom)
-      this.gallery.addImage(dom)
+      this.gallery.addImage(this.getPreviewDom(reader.result))
     }
   }
 
