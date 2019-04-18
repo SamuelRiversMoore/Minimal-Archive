@@ -1,0 +1,13 @@
+body {
+  margin: 0;
+  padding: 0;
+  font-size: 12px;
+  font-family: "Arcadia", "Zwizz", "IBM Plex Mono", monospace;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+*:focus {
+  outline: none !important;
+  box-sizing: border-box;
+}

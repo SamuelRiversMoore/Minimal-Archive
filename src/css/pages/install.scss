@@ -1,0 +1,24 @@
+@import '../common/common';
+@import '../modules/notice';
+@import '../modules/base';
+@import '../modules/form';
+@import '../modules/buttons';
+
+main {
+  padding: 2em;
+  font-size: 14px;
+}
+
+legend {
+  font-size: 1.25em;
+}
+
+header {
+  font-size: 2em;
+  margin-bottom: 1em;
+  color: #333;
+}
+
+.separator {
+  margin: 2.5em;
+}

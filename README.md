@@ -8,11 +8,15 @@ A minimal tool (javascript with no dependencies, php) to display images on a web
 - `php` >= 7.0
 
 ## Installation
-1. Edit `./www/meta.txt` with the appropriate `title`, `description` and `shareimage`.
-2. Add images in the `./www/images/` folder.
-3. Edit the style if you wish in `./www/assets/css/main.css`
-4. Put everything inside the `./www` folder in your server.
-3. Enjoy (+ keyboard navigation).
+1. Put everything inside the `./www` folder in your server
+2. Head to `{your-url}/install`
+3. Add a title, description, favicon, social image, email and password.
+6. Enjoy `{your-url}` (+ keyboard navigation)
+7. Uninstall using `{your-url}/uninstall`. This will remove the account and the meta file.
+
+## <del>Usage</del>
+1. <del>Head to `{your-url}/editor` with your email and password</del>
+2. <del>Add a bunch of images, re-order etc</del>
 
 ## Project structure
 
@@ -27,9 +31,18 @@ Minimal-Archive/
    │
    ├── assets/
    ├── images/
-   ├── lib/
+   ├── minimalarchive/
+   │
+   ├── meta.txt
+   │   # This file contains all the page info :)
+   │
    └── index.php
 ```
+
+## Translation
+
+The translation file is located in `www/minimalarchive/engine/translations.php`.
+It's a simple array where the key is the language code.
 
 ## Compilation
 
@@ -37,6 +50,17 @@ If you plan to edit the javascript, you need to compile it to iife. A simple way
 
 ```sh
 npx rollup ./src/js/index.js --file www/assets/js/main.js --format iife
-# If you wish to watch files:
-# npx rollup ./src/js/index.js --file www/assets/js/main.js --format iife -w
+
+# Watch the files using -w argument:
+npx rollup ./src/js/index.js --file www/assets/js/main.js --format iife -w
+```
+
+If you wish to edit the css, you may want to use the scss sources. Compile using sass.
+
+```sh
+# index page
+sass --watch --scss src/css/pages/index.scss:www/assets/css/index.css
+
+# installation page
+sass --watch --scss src/css/pages/install.scss:www/assets/css/install.css
 ```
