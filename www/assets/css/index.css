@@ -75,17 +75,6 @@ main {
 .Image:hover {
   background-color: rgba(200, 200, 200, 0.9); }
 
-.Image--active {
-  cursor: pointer;
-  cursor: zoom-out;
-  cursor: -moz-zoom-out;
-  cursor: -webkit-zoom-out;
-  width: auto;
-  height: auto;
-  max-height: calc(100% - 250px);
-  max-width: 100%;
-  flex: 100%; }
-
 .Image__container {
   overflow: hidden;
   text-align: center; }
@@ -93,6 +82,19 @@ main {
 .Image__container img {
   max-height: 100%;
   max-width: 80%; }
+
+.Image--active {
+  cursor: pointer;
+  cursor: zoom-out;
+  cursor: -moz-zoom-out;
+  cursor: -webkit-zoom-out;
+  width: auto;
+  height: auto;
+  max-height: calc(100vh - 250px);
+  flex: 100%; }
+  .Image--active .Image__container img {
+    max-height: auto;
+    max-width: auto; }
 
 .Image__caption {
   flex: 1;

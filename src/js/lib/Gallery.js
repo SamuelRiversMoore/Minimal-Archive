@@ -86,6 +86,17 @@ class Gallery {
     }
   }
 
+  addImage (dom) {
+    if (dom && document.body.contains(dom)) {
+      this.imgs.push(new Image(dom))
+    } else if (dom && !document.body.contains(dom)) {
+      const images = document.querySelectorAll(this.config.image_selector)
+      images[images.length - 1].parentNode.insertBefore(dom, images[images.length - 1].nextSibling)
+      this.imgs.push(new Image(dom))
+    }
+    this.lazyload.update()
+  }
+
   get current () {
     return this.currentImage
   }

@@ -117,14 +117,12 @@ try {
         } else {
         ?>
 
-        <div id="drop_file_zone" ondrop="upload_file(event)" ondragover="onDragOver()">
-            <div id="drag_upload_file">
-            <p>Drop file here</p>
-            <p>or</p>
-            <p>
-                <input type="button" value="Select File" onclick="file_explorer();">
-            </p>
-            <input type="file" id="selectfile">
+        <div id="drop-area">
+            <form class="my-form">
+                <p>Upload multiple files with the file dialog or by dragging and dropping images onto the dashed region</p>
+                <input type="file" id="file-input" multiple accept="image/*">
+                <label class="button" for="file-input">Select some files</label>
+            </form>
         </div>
         <input class="modal-state" id="modal-1" type="checkbox" checked />
         <aside class="modal">
@@ -183,7 +181,6 @@ try {
         <?php
         }
         ?>
-        <script src="<?= url('assets/js/main.js')?>"></script>
         <script src="<?= url('assets/js/edit.js')?>"></script>
     </body>
 </html>
