@@ -3,7 +3,10 @@ if (!defined('minimalarchive') || !is_installed()) {
     header('location: /');
     exit();
 }
-
+if (!has_meta()) {
+    header('location: /install');
+    exit();
+}
 if (!isset($_POST['csrf_token'])) {
     create_token();
 } else {
@@ -11,23 +14,30 @@ if (!isset($_POST['csrf_token'])) {
         create_token();
     }
 }
-if (!has_meta()) {
-    header('location: /install');
-    exit();
-}
-
-// CREDENTIALS CHECK
 $error = "";
-$access_granted = false;
-if (isset($_POST['email']) && isset($_POST['password']) && check_token($_POST['csrf_token'], 'edit')) {
-    try {
-        if (check_credentials($_POST['email'], $_POST['password']) === true) {
-            $access_granted = true;
-        } else {
-            $error .= translate('bad_credentials');
+if (isset($_SESSION['id'])) {
+    if (validate_session($_SESSION['id'], 'id')) {
+        $access_granted = true;
+    } else {
+        invalidate_session($_SESSION['id'], 'id');
+        $access_granted = false;
+    }
+} else {
+    // CREDENTIALS CHECK
+    $access_granted = false;
+    if (isset($_POST['email']) && isset($_POST['password']) && check_token($_POST['csrf_token'], 'edit')) {
+        try {
+            if (check_credentials($_POST['email'], $_POST['password']) === true) {
+                // if credentials are OK, setup session and create session file
+                $_SESSION['id'] = $_POST['email'];
+                add_session($_POST['email'], 'id');
+                $access_granted = true;
+            } else {
+                $error .= translate('bad_credentials');
+            }
+        } catch (Exception $e) {
+            $error .= translate($e->getMessage());
         }
-    } catch (Exception $e) {
-        $error .= translate($e->getMessage());
     }
 }
 ?>
@@ -53,7 +63,7 @@ if (isset($_POST['email']) && isset($_POST['password']) && check_token($_POST['c
                         <legend>Edit</legend>
                         <div class="pure-control-group">
                             <label for="email">Email Address *</label>
-                            <input id="email" type="email" placeholder="Email Address" required="true" name="email">
+                            <input id="email" type="email" placeholder="Email Address" required="true" name="email" autofocus="true" autocomplete="on">
                         </div>
 
                         <div class="pure-control-group">
@@ -115,11 +125,12 @@ try {
         if ($error && strlen($error)) {
             put_error($error);
         } else {
-        ?>
+            ?>
 
         <div id="drop-area">
             <span class="drop-message"><?= translate('edit_dragzone') ?></span>
             <form class="my-form">
+                <input type="hidden" name="csrf_token" value="<?= get_token('upload') ?>" />
                 <!-- <p>Upload multiple files with the file dialog or by dragging and dropping images onto the dashed region</p> -->
                 <!-- <input type="file" id="file-input" multiple accept="image/*"> -->
                 <!-- <label class="button" for="file-input">Select some files</label> -->
@@ -134,7 +145,7 @@ try {
                 <p>
                     <ul>
                         <li>📝 All the text is editable, just click on the text to change it.</li>
-                        <li> 🖼 To add an image, just drag and drop it on the screen.</li>
+                        <li>🖼 To add an image, just drag and drop it on the screen.</li>
                         <li>🔁 Reorder the images by moving them around.</li>
                     </ul>
 
@@ -168,9 +179,7 @@ try {
                     $output .= "<div class='Image__caption'><span contenteditable='true'>" . $image . "</span></div>";
                     $output .= "</div>";
                     echo $output;
-                }
-
-                ?>
+                } ?>
             </section>
             <span id="breaker"></span>
         </main>

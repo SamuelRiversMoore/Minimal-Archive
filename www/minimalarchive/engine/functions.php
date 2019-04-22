@@ -167,6 +167,113 @@ function create_token()
     }
 }
 
+function parse_sessions($content)
+{
+    if (!$content) {
+        return [];
+    }
+    $json = json_decode($content);
+    if ($json && count($json)) {
+        return $json;
+    }
+    return [];
+}
+
+function invalidate_session($id, $key)
+{
+    session_destroy();
+    $dir = VAR_FOLDER;
+    $filename = DEFAULT_SESSIONSFILE;
+    if (!file_exists($dir)) {
+        return false;
+    }
+    $sessions = array();
+    if (file_exists($filename)) {
+        $content = file_get_contents($filename);
+        $sessions = parse_sessions($content);
+        if (($index = getindex_sessionbykey($id, $key, $sessions)) > -1) {
+            $i = 0;
+            foreach ($sessions as $session) {
+                if ($i !== $index) {
+                    $sessions[$i] = $session;
+                }
+                $i++;
+            }
+        }
+        $file = fopen($filename, "w");
+        fwrite($file, json_encode($sessions). "\n");
+        fclose($file);
+    }
+}
+
+function validate_session($id, $key)
+{
+    $dir = VAR_FOLDER;
+    $filename = DEFAULT_SESSIONSFILE;
+    if (!file_exists($dir)) {
+        return false;
+    }
+    if (file_exists($filename)) {
+        $content = file_get_contents($filename);
+        $sessions = parse_sessions($content);
+        if (($index = getindex_sessionbykey($id, $key, $sessions)) > -1) {
+            if (((int)(new \DateTime())->getTimestamp() - (int)$sessions[$index]->time) / (60 * 60) < SESSION_MAXDURATION) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+function getindex_sessionbykey($id, $key, $sessions)
+{
+    if (!$sessions) {
+        return -1;
+    }
+    $i = -1;
+    while (++$i < count($sessions)) {
+        if (property_exists($sessions[$i], $key)) {
+            if (password_verify($id, $sessions[$i]->$key)) {
+                return $i;
+            }
+        }
+    }
+}
+
+function add_session($id, $key)
+{
+    try {
+        $dir = VAR_FOLDER;
+        $filename = DEFAULT_SESSIONSFILE;
+        if (!file_exists($dir)) {
+            mkdir($dir, 0777, true);
+        }
+        $sessions = array();
+        $account = null;
+        // if file exists, try to update the entry
+        if (file_exists($filename)) {
+            $content = file_get_contents($filename);
+            $sessions = parse_sessions($content);
+            if (($index = getindex_sessionbykey($id, $key, $sessions)) > -1) {
+                $sessions[$index]->time = (new \DateTime())->getTimestamp();
+            }
+        }
+        // else, create a new session
+        if (!$account) {
+            $sessions[] = (object) array(
+                'id' => password_hash($id, PASSWORD_DEFAULT),
+                'time' => (new \DateTime())->getTimestamp()
+            );
+        }
+        $file = fopen($filename, "w");
+        fwrite($file, json_encode($sessions). "\n");
+        fclose($file);
+        return true;
+    } catch (Exception $e) {
+        throw new Exception($e->getMessage(), $e->getCode());
+    }
+}
+
 function clean_installation()
 {
     $files = glob(VAR_FOLDER . DS . '*');
