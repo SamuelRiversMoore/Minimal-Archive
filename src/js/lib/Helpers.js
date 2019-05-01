@@ -50,3 +50,43 @@ export const htmlToElement = (html) => {
   template.innerHTML = html
   return template.content.firstChild
 }
+
+export class Fetch {
+  newRequest (url, request, callback, credentials = 'same-origin', headers = { 'Content-Type': 'application/x-www-form-urlencoded' }) {
+    fetch(url, {
+      method: 'POST',
+      body: request,
+      credentials: credentials,
+      headers: {
+        headers
+      }
+    })
+      .then((response) => {
+        if (response.status !== 200) {
+          console.log(`Problem: ${response.status}`)
+          return
+        }
+        // console.log(response.text())
+        response.json().then((data) => this._onRequest(data, callback))
+      })
+      .catch((err) => {
+        console.log(`Fetch Error:`, err)
+      })
+  }
+  _onRequest (data, callback) {
+    if (data && data.status) {
+      // console.dir(data)
+      if (data.status === 200) {
+        if (data.action !== 'get_images' && data.user.id === null) {
+          window.location.href = '/signup'
+        } else {
+          callback(data)
+        }
+      } else if (data.status === 401) {
+        window.location.href = '/signup'
+      } else {
+        console.log('Data fetch error: ', data)
+      }
+    }
+  }
+}

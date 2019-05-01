@@ -1,6 +1,8 @@
 import ProgressBar from './ProgressBar.js'
 import {
-  htmlToElement
+  isDomNode,
+  htmlToElement,
+  Fetch
 } from './Helpers.js'
 
 const mergeSettings = (options) => {
@@ -103,28 +105,18 @@ class Editor {
     }
   }
 
-  uploadFile (file, i) {
-    // const url = '/edit?upload_file'
-    // var xhr = new XMLHttpRequest()
-    // var formData = new FormData()
-    // xhr.open('POST', url, true)
-    // xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest')
+  uploadFile (file, csrfToken, i) {
+    const api = new Fetch()
 
-    // // Update progress (can be used to show progress indicator)
-    // xhr.upload.addEventListener('progress', (e) => {
-    //   this.progressbar.updateProgress(i, (e.loaded * 100.0 / e.total) || 100)
-    // })
+    const url = '/upload'
+    const formData = new FormData()
 
-    // xhr.addEventListener('readystatechange', (e) => {
-    //   if (xhr.readyState === 4 && xhr.status === 200) {
-    //     this.progressbar.updateProgress(i, 100)
-    //   } else if (xhr.readyState === 4 && xhr.status !== 200) {
-    //     console.log(xhr)
-    //   }
-    // })
-
-    // formData.append('file', file)
-    // xhr.send(formData)
+    console.log(csrfToken)
+    formData.append('file', file)
+    formData.append('csrf_token', csrfToken)
+    api.newRequest(url, formData, (e) => {
+      console.log(e)
+    })
   }
 
   previewFile (file) {
@@ -148,8 +140,12 @@ class Editor {
   handleFiles (files) {
     files = [...files]
     this.progressbar.initializeProgress(files.length)
-    files.forEach(this.uploadFile)
-    files.forEach(this.previewFile)
+    files.forEach(file => {
+      this.uploadFile(file, this.getCsrfToken())
+    })
+    files.forEach(file => {
+      this.previewFile(file)
+    })
   }
 
   handleDrop (e) {
@@ -163,6 +159,14 @@ class Editor {
       }
     }
     this.handleFiles(imageFiles)
+  }
+
+  getCsrfToken () {
+    if (this.dropArea && isDomNode(this.dropArea)) {
+      const inputElement = this.dropArea.querySelector('[name=csrf_token]')
+      return inputElement && inputElement.value
+    }
+    return undefined
   }
 
   preventDefaults (e) {
