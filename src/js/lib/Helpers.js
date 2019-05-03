@@ -62,11 +62,10 @@ export class Fetch {
       }
     })
       .then((response) => {
-        if (response.status !== 200) {
-          console.log(`Problem: ${response.status}`)
+        if (response.code !== 200) {
+          console.log(`Problem: ${response.code}`)
           return
         }
-        // console.log(response.text())
         response.json().then((data) => this._onRequest(data, callback))
       })
       .catch((err) => {
@@ -74,19 +73,10 @@ export class Fetch {
       })
   }
   _onRequest (data, callback) {
-    if (data && data.status) {
-      // console.dir(data)
-      if (data.status === 200) {
-        if (data.action !== 'get_images' && data.user.id === null) {
-          window.location.href = '/signup'
-        } else {
-          callback(data)
-        }
-      } else if (data.status === 401) {
-        window.location.href = '/signup'
-      } else {
-        console.log('Data fetch error: ', data)
-      }
+    if (data) {
+      callback(data)
+    } else {
+      console.log('Data fetch error: ', data)
     }
   }
 }

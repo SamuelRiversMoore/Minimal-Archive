@@ -111,7 +111,6 @@ class Editor {
     const url = '/upload'
     const formData = new FormData()
 
-    console.log(csrfToken)
     formData.append('file', file)
     formData.append('csrf_token', csrfToken)
     api.newRequest(url, formData, (e) => {
@@ -124,17 +123,19 @@ class Editor {
     reader.readAsDataURL(file)
 
     reader.onloadend = () => {
-      this.gallery.addImage(this.getPreviewDom(reader.result))
+      this.gallery.addImage(this.getPreviewDom(reader.result, file.name))
     }
   }
 
-  getPreviewDom (src) {
-    return htmlToElement(`<div class="Image">
-      <div class="Image__container">
-        <img class="lazy miniarch" src="/assets/css/loading.gif" data-src="${src}" title="new image preview" />
-      </div>
-      <div class="Image__caption"><span contenteditable="true">new_image</span></div>
-      </div>`)
+  getPreviewDom (src, filename) {
+    if (src) {
+      return htmlToElement(`<div class="Image">
+        <div class="Image__container">
+          <img class="lazy miniarch" src="/assets/css/loading.gif" data-src="${src}" title="${filename} preview" />
+        </div>
+        <div class="Image__caption"><span contenteditable="true">${filename}</span></div>
+        </div>`)
+    }
   }
 
   handleFiles (files) {

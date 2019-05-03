@@ -92,9 +92,21 @@ function check_uploadedfile($file, $uploadfolder = VAR_FOLDER, $max_filesize = 2
 function save_file($file, $name = null, $folder = VAR_FOLDER)
 {
     if ($file) {
-        if (!move_uploaded_file($file['tmp_name'], $folder . DS. basename($name ? $name : $file['name']))) {
+        $filename = $name ? $name : $file['name'];
+        $basename = basename($filename);
+        $extension = pathinfo($basename, PATHINFO_EXTENSION);
+        $name = pathinfo($basename, PATHINFO_FILENAME);
+        $correctFilename = "";
+        if (file_exists($folder . DS. $basename)) {
+            $correctFilename = $name . '_' . bin2hex(random_bytes(4)) . '.' . $extension;
+        } else {
+            $correctFilename = basename($filename);
+        }
+        if (!move_uploaded_file($file['tmp_name'], $folder . DS. $correctFilename)) {
             throw new Exception("file_upload_error", 1);
         }
+    } else {
+        throw new Exception("no_file", 1);
     }
 }
 
