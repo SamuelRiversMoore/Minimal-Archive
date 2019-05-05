@@ -52,31 +52,36 @@ export const htmlToElement = (html) => {
 }
 
 export class Fetch {
-  newRequest (url, request, callback, credentials = 'same-origin', headers = { 'Content-Type': 'application/x-www-form-urlencoded' }) {
-    fetch(url, {
-      method: 'POST',
-      body: request,
-      credentials: credentials,
-      headers: {
-        headers
+  newRequest (url, request, credentials = 'same-origin', headers = { 'Content-Type': 'application/x-www-form-urlencoded' }) {
+    const handleErrors = (response) => {
+      if (!response.ok) {
+        throw Error(response.statusText)
       }
-    })
-      .then((response) => {
-        if (response.code !== 200) {
-          console.log(`Problem: ${response.code}`)
-          return
-        }
-        response.json().then((data) => this._onRequest(data, callback))
-      })
-      .catch((err) => {
-        console.log(`Fetch Error:`, err)
-      })
-  }
-  _onRequest (data, callback) {
-    if (data) {
-      callback(data)
-    } else {
-      console.log('Data fetch error: ', data)
+      if (response.status !== 200) {
+        throw Error(response.statusText)
+      }
+      return response
     }
+
+    return new Promise((resolve, reject) => {
+      fetch(url, {
+        method: 'POST',
+        body: request,
+        credentials: credentials,
+        headers: {
+          headers
+        }
+      })
+        .then(handleErrors)
+        .then((response) => {
+          response.json().then((data) => {
+            resolve(data)
+          })
+        })
+        .catch(err => {
+          console.log(`Fetch Error:`, err)
+          reject(err)
+        })
+    })
   }
 }
