@@ -38,7 +38,7 @@ if (isset($_POST['confirm']) && check_token($_POST['csrf_token'], 'install')) {
         <main>
             <header>
                 Installation
-            </header><!-- /header -->
+            </header>
             <section class="Form">
                 <?php
                 if (strlen($error)) {
