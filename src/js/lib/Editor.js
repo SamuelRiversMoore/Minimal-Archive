@@ -10,6 +10,8 @@ const mergeSettings = (options) => {
     dropAreaSelector: '#drop-area',
     fileInputSelector: '#file-input',
     progressBarSelector: '.progress-bar',
+    cancelBtnSelector: '.editbutton.cancel',
+    saveBtnSelector: '.editbutton.save',
     gallery: null,
     fullscreenDropZone: true
   }
@@ -26,7 +28,7 @@ class Editor {
     this.config = mergeSettings(options)
     this.uploadFile = this.uploadFile.bind(this)
     this.previewFile = this.previewFile.bind(this)
-
+    this.files = []
     this.init()
   }
 
@@ -36,13 +38,17 @@ class Editor {
       dropAreaSelector,
       fullscreenDropZone,
       fileInputSelector,
-      progressBarSelector
+      progressBarSelector,
+      cancelBtnSelector,
+      saveBtnSelector
     } = this.config
 
     this.gallery = gallery
     this.dropArea = document.querySelector(dropAreaSelector)
     this.fileInput = document.querySelector(fileInputSelector)
     this.fullscreenDropZone = Boolean(fullscreenDropZone)
+    this.saveBtn = document.querySelector(saveBtnSelector)
+    this.cancelBtn = document.querySelector(cancelBtnSelector)
 
     if (!this.gallery) {
       console.warn(`\nModule: Editor.js\nError: Can't create editor.\nCause: No Gallery provided.\nResult: Editor can't initialize.`)
@@ -54,6 +60,12 @@ class Editor {
     }
     if (!this.fileInput) {
       console.warn(`\nModule: Editor.js\nWarning: Can't create file input listener.\nCause: No file input with selector [${fileInputSelector}] found in document.\nResult: Upload by file input button is disabled.`)
+    }
+    if (!this.saveBtn) {
+      console.warn(`Module: Editor.js\nWarning: Can't add save functionality.\nCause: No save button with selector [${saveBtnSelector}] found in document.\nResult: Saving is disabled.`)
+    }
+    if (!this.cancelBtn) {
+      console.warn(`Module: Editor.js\nWarning: Can't add cancel functionality.\nCause: No cancel button with selector [${cancelBtnSelector}] found in document.\nResult: Undoing changes is disabled.`)
     }
     this.progressbar = new ProgressBar(progressBarSelector)
     this.initListeners()
@@ -103,27 +115,42 @@ class Editor {
         }
       })
     }
+
+    if (this.cancelBtn) {
+      this.cancelBtn.addEventListener('click', (e) => {
+        this.cancelChanges()
+      })
+    }
+  }
+
+  cancelChanges () {
+    if (this.files.length) {
+      this.files.forEach(file => {
+        console.log(file)
+      })
+    }
   }
 
   uploadFile (file, csrfToken, i) {
-    const api = new Fetch()
+    return new Promise ((resolve, reject) => {
+      const api = new Fetch()
+      const url = '/upload'
+      const formData = new FormData()
 
-    const url = '/upload'
-    const formData = new FormData()
-
-    formData.append('file', file)
-    formData.append('csrf_token', csrfToken)
-    api.newRequest(url, formData, (e) => {
-      console.log(e)
+      formData.append('file', file)
+      formData.append('csrf_token', csrfToken)
+      api.newRequest(url, formData)
+        .then(data => resolve(data))
+        .catch(err => reject(err))
     })
   }
 
-  previewFile (file) {
+  previewFile (file, filename) {
     const reader = new FileReader()
     reader.readAsDataURL(file)
 
     reader.onloadend = () => {
-      this.gallery.addImage(this.getPreviewDom(reader.result, file.name))
+      this.gallery.addImage(this.getPreviewDom(reader.result, filename))
     }
   }
 
@@ -142,10 +169,12 @@ class Editor {
     files = [...files]
     this.progressbar.initializeProgress(files.length)
     files.forEach(file => {
-      this.uploadFile(file, this.getCsrfToken())
-    })
-    files.forEach(file => {
-      this.previewFile(file)
+      this.uploadFile(file, this.getCsrfToken()).then((result) => {
+        if (result && result.data && result.data.length && result.data[0]) {
+          this.previewFile(file, result.data[0].name)
+          this.files.push(result.data[0])
+        }
+      })
     })
   }
 
@@ -159,7 +188,9 @@ class Editor {
         imageFiles.push(files[i])
       }
     }
-    this.handleFiles(imageFiles)
+    if (imageFiles.length > 0) {
+      this.handleFiles(imageFiles)
+    }
   }
 
   getCsrfToken () {
