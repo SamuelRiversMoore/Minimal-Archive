@@ -105,8 +105,7 @@ function save_file($file, $name = null, $folder = VAR_FOLDER)
         if (!move_uploaded_file($file['tmp_name'], $folder . DS. $correctFilename)) {
             throw new Exception("file_upload_error", 1);
         }
-    } else {
-        throw new Exception("no_file", 1);
+        return $correctFilename;
     }
 }
 
