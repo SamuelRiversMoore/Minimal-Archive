@@ -17,9 +17,9 @@ try {
         'data' => array()
     );
     foreach ($_FILES as $file) {
-        save_file($file, $file['name'], DEFAULT_IMAGEFOLDER);
+        $filename = save_file($file, $file['name'], DEFAULT_IMAGEFOLDER);
         $data['data'][] = array(
-            'name' => $file['name'],
+            'name' => $filename,
             'type' => $file['type'],
             'extension' => pathinfo($file['name'], PATHINFO_EXTENSION)
         );
