@@ -1,3 +1,6 @@
+import {
+  UPLOAD_URL
+} from './Constants.js'
 import ProgressBar from './ProgressBar.js'
 import {
   isDomNode,
@@ -134,7 +137,7 @@ class Editor {
   uploadFile (file, csrfToken, i) {
     return new Promise ((resolve, reject) => {
       const api = new Fetch()
-      const url = '/upload'
+      const url = UPLOAD_URL
       const formData = new FormData()
 
       formData.append('file', file)

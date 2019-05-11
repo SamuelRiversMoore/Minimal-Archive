@@ -1,13 +1,18 @@
 import LazyLoad from './LazyLoad.js'
 import Image from './Image.js'
 import {
+  EVENT_RESET,
+  EVENT_IMAGE_UPDATE
+} from './Constants.js'
+import {
   scrollTo
 } from './Helpers.js'
 
 const mergeSettings = (options) => {
   const settings = {
-    image_selector: '.Image',
-    lazyload_selector: '.lazy'
+    gallerySelector: '.Gallery',
+    imageSelector: '.Image',
+    lazyloadSelector: '.lazy'
   }
 
   for (const attrName in options) {
@@ -24,9 +29,19 @@ class Gallery {
   }
 
   init () {
-    const images = document.querySelectorAll(this.config.image_selector)
+    const {
+      gallerySelector,
+      imageSelector,
+      lazyloadSelector
+    } = this.config
+    const images = document.querySelectorAll(imageSelector)
 
+    this.gallery = document.querySelector(gallerySelector)
     this.currentImage = null
+
+    if (!this.gallery) {
+      console.warn(`\nModule: Gallery.js\nWarning: No Gallery dom node found in document.\nCause: No gallerySelector provided.\nResult: Adding images may fail.`)
+    }
 
     let i = -1
     this.imgs = []
@@ -35,14 +50,14 @@ class Gallery {
     }
 
     this.lazyload = new LazyLoad({
-      elements_selector: this.config.lazyload_selector
+      elements_selector: lazyloadSelector
     })
 
     this.initListeners()
   }
 
   initListeners () {
-    document.addEventListener('image-update', (e) => {
+    document.addEventListener(EVENT_IMAGE_UPDATE, (e) => {
       if (e.detail && e.detail.image && e.detail.image instanceof Image) {
         this.updateCurrentImage(e.detail.image)
       } else {
@@ -90,8 +105,12 @@ class Gallery {
     if (dom && document.body.contains(dom)) {
       this.imgs.push(new Image(dom))
     } else if (dom && !document.body.contains(dom)) {
-      const images = document.querySelectorAll(this.config.image_selector)
-      images[images.length - 1].parentNode.insertBefore(dom, images[images.length - 1].nextSibling)
+      const images = document.querySelectorAll(this.config.imageSelector)
+      if (images.length) {
+        images[images.length - 1].parentNode.insertBefore(dom, images[images.length - 1].nextSibling)
+      } else {
+        this.gallery.appendChild(dom)
+      }
       this.imgs.push(new Image(dom))
     }
     this.lazyload.update()
@@ -132,7 +151,7 @@ class Gallery {
   }
 
   reset () {
-    document.dispatchEvent(new Event('reset'))
+    document.dispatchEvent(new Event(EVENT_RESET))
   }
 }
 
