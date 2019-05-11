@@ -334,13 +334,9 @@ body {
   font-size: 16px;
   line-height: 1.6em; }
   .controls .editbutton {
-    height: 44px;
     margin: 0.5em;
     overflow: hidden;
     cursor: pointer; }
-    .controls .editbutton img {
-      height: 100%;
-      width: auto; }
 
 #drop-area {
   position: fixed;
@@ -362,5 +358,8 @@ body {
     transform: translate(-50%, -50%);
     color: white;
     font-size: 2em; }
+
+.modal {
+  z-index: 99; }
 
 /*# sourceMappingURL=edit.css.map */

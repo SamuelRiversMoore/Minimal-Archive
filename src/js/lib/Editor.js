@@ -13,6 +13,7 @@ const mergeSettings = (options) => {
     dropAreaSelector: '#drop-area',
     fileInputSelector: '#file-input',
     progressBarSelector: '.progress-bar',
+    previewBtnSelector: '.editbutton.preview',
     cancelBtnSelector: '.editbutton.cancel',
     saveBtnSelector: '.editbutton.save',
     gallery: null,
@@ -42,6 +43,7 @@ class Editor {
       fullscreenDropZone,
       fileInputSelector,
       progressBarSelector,
+      previewBtnSelector,
       cancelBtnSelector,
       saveBtnSelector
     } = this.config
@@ -50,8 +52,9 @@ class Editor {
     this.dropArea = document.querySelector(dropAreaSelector)
     this.fileInput = document.querySelector(fileInputSelector)
     this.fullscreenDropZone = Boolean(fullscreenDropZone)
-    this.saveBtn = document.querySelector(saveBtnSelector)
     this.cancelBtn = document.querySelector(cancelBtnSelector)
+    this.previewBtn = document.querySelector(previewBtnSelector)
+    this.saveBtn = document.querySelector(saveBtnSelector)
 
     if (!this.gallery) {
       console.warn(`\nModule: Editor.js\nError: Can't create editor.\nCause: No Gallery provided.\nResult: Editor can't initialize.`)
@@ -63,6 +66,9 @@ class Editor {
     }
     if (!this.fileInput) {
       console.warn(`\nModule: Editor.js\nWarning: Can't create file input listener.\nCause: No file input with selector [${fileInputSelector}] found in document.\nResult: Upload by file input button is disabled.`)
+    }
+    if (!this.saveBtn) {
+      console.warn(`Module: Editor.js\nWarning: Can't add preview functionality.\nCause: No preview button with selector [${previewBtnSelector}] found in document.\nResult: Previewing is disabled.`)
     }
     if (!this.saveBtn) {
       console.warn(`Module: Editor.js\nWarning: Can't add save functionality.\nCause: No save button with selector [${saveBtnSelector}] found in document.\nResult: Saving is disabled.`)
@@ -124,6 +130,12 @@ class Editor {
         this.cancelChanges()
       })
     }
+
+    if (this.previewBtn) {
+      this.previewBtn.addEventListener('click', (e) => {
+        this.previewChanges()
+      })
+    }
   }
 
   cancelChanges () {
@@ -132,6 +144,10 @@ class Editor {
         console.log(file)
       })
     }
+  }
+
+  previewChanges () {
+    window.location = '/'
   }
 
   uploadFile (file, csrfToken, i) {
