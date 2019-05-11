@@ -8,7 +8,7 @@
         header('location: /install');
         exit();
     }
-    $meta = textFileToArray(ROOT_FOLDER . DS . 'meta.txt');
+    $meta = textFileToArray(DEFAULT_METAFILE);
     $imagesdir = array_key_exists('imagesfolder', $meta) ? $meta['imagesfolder'] : null;
     $title = array_key_exists('title', $meta) ? $meta['title'] : '';
     $description = array_key_exists('description', $meta) ? $meta['description'] : '';
@@ -44,7 +44,7 @@
         if ($error && strlen($error)) {
             put_error($error);
         } else {
-        ?>
+            ?>
         <header>
             <section class="title"><?= $title ?></section>
         </header>
@@ -59,9 +59,7 @@
                     $output .= "<div class='Image__caption'><span>" . $image . "</span></div>";
                     $output .= "</div>";
                     echo $output;
-                }
-
-                ?>
+                } ?>
             </section>
             <span id="breaker"></span>
         </main>

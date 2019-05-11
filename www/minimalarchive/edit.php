@@ -156,6 +156,7 @@ try {
                 <span><?= translate('exit') ?></span>
             </div>
             <div class="editbutton save pure-button">
+                <input type="hidden" name="csrf_token" value="<?= get_token('save') ?>" />
                 <span><?= translate('save') ?></span>
             </div>
             <div class="editbutton cancel pure-button">

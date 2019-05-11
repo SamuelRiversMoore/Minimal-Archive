@@ -1,6 +1,5 @@
 <?php
-if (!defined('minimalarchive'))
-{
+if (!defined('minimalarchive')) {
     header('location: /');
     exit();
 }
@@ -27,13 +26,12 @@ switch ($request_uri[0]) {
   case (preg_match('/\/(edit)\/?$/', $request_uri[0]) ? true : false):
     require BASE_FOLDER . DS . 'edit.php';
     break;
-  // Editor page
-  case (preg_match('/\/(upload)\/?$/', $request_uri[0]) ? true : false):
-    require BASE_FOLDER . DS . 'upload.php';
+  // API
+  case (preg_match('/\/(api)\/?$/', $request_uri[0]) ? true : false):
+    require BASE_FOLDER . DS . 'api.php';
     break;
   // Everything else
   default:
     require BASE_FOLDER . DS . '404.php';
     break;
 }
-?>

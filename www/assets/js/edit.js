@@ -1,7 +1,13 @@
 (function () {
   'use strict';
 
-  const UPLOAD_URL = '/upload';
+  const API_URL = '/api';
+  const API_UPLOAD = 'upload';
+  const API_SAVE = 'save';
+
+  const SELECTOR_TITLE = '.title';
+  const SELECTOR_NOTE = '.note';
+
   const EVENT_RESET = 'reset';
   const EVENT_IMAGE_UPDATE = 'image-update';
 
@@ -42,6 +48,12 @@
 
   const isDomNode = (element) => {
     return element instanceof Element || element instanceof HTMLDocument
+  };
+
+  const stripHtmlTags = (str) => {
+    if (typeof str === 'string') {
+      return str.replace(/(<([^>]+)>)/ig, '')
+    }
   };
 
   const scrollTo = (destination, duration = 200, easing = 'linear', callback) => {
@@ -249,6 +261,12 @@
         });
       }
 
+      if (this.saveBtn) {
+        this.saveBtn.addEventListener('click', (e) => {
+          this.saveChanges();
+        });
+      }
+
       if (this.previewBtn) {
         this.previewBtn.addEventListener('click', (e) => {
           this.previewChanges();
@@ -264,17 +282,52 @@
       }
     }
 
+    saveChanges () {
+      const data = {
+        title: '',
+        note: ''
+      };
+      const title = document.querySelector(SELECTOR_TITLE);
+      const note = document.querySelector(SELECTOR_NOTE);
+
+      if (title) {
+        data.title = stripHtmlTags(title.innerHTML);
+      }
+      if (note) {
+        data.note = stripHtmlTags(note.innerHTML);
+      }
+
+      this.saveMeta(data, this.getCsrfToken(this.saveBtn))
+        .then(res => console.log(res))
+        .catch(err => console.log(err));
+    }
+
     previewChanges () {
       window.location = '/';
     }
 
-    uploadFile (file, csrfToken, i) {
-      return new Promise ((resolve, reject) => {
+    saveMeta (data, csrfToken) {
+      return new Promise((resolve, reject) => {
         const api = new Fetch();
-        const url = UPLOAD_URL;
+        const url = API_URL;
+        const formData = new FormData();
+
+        formData.append('data', JSON.stringify(data));
+        formData.append('action', API_SAVE);
+        formData.append('csrf_token', csrfToken);
+        api.newRequest(url, formData)
+          .then(data => resolve(data))
+          .catch(err => reject(err));
+      })
+    }
+    uploadFile (file, csrfToken, i) {
+      return new Promise((resolve, reject) => {
+        const api = new Fetch();
+        const url = API_URL;
         const formData = new FormData();
 
         formData.append('file', file);
+        formData.append('action', API_UPLOAD);
         formData.append('csrf_token', csrfToken);
         api.newRequest(url, formData)
           .then(data => resolve(data))
@@ -306,7 +359,7 @@
       files = [...files];
       this.progressbar.initializeProgress(files.length);
       files.forEach(file => {
-        this.uploadFile(file, this.getCsrfToken()).then((result) => {
+        this.uploadFile(file, this.getCsrfToken(this.dropArea)).then((result) => {
           if (result && result.data && result.data.length && result.data[0]) {
             this.previewFile(file, result.data[0].name);
             this.files.push(result.data[0]);
@@ -330,9 +383,9 @@
       }
     }
 
-    getCsrfToken () {
-      if (this.dropArea && isDomNode(this.dropArea)) {
-        const inputElement = this.dropArea.querySelector('[name=csrf_token]');
+    getCsrfToken (domNode) {
+      if (domNode && isDomNode(domNode)) {
+        const inputElement = domNode.querySelector('[name=csrf_token]');
         return inputElement && inputElement.value
       }
       return undefined

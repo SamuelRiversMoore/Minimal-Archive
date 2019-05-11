@@ -2,6 +2,12 @@ export const isDomNode = (element) => {
   return element instanceof Element || element instanceof HTMLDocument
 }
 
+export const stripHtmlTags = (str) => {
+  if (typeof str === 'string') {
+    return str.replace(/(<([^>]+)>)/ig, '')
+  }
+}
+
 export const scrollTo = (destination, duration = 200, easing = 'linear', callback) => {
   const easings = {
     linear (t) {

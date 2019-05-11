@@ -109,6 +109,28 @@ function save_file($file, $name = null, $folder = VAR_FOLDER)
     }
 }
 
+function update_file(array $data, $file = DEFAULT_METAFILE)
+{
+    try {
+        if (!$data || !count($data)) {
+            return true;
+        }
+        $dir = ROOT_FOLDER;
+        $filename = $file;
+        if (!file_exists($dir)) {
+            mkdir($dir, 0777, true);
+        }
+        $file = fopen($filename, "w");
+        foreach ($data as $key => $value) {
+            fwrite($file, "${key}: ${value}\n");
+        }
+        fclose($file);
+        return true;
+    } catch (Exception $e) {
+        throw new Exception($e->getMessage(), $e->getCode());
+    }
+}
+
 function get_credentials()
 {
     $credentials = array(
@@ -330,12 +352,12 @@ function sanitize_text($text)
 
 function has_account()
 {
-    return file_exists(VAR_FOLDER . DS . ".account");
+    return file_exists(DEFAULT_ACCOUNTFILE);
 }
 
 function has_meta()
 {
-    return file_exists(ROOT_FOLDER . DS . "meta.txt");
+    return file_exists(DEFAULT_METAFILE) && ($meta = textFileToArray(DEFAULT_METAFILE)) && count($meta);
 }
 
 function is_installed()
