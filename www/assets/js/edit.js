@@ -1,6 +1,10 @@
 (function () {
   'use strict';
 
+  const UPLOAD_URL = '/upload';
+  const EVENT_RESET = 'reset';
+  const EVENT_IMAGE_UPDATE = 'image-update';
+
   function ProgressBar (progressBarSelector) {
     let uploadProgress = [];
     const progressBar = document.querySelector(progressBarSelector);
@@ -89,11 +93,48 @@
     return template.content.firstChild
   };
 
+  class Fetch {
+    newRequest (url, request, credentials = 'same-origin', headers = { 'Content-Type': 'application/x-www-form-urlencoded' }) {
+      const handleErrors = (response) => {
+        if (!response.ok) {
+          throw Error(response.statusText)
+        }
+        if (response.status !== 200) {
+          throw Error(response.statusText)
+        }
+        return response
+      };
+
+      return new Promise((resolve, reject) => {
+        fetch(url, {
+          method: 'POST',
+          body: request,
+          credentials: credentials,
+          headers: {
+            headers
+          }
+        })
+          .then(handleErrors)
+          .then((response) => {
+            response.json().then((data) => {
+              resolve(data);
+            });
+          })
+          .catch(err => {
+            console.log(`Fetch Error:`, err);
+            reject(err);
+          });
+      })
+    }
+  }
+
   const mergeSettings = (options) => {
     const settings = {
       dropAreaSelector: '#drop-area',
       fileInputSelector: '#file-input',
       progressBarSelector: '.progress-bar',
+      cancelBtnSelector: '.editbutton.cancel',
+      saveBtnSelector: '.editbutton.save',
       gallery: null,
       fullscreenDropZone: true
     };
@@ -110,7 +151,7 @@
       this.config = mergeSettings(options);
       this.uploadFile = this.uploadFile.bind(this);
       this.previewFile = this.previewFile.bind(this);
-
+      this.files = [];
       this.init();
     }
 
@@ -120,13 +161,17 @@
         dropAreaSelector,
         fullscreenDropZone,
         fileInputSelector,
-        progressBarSelector
+        progressBarSelector,
+        cancelBtnSelector,
+        saveBtnSelector
       } = this.config;
 
       this.gallery = gallery;
       this.dropArea = document.querySelector(dropAreaSelector);
       this.fileInput = document.querySelector(fileInputSelector);
       this.fullscreenDropZone = Boolean(fullscreenDropZone);
+      this.saveBtn = document.querySelector(saveBtnSelector);
+      this.cancelBtn = document.querySelector(cancelBtnSelector);
 
       if (!this.gallery) {
         console.warn(`\nModule: Editor.js\nError: Can't create editor.\nCause: No Gallery provided.\nResult: Editor can't initialize.`);
@@ -138,6 +183,12 @@
       }
       if (!this.fileInput) {
         console.warn(`\nModule: Editor.js\nWarning: Can't create file input listener.\nCause: No file input with selector [${fileInputSelector}] found in document.\nResult: Upload by file input button is disabled.`);
+      }
+      if (!this.saveBtn) {
+        console.warn(`Module: Editor.js\nWarning: Can't add save functionality.\nCause: No save button with selector [${saveBtnSelector}] found in document.\nResult: Saving is disabled.`);
+      }
+      if (!this.cancelBtn) {
+        console.warn(`Module: Editor.js\nWarning: Can't add cancel functionality.\nCause: No cancel button with selector [${cancelBtnSelector}] found in document.\nResult: Undoing changes is disabled.`);
       }
       this.progressbar = new ProgressBar(progressBarSelector);
       this.initListeners();
@@ -185,55 +236,67 @@
           }
         });
       }
+
+      if (this.cancelBtn) {
+        this.cancelBtn.addEventListener('click', (e) => {
+          this.cancelChanges();
+        });
+      }
     }
 
-    uploadFile (file, i) {
-      // const url = '/edit?upload_file'
-      // var xhr = new XMLHttpRequest()
-      // var formData = new FormData()
-      // xhr.open('POST', url, true)
-      // xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest')
-
-      // // Update progress (can be used to show progress indicator)
-      // xhr.upload.addEventListener('progress', (e) => {
-      //   this.progressbar.updateProgress(i, (e.loaded * 100.0 / e.total) || 100)
-      // })
-
-      // xhr.addEventListener('readystatechange', (e) => {
-      //   if (xhr.readyState === 4 && xhr.status === 200) {
-      //     this.progressbar.updateProgress(i, 100)
-      //   } else if (xhr.readyState === 4 && xhr.status !== 200) {
-      //     console.log(xhr)
-      //   }
-      // })
-
-      // formData.append('file', file)
-      // xhr.send(formData)
+    cancelChanges () {
+      if (this.files.length) {
+        this.files.forEach(file => {
+          console.log(file);
+        });
+      }
     }
 
-    previewFile (file) {
+    uploadFile (file, csrfToken, i) {
+      return new Promise ((resolve, reject) => {
+        const api = new Fetch();
+        const url = UPLOAD_URL;
+        const formData = new FormData();
+
+        formData.append('file', file);
+        formData.append('csrf_token', csrfToken);
+        api.newRequest(url, formData)
+          .then(data => resolve(data))
+          .catch(err => reject(err));
+      })
+    }
+
+    previewFile (file, filename) {
       const reader = new FileReader();
       reader.readAsDataURL(file);
 
       reader.onloadend = () => {
-        this.gallery.addImage(this.getPreviewDom(reader.result));
+        this.gallery.addImage(this.getPreviewDom(reader.result, filename));
       };
     }
 
-    getPreviewDom (src) {
-      return htmlToElement(`<div class="Image">
-      <div class="Image__container">
-        <img class="lazy miniarch" src="/assets/css/loading.gif" data-src="${src}" title="new image preview" />
-      </div>
-      <div class="Image__caption"><span contenteditable="true">new_image</span></div>
-      </div>`)
+    getPreviewDom (src, filename) {
+      if (src) {
+        return htmlToElement(`<div class="Image">
+        <div class="Image__container">
+          <img class="lazy miniarch" src="/assets/css/loading.gif" data-src="${src}" title="${filename} preview" />
+        </div>
+        <div class="Image__caption"><span contenteditable="true">${filename}</span></div>
+        </div>`)
+      }
     }
 
     handleFiles (files) {
       files = [...files];
       this.progressbar.initializeProgress(files.length);
-      files.forEach(this.uploadFile);
-      files.forEach(this.previewFile);
+      files.forEach(file => {
+        this.uploadFile(file, this.getCsrfToken()).then((result) => {
+          if (result && result.data && result.data.length && result.data[0]) {
+            this.previewFile(file, result.data[0].name);
+            this.files.push(result.data[0]);
+          }
+        });
+      });
     }
 
     handleDrop (e) {
@@ -246,7 +309,17 @@
           imageFiles.push(files[i]);
         }
       }
-      this.handleFiles(imageFiles);
+      if (imageFiles.length > 0) {
+        this.handleFiles(imageFiles);
+      }
+    }
+
+    getCsrfToken () {
+      if (this.dropArea && isDomNode(this.dropArea)) {
+        const inputElement = this.dropArea.querySelector('[name=csrf_token]');
+        return inputElement && inputElement.value
+      }
+      return undefined
     }
 
     preventDefaults (e) {
@@ -754,8 +827,9 @@
 
   const mergeSettings$1 = (options) => {
     const settings = {
-      image_selector: '.Image',
-      lazyload_selector: '.lazy'
+      gallerySelector: '.Gallery',
+      imageSelector: '.Image',
+      lazyloadSelector: '.lazy'
     };
 
     for (const attrName in options) {
@@ -772,9 +846,19 @@
     }
 
     init () {
-      const images = document.querySelectorAll(this.config.image_selector);
+      const {
+        gallerySelector,
+        imageSelector,
+        lazyloadSelector
+      } = this.config;
+      const images = document.querySelectorAll(imageSelector);
 
+      this.gallery = document.querySelector(gallerySelector);
       this.currentImage = null;
+
+      if (!this.gallery) {
+        console.warn(`\nModule: Gallery.js\nWarning: No Gallery dom node found in document.\nCause: No gallerySelector provided.\nResult: Adding images may fail.`);
+      }
 
       let i = -1;
       this.imgs = [];
@@ -783,14 +867,14 @@
       }
 
       this.lazyload = new LazyLoad({
-        elements_selector: this.config.lazyload_selector
+        elements_selector: lazyloadSelector
       });
 
       this.initListeners();
     }
 
     initListeners () {
-      document.addEventListener('image-update', (e) => {
+      document.addEventListener(EVENT_IMAGE_UPDATE, (e) => {
         if (e.detail && e.detail.image && e.detail.image instanceof Image) {
           this.updateCurrentImage(e.detail.image);
         } else {
@@ -838,8 +922,12 @@
       if (dom && document.body.contains(dom)) {
         this.imgs.push(new Image(dom));
       } else if (dom && !document.body.contains(dom)) {
-        const images = document.querySelectorAll(this.config.image_selector);
-        images[images.length - 1].parentNode.insertBefore(dom, images[images.length - 1].nextSibling);
+        const images = document.querySelectorAll(this.config.imageSelector);
+        if (images.length) {
+          images[images.length - 1].parentNode.insertBefore(dom, images[images.length - 1].nextSibling);
+        } else {
+          this.gallery.appendChild(dom);
+        }
         this.imgs.push(new Image(dom));
       }
       this.lazyload.update();
@@ -880,14 +968,15 @@
     }
 
     reset () {
-      document.dispatchEvent(new Event('reset'));
+      document.dispatchEvent(new Event(EVENT_RESET));
     }
   }
 
   document.addEventListener('DOMContentLoaded', () => {
     const gallery = new Gallery({
-      image_selector: '.Image',
-      lazyload_selector: '.lazy'
+      gallerySelector: '.Gallery',
+      imageSelector: '.Image',
+      lazyloadSelector: '.lazy'
     })
 
     ;(() => new Editor({
