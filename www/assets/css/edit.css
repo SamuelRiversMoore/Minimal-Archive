@@ -314,6 +314,30 @@ https://github.com/yahoo/pure/blob/master/LICENSE.md
   background: #42b8dd;
   /* this is a light blue */ }
 
+.Loader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  display: none;
+  z-index: 999;
+  margin: auto;
+  height: 100%;
+  width: 100%;
+  transition: all 0.25 ease-in-out;
+  justify-content: center; }
+  .Loader.transition-start {
+    display: flex;
+    align-items: center; }
+  .Loader.loading {
+    display: flex;
+    align-items: center;
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.7); }
+  .Loader.loaded {
+    opacity: 0; }
+    .Loader.loaded.transition-end {
+      display: none; }
+
 body {
   background: pink;
   color: #333; }
