@@ -6,4 +6,6 @@ export const SELECTOR_TITLE = '.title'
 export const SELECTOR_NOTE = '.note'
 
 export const EVENT_RESET = 'reset'
+export const EVENT_LOADED = 'loaded'
+export const EVENT_LOADING = 'loading'
 export const EVENT_IMAGE_UPDATE = 'image-update'

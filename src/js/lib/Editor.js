@@ -2,6 +2,8 @@ import {
   API_URL,
   API_SAVE,
   API_UPLOAD,
+  EVENT_LOADED,
+  EVENT_LOADING,
   SELECTOR_TITLE,
   SELECTOR_NOTE
 } from './Constants.js'
@@ -172,9 +174,11 @@ class Editor {
       data.note = stripHtmlTags(note.innerHTML)
     }
 
+    document.dispatchEvent(new Event(EVENT_LOADING))
     this.saveMeta(data, this.getCsrfToken(this.saveBtn))
       .then(res => console.log(res))
       .catch(err => console.log(err))
+      .finally(() => document.dispatchEvent(new Event(EVENT_LOADED)))
   }
 
   previewChanges () {
