@@ -5,7 +5,8 @@ import {
   EVENT_IMAGE_UPDATE
 } from './Constants.js'
 import {
-  scrollTo
+  scrollTo,
+  htmlToElement
 } from './Helpers.js'
 
 const mergeSettings = (options) => {
@@ -130,6 +131,29 @@ class Gallery {
 
   set images (images) {
     this.imgs = images
+  }
+
+  setImages (images) {
+    if (!images || !images.length) {
+      return
+    }
+    this.gallery.innerHTML = null
+    this.images = []
+    let i = -1
+    while (++i < images.length) {
+      this.addImage(this.getImageDom(images[i].src, images[i].filename))
+    }
+  }
+
+  getImageDom (src, filename) {
+    if (src) {
+      return htmlToElement(`<div class="Image">
+        <div class="Image__container">
+          <img class="lazy miniarch" src="/assets/css/loading.gif" data-src="${src}" data-filename="${filename}" title="${filename} preview" />
+        </div>
+        <div class="Image__caption"><span contenteditable="true">${filename}</span></div>
+        </div>`)
+    }
   }
 
   next () {
