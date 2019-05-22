@@ -14,9 +14,12 @@ A minimal tool (javascript with no dependencies, php) to display images on a web
 6. Enjoy `{your-url}` (+ keyboard navigation)
 7. Uninstall using `{your-url}/uninstall`. This will remove the account and the meta file.
 
-## <del>Usage</del>
-1. <del>Head to `{your-url}/editor` with your email and password</del>
-2. <del>Add a bunch of images, re-order etc</del>
+## Usage
+1. Head to `{your-url}/editor` with your email and password
+2. Add a bunch of images
+3. Edit the title and the note
+4. <del>Reorder images, rename them etc.</del>
+5. Save or cancel your changes
 
 ## Project structure
 
