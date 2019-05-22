@@ -7,9 +7,11 @@ import {
   SELECTOR_TITLE,
   SELECTOR_NOTE
 } from './Constants.js'
+import Gallery from './Gallery.js'
 import ProgressBar from './ProgressBar.js'
 import {
   isDomNode,
+  isEqual,
   htmlToElement,
   Fetch,
   stripHtmlTags
@@ -23,7 +25,11 @@ const mergeSettings = (options) => {
     previewBtnSelector: '.editbutton.preview',
     cancelBtnSelector: '.editbutton.cancel',
     saveBtnSelector: '.editbutton.save',
-    gallery: null,
+    gallery: new Gallery({
+      gallerySelector: '.Gallery',
+      imageSelector: '.Image',
+      lazyloadSelector: '.lazy'
+    }),
     fullscreenDropZone: true
   }
 
@@ -66,6 +72,8 @@ class Editor {
     if (!this.gallery) {
       console.warn(`\nModule: Editor.js\nError: Can't create editor.\nCause: No Gallery provided.\nResult: Editor can't initialize.`)
       return
+    } else {
+      this.gallery.reset()
     }
     if (!this.dropArea) {
       console.warn(`\nModule: Editor.js\nError: Can't create editor.\nCause: No drop area with selector [${dropAreaSelector}] found in document.\nResult: Editor can't initialize.`)
@@ -85,6 +93,7 @@ class Editor {
     }
     this.progressbar = new ProgressBar(progressBarSelector)
     this.initListeners()
+    this.backup = this.getState()
   }
 
   initListeners () {
@@ -152,40 +161,70 @@ class Editor {
   }
 
   cancelChanges () {
-    if (this.files.length) {
-      this.files.forEach(file => {
-        console.log(file)
-      })
+    if (!isEqual(this.getState(), this.backup)) {
+      this.save(this.backup)
     }
   }
 
   saveChanges () {
-    const data = {
+    const {
+      title,
+      note
+    } = this.getState()
+
+    if (!isEqual(this.getState(), this.backup)) {
+      this.save({
+        'title': title,
+        'note': note
+      })
+    }
+  }
+
+  save (data) {
+    document.dispatchEvent(new Event(EVENT_LOADING))
+    this.saveData(data, this.getCsrfToken(this.saveBtn))
+      .then((res) => {
+        if (res.data.images) {
+          this.gallery.setImages(res.data.images)
+        }
+        this.backup = this.getState()
+      })
+      .catch(err => console.log(err))
+      .finally(() => document.dispatchEvent(new Event(EVENT_LOADED)))
+  }
+
+  getState () {
+    const result = {
       title: '',
-      note: ''
+      note: '',
+      images: []
     }
     const title = document.querySelector(SELECTOR_TITLE)
     const note = document.querySelector(SELECTOR_NOTE)
+    const images = this.gallery.images
 
     if (title) {
-      data.title = stripHtmlTags(title.innerHTML)
+      result.title = stripHtmlTags(title.innerHTML)
     }
     if (note) {
-      data.note = stripHtmlTags(note.innerHTML)
+      result.note = stripHtmlTags(note.innerHTML)
     }
-
-    document.dispatchEvent(new Event(EVENT_LOADING))
-    this.saveMeta(data, this.getCsrfToken(this.saveBtn))
-      .then(res => console.log(res))
-      .catch(err => console.log(err))
-      .finally(() => document.dispatchEvent(new Event(EVENT_LOADED)))
+    if (images && images.length) {
+      result.images = [...images].map((image) => {
+        return {
+          id: image.getId(),
+          filename: image.filename
+        }
+      })
+    }
+    return result
   }
 
   previewChanges () {
     window.location = '/'
   }
 
-  saveMeta (data, csrfToken) {
+  saveData (data, csrfToken) {
     return new Promise((resolve, reject) => {
       const api = new Fetch()
       const url = API_URL
@@ -227,7 +266,7 @@ class Editor {
     if (src) {
       return htmlToElement(`<div class="Image">
         <div class="Image__container">
-          <img class="lazy miniarch" src="/assets/css/loading.gif" data-src="${src}" title="${filename} preview" />
+          <img class="lazy miniarch" src="/assets/css/loading.gif" data-src="${src}" data-filename="${filename}" title="${filename} preview" />
         </div>
         <div class="Image__caption"><span contenteditable="true">${filename}</span></div>
         </div>`)
@@ -238,12 +277,16 @@ class Editor {
     files = [...files]
     this.progressbar.initializeProgress(files.length)
     files.forEach(file => {
-      this.uploadFile(file, this.getCsrfToken(this.dropArea)).then((result) => {
-        if (result && result.data && result.data.length && result.data[0]) {
-          this.previewFile(file, result.data[0].name)
-          this.files.push(result.data[0])
-        }
-      })
+      this.uploadFile(file, this.getCsrfToken(this.dropArea))
+        .then((result) => {
+          if (result && result.data && result.data.length && result.data[0]) {
+            this.previewFile(file, result.data[0].name)
+            this.files.push(result.data[0])
+          }
+        })
+        .catch(err => {
+          console.log(err)
+        })
     })
   }
 
