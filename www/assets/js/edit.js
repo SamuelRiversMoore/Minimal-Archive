@@ -9,405 +9,10 @@
   const SELECTOR_NOTE = '.note';
 
   const EVENT_RESET = 'reset';
+  const EVENT_STATUS_CHANGE = 'status-change';
   const EVENT_LOADED = 'loaded';
   const EVENT_LOADING = 'loading';
   const EVENT_IMAGE_UPDATE = 'image-update';
-
-  function ProgressBar (progressBarSelector) {
-    let uploadProgress = [];
-    const progressBar = document.querySelector(progressBarSelector);
-
-    if (!progressBar) {
-      console.warn('ProgressBar, no selector provided!');
-    }
-
-    const updateProgress = (fileNumber, percent) => {
-      uploadProgress[fileNumber] = percent;
-      let total = uploadProgress.reduce((tot, curr) => tot + curr, 0) / uploadProgress.length;
-      console.debug('update', fileNumber, percent, total);
-      if (progressBar) {
-        progressBar.value = total;
-      }
-    };
-
-    const initializeProgress = (numFiles) => {
-      if (!progressBar) {
-        console.warn('ProgressBar, no selector provided!');
-      } else {
-        progressBar.value = 0;
-      }
-      uploadProgress = [];
-      for (let i = numFiles; i > 0; i--) {
-        uploadProgress.push(0);
-      }
-    };
-
-    return {
-      updateProgress: updateProgress,
-      initializeProgress: initializeProgress
-    }
-  }
-
-  const isDomNode = (element) => {
-    return element instanceof Element || element instanceof HTMLDocument
-  };
-
-  const stripHtmlTags = (str) => {
-    if (typeof str === 'string') {
-      return str.replace(/(<([^>]+)>)/ig, '')
-    }
-  };
-
-  const scrollTo = (destination, duration = 200, easing = 'linear', callback) => {
-    const easings = {
-      linear (t) {
-        return t
-      }
-    };
-
-    const start = window.pageYOffset;
-    const startTime = 'now' in window.performance ? performance.now() : new Date().getTime();
-
-    const documentHeight = Math.max(document.body.scrollHeight, document.body.offsetHeight, document.documentElement.clientHeight, document.documentElement.scrollHeight, document.documentElement.offsetHeight);
-    const windowHeight = window.innerHeight || document.documentElement.clientHeight || document.getElementsByTagName('body')[0].clientHeight;
-    const destinationOffset = typeof destination === 'number' ? destination : destination.offsetTop;
-    const destinationOffsetToScroll = Math.round(documentHeight - destinationOffset < windowHeight ? documentHeight - windowHeight : destinationOffset);
-
-    if ('requestAnimationFrame' in window === false) {
-      window.scroll(0, destinationOffsetToScroll);
-      if (callback) {
-        callback();
-      }
-      return
-    }
-
-    function scroll () {
-      const now = 'now' in window.performance ? performance.now() : new Date().getTime();
-      const time = Math.min(1, ((now - startTime) / duration));
-      const timeFunction = easings[easing](time);
-      window.scroll(0, Math.ceil((timeFunction * (destinationOffsetToScroll - start)) + start));
-
-      if (window.pageYOffset === destinationOffsetToScroll) {
-        if (callback) {
-          callback();
-        }
-        return
-      }
-
-      requestAnimationFrame(scroll);
-    }
-
-    scroll();
-  };
-
-  const htmlToElement = (html) => {
-    const template = document.createElement('template');
-    html = html.trim(); // Never return a text node of whitespace as the result
-    template.innerHTML = html;
-    return template.content.firstChild
-  };
-
-  class Fetch {
-    newRequest (url, request, credentials = 'same-origin', headers = { 'Content-Type': 'application/x-www-form-urlencoded' }) {
-      const handleErrors = (response) => {
-        if (!response.ok) {
-          throw Error(response.statusText)
-        }
-        if (response.status !== 200) {
-          throw Error(response.statusText)
-        }
-        return response
-      };
-
-      return new Promise((resolve, reject) => {
-        fetch(url, {
-          method: 'POST',
-          body: request,
-          credentials: credentials,
-          headers: {
-            headers
-          }
-        })
-          .then(handleErrors)
-          .then((response) => {
-            response.json().then((data) => {
-              resolve(data);
-            });
-          })
-          .catch(err => {
-            console.log(`Fetch Error:`, err);
-            reject(err);
-          });
-      })
-    }
-  }
-
-  const mergeSettings = (options) => {
-    const settings = {
-      dropAreaSelector: '#drop-area',
-      fileInputSelector: '#file-input',
-      progressBarSelector: '.progress-bar',
-      previewBtnSelector: '.editbutton.preview',
-      cancelBtnSelector: '.editbutton.cancel',
-      saveBtnSelector: '.editbutton.save',
-      gallery: null,
-      fullscreenDropZone: true
-    };
-
-    for (const attrName in options) {
-      settings[attrName] = options[attrName];
-    }
-
-    return settings
-  };
-
-  class Editor {
-    constructor (options) {
-      this.config = mergeSettings(options);
-      this.uploadFile = this.uploadFile.bind(this);
-      this.previewFile = this.previewFile.bind(this);
-      this.files = [];
-      this.init();
-    }
-
-    init () {
-      const {
-        gallery,
-        dropAreaSelector,
-        fullscreenDropZone,
-        fileInputSelector,
-        progressBarSelector,
-        previewBtnSelector,
-        cancelBtnSelector,
-        saveBtnSelector
-      } = this.config;
-
-      this.gallery = gallery;
-      this.dropArea = document.querySelector(dropAreaSelector);
-      this.fileInput = document.querySelector(fileInputSelector);
-      this.fullscreenDropZone = Boolean(fullscreenDropZone);
-      this.cancelBtn = document.querySelector(cancelBtnSelector);
-      this.previewBtn = document.querySelector(previewBtnSelector);
-      this.saveBtn = document.querySelector(saveBtnSelector);
-
-      if (!this.gallery) {
-        console.warn(`\nModule: Editor.js\nError: Can't create editor.\nCause: No Gallery provided.\nResult: Editor can't initialize.`);
-        return
-      }
-      if (!this.dropArea) {
-        console.warn(`\nModule: Editor.js\nError: Can't create editor.\nCause: No drop area with selector [${dropAreaSelector}] found in document.\nResult: Editor can't initialize.`);
-        return
-      }
-      if (!this.fileInput) {
-        console.warn(`\nModule: Editor.js\nWarning: Can't create file input listener.\nCause: No file input with selector [${fileInputSelector}] found in document.\nResult: Upload by file input button is disabled.`);
-      }
-      if (!this.saveBtn) {
-        console.warn(`Module: Editor.js\nWarning: Can't add preview functionality.\nCause: No preview button with selector [${previewBtnSelector}] found in document.\nResult: Previewing is disabled.`);
-      }
-      if (!this.saveBtn) {
-        console.warn(`Module: Editor.js\nWarning: Can't add save functionality.\nCause: No save button with selector [${saveBtnSelector}] found in document.\nResult: Saving is disabled.`);
-      }
-      if (!this.cancelBtn) {
-        console.warn(`Module: Editor.js\nWarning: Can't add cancel functionality.\nCause: No cancel button with selector [${cancelBtnSelector}] found in document.\nResult: Undoing changes is disabled.`);
-      }
-      this.progressbar = new ProgressBar(progressBarSelector);
-      this.initListeners();
-    }
-
-    initListeners () {
-  ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-        this.dropArea.addEventListener(eventName, this.preventDefaults, false);
-        document.body.addEventListener(eventName, this.preventDefaults, false);
-      });
-
-      if (this.fullscreenDropZone) {
-  ['dragenter'].forEach(eventName => {
-          document.addEventListener(eventName, (e) => {
-            this.dropArea.classList.add('active');
-          }, true);
-        })
-        ;['dragleave', 'drop'].forEach(eventName => {
-          this.dropArea.addEventListener(eventName, (e) => {
-            this.dropArea.classList.remove('active');
-          }, true);
-        });
-      }
-  ['dragenter', 'dragover'].forEach(eventName => {
-        this.dropArea.addEventListener(eventName, () => {
-          this.highlight();
-        }, false);
-      })
-
-      ;['dragleave', 'drop'].forEach(eventName => {
-        this.dropArea.addEventListener(eventName, () => {
-          this.unhighlight();
-        }, false);
-      });
-
-      // Handle dropped files
-      this.dropArea.addEventListener('drop', (e) => {
-        this.handleDrop(e);
-      }, false);
-
-      if (this.fileInput) {
-        this.fileInput.addEventListener('change', (e) => {
-          if (e.target && e.target.files) {
-            this.handleFiles(e.target.files);
-          }
-        });
-      }
-
-      if (this.cancelBtn) {
-        this.cancelBtn.addEventListener('click', (e) => {
-          this.cancelChanges();
-        });
-      }
-
-      if (this.saveBtn) {
-        this.saveBtn.addEventListener('click', (e) => {
-          this.saveChanges();
-        });
-      }
-
-      if (this.previewBtn) {
-        this.previewBtn.addEventListener('click', (e) => {
-          this.previewChanges();
-        });
-      }
-    }
-
-    cancelChanges () {
-      if (this.files.length) {
-        this.files.forEach(file => {
-          console.log(file);
-        });
-      }
-    }
-
-    saveChanges () {
-      const data = {
-        title: '',
-        note: ''
-      };
-      const title = document.querySelector(SELECTOR_TITLE);
-      const note = document.querySelector(SELECTOR_NOTE);
-
-      if (title) {
-        data.title = stripHtmlTags(title.innerHTML);
-      }
-      if (note) {
-        data.note = stripHtmlTags(note.innerHTML);
-      }
-
-      document.dispatchEvent(new Event(EVENT_LOADING));
-      this.saveMeta(data, this.getCsrfToken(this.saveBtn))
-        .then(res => console.log(res))
-        .catch(err => console.log(err))
-        .finally(() => document.dispatchEvent(new Event(EVENT_LOADED)));
-    }
-
-    previewChanges () {
-      window.location = '/';
-    }
-
-    saveMeta (data, csrfToken) {
-      return new Promise((resolve, reject) => {
-        const api = new Fetch();
-        const url = API_URL;
-        const formData = new FormData();
-
-        formData.append('data', JSON.stringify(data));
-        formData.append('action', API_SAVE);
-        formData.append('csrf_token', csrfToken);
-        api.newRequest(url, formData)
-          .then(data => resolve(data))
-          .catch(err => reject(err));
-      })
-    }
-    uploadFile (file, csrfToken, i) {
-      return new Promise((resolve, reject) => {
-        const api = new Fetch();
-        const url = API_URL;
-        const formData = new FormData();
-
-        formData.append('file', file);
-        formData.append('action', API_UPLOAD);
-        formData.append('csrf_token', csrfToken);
-        api.newRequest(url, formData)
-          .then(data => resolve(data))
-          .catch(err => reject(err));
-      })
-    }
-
-    previewFile (file, filename) {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-
-      reader.onloadend = () => {
-        this.gallery.addImage(this.getPreviewDom(reader.result, filename));
-      };
-    }
-
-    getPreviewDom (src, filename) {
-      if (src) {
-        return htmlToElement(`<div class="Image">
-        <div class="Image__container">
-          <img class="lazy miniarch" src="/assets/css/loading.gif" data-src="${src}" title="${filename} preview" />
-        </div>
-        <div class="Image__caption"><span contenteditable="true">${filename}</span></div>
-        </div>`)
-      }
-    }
-
-    handleFiles (files) {
-      files = [...files];
-      this.progressbar.initializeProgress(files.length);
-      files.forEach(file => {
-        this.uploadFile(file, this.getCsrfToken(this.dropArea)).then((result) => {
-          if (result && result.data && result.data.length && result.data[0]) {
-            this.previewFile(file, result.data[0].name);
-            this.files.push(result.data[0]);
-          }
-        });
-      });
-    }
-
-    handleDrop (e) {
-      const files = e.dataTransfer.files;
-      const imageFiles = [];
-
-      let i = -1;
-      while (++i < files.length) {
-        if (files[i].type.match(/image.*/)) {
-          imageFiles.push(files[i]);
-        }
-      }
-      if (imageFiles.length > 0) {
-        this.handleFiles(imageFiles);
-      }
-    }
-
-    getCsrfToken (domNode) {
-      if (domNode && isDomNode(domNode)) {
-        const inputElement = domNode.querySelector('[name=csrf_token]');
-        return inputElement && inputElement.value
-      }
-      return undefined
-    }
-
-    preventDefaults (e) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-
-    highlight (e) {
-      this.dropArea.classList.add('highlight');
-    }
-
-    unhighlight (e) {
-      this.dropArea.classList.remove('highlight');
-    }
-  }
 
   const runningOnBrowser = typeof window !== 'undefined';
 
@@ -838,21 +443,192 @@
     autoInitialize(LazyLoad, window.lazyLoadOptions);
   }
 
+  const uuidv4 = () => {
+    return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c =>
+      (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+    )
+  };
+
+  const isEqual = (value, other) => {
+    // Get the value type
+    const type = Object.prototype.toString.call(value);
+
+    // If the two objects are not the same type, return false
+    if (type !== Object.prototype.toString.call(other)) return false
+
+    // If items are not an object or array, return false
+    if (['[object Array]', '[object Object]'].indexOf(type) < 0) return false
+
+    // Compare the length of the length of the two items
+    const valueLen = type === '[object Array]' ? value.length : Object.keys(value).length;
+    const otherLen = type === '[object Array]' ? other.length : Object.keys(other).length;
+    if (valueLen !== otherLen) return false
+
+    // Compare two items
+    const compare = function (item1, item2) {
+      // Get the object type
+      const itemType = Object.prototype.toString.call(item1);
+
+      // If an object or array, compare recursively
+      if (['[object Array]', '[object Object]'].indexOf(itemType) >= 0) {
+        if (!isEqual(item1, item2)) {
+          return false
+        }
+      } else {
+        // If the two items are not the same type, return false
+        if (itemType !== Object.prototype.toString.call(item2)) return false
+
+        // Else if it's a function, convert to a string and compare
+        // Otherwise, just compare
+        if (itemType === '[object Function]') {
+          if (item1.toString() !== item2.toString()) return false
+        } else {
+          if (item1 !== item2) {
+            return false
+          }
+        }
+      }
+    };
+
+    // Compare properties
+    if (type === '[object Array]') {
+      for (var i = 0; i < valueLen; i++) {
+        if (compare(value[i], other[i]) === false) return false
+      }
+    } else {
+      for (var key in value) {
+        if (value.hasOwnProperty(key)) {
+          if (compare(value[key], other[key]) === false) return false
+        }
+      }
+    }
+
+    // If nothing failed, return true
+    return true
+  };
+
+  const isDomNode = (element) => {
+    return element instanceof Element || element instanceof HTMLDocument
+  };
+
+  const stripHtmlTags = (str) => {
+    if (typeof str === 'string') {
+      return str.replace(/(<([^>]+)>)/ig, '')
+    }
+  };
+
+  const scrollTo = (destination, duration = 200, easing = 'linear', callback) => {
+    const easings = {
+      linear (t) {
+        return t
+      }
+    };
+
+    const start = window.pageYOffset;
+    const startTime = 'now' in window.performance ? performance.now() : new Date().getTime();
+
+    const documentHeight = Math.max(document.body.scrollHeight, document.body.offsetHeight, document.documentElement.clientHeight, document.documentElement.scrollHeight, document.documentElement.offsetHeight);
+    const windowHeight = window.innerHeight || document.documentElement.clientHeight || document.getElementsByTagName('body')[0].clientHeight;
+    const destinationOffset = typeof destination === 'number' ? destination : destination.offsetTop;
+    const destinationOffsetToScroll = Math.round(documentHeight - destinationOffset < windowHeight ? documentHeight - windowHeight : destinationOffset);
+
+    if ('requestAnimationFrame' in window === false) {
+      window.scroll(0, destinationOffsetToScroll);
+      if (callback) {
+        callback();
+      }
+      return
+    }
+
+    function scroll () {
+      const now = 'now' in window.performance ? performance.now() : new Date().getTime();
+      const time = Math.min(1, ((now - startTime) / duration));
+      const timeFunction = easings[easing](time);
+      window.scroll(0, Math.ceil((timeFunction * (destinationOffsetToScroll - start)) + start));
+
+      if (window.pageYOffset === destinationOffsetToScroll) {
+        if (callback) {
+          callback();
+        }
+        return
+      }
+
+      requestAnimationFrame(scroll);
+    }
+
+    scroll();
+  };
+
+  const htmlToElement = (html) => {
+    const template = document.createElement('template');
+    html = html.trim(); // Never return a text node of whitespace as the result
+    template.innerHTML = html;
+    return template.content.firstChild
+  };
+
+  class Fetch {
+    newRequest (url, request, credentials = 'same-origin', headers = { 'Content-Type': 'application/x-www-form-urlencoded' }) {
+      function processResponse (response) {
+        return new Promise((resolve, reject) => {
+          // will resolve or reject depending on status, will pass both "status" and "data" in either case
+          let func;
+          response.status < 400 ? func = resolve : func = reject;
+          response.json().then(data => func({
+            'status': response.status,
+            'code': data.code,
+            'data': data.data,
+            'message': data.message
+          }));
+        })
+      }
+
+      return new Promise((resolve, reject) => {
+        fetch(url, {
+          method: 'POST',
+          body: request,
+          credentials: credentials,
+          headers: {
+            headers
+          }
+        })
+          .then(processResponse)
+          .then((response) => {
+            resolve(response);
+          })
+          .catch(response => {
+            console.log(response);
+            reject(response.message);
+          });
+      })
+    }
+  }
+
   class Image {
     constructor (image) {
       if (!isDomNode(image)) {
-        console.error('%o is not a dom element!', image);
+        console.error('%o is not a dom element! aborting image creation', image);
+      } else {
+        this.id = uuidv4();
+        this.dom = image;
+        this.url = image.querySelector('img').src;
+
+        const datafilename = image.querySelector('img').getAttribute('data-filename');
+        if (datafilename) {
+          this.file = datafilename.substring(datafilename.lastIndexOf('/') + 1);
+        } else {
+          this.file = image.querySelector('img').src.substring(image.querySelector('img').src.lastIndexOf('/') + 1);
+        }
+
+        this.stat = false;
+        this.initListeners();
+        this.dispatchStatusUpdate = this.dispatchStatusUpdate.bind(this);
       }
-      this.dom = image;
-      this.stat = false;
-      this.initListeners();
-      this.dispatchStatusUpdate = this.dispatchStatusUpdate.bind(this);
     }
 
     initListeners () {
       this.dom.addEventListener('click', this.toggleStatus.bind(this));
-      this.dom.addEventListener('status-change', this.applyStyle.bind(this));
-      document.addEventListener('reset', (e) => {
+      this.dom.addEventListener(EVENT_STATUS_CHANGE, this.applyStyle.bind(this));
+      document.addEventListener(EVENT_RESET, (e) => {
         this.stat = false;
         this.dispatchStatusUpdate();
       });
@@ -864,8 +640,8 @@
     }
 
     dispatchStatusUpdate (event) {
-      this.dom.dispatchEvent(new Event('status-change'));
-      document.dispatchEvent(new CustomEvent('image-update', {
+      this.dom.dispatchEvent(new Event(EVENT_STATUS_CHANGE));
+      document.dispatchEvent(new CustomEvent(EVENT_IMAGE_UPDATE, {
         detail: {
           image: this.stat ? this : null
         }
@@ -880,6 +656,10 @@
       }
     }
 
+    getId () {
+      return this.id
+    }
+
     set image (image) {
       this.dom = image;
     }
@@ -890,15 +670,30 @@
 
     set status (status) {
       this.stat = status;
-      this.dom.dispatchEvent(new Event('status-change'));
+      this.dom.dispatchEvent(new Event(EVENT_STATUS_CHANGE));
     }
 
     get status () {
       return this.stat
     }
+
+    set filename (filename) {
+      this.file = filename;
+    }
+
+    get filename () {
+      return this.file
+    }
+
+    set src (src) {
+      this.url = src;
+    }
+    get src () {
+      return this.url
+    }
   }
 
-  const mergeSettings$1 = (options) => {
+  const mergeSettings = (options) => {
     const settings = {
       gallerySelector: '.Gallery',
       imageSelector: '.Image',
@@ -914,7 +709,7 @@
 
   class Gallery {
     constructor (options) {
-      this.config = mergeSettings$1(options);
+      this.config = mergeSettings(options);
       this.init();
     }
 
@@ -1022,6 +817,29 @@
       this.imgs = images;
     }
 
+    setImages (images) {
+      if (!images || !images.length) {
+        return
+      }
+      this.gallery.innerHTML = null;
+      this.images = [];
+      let i = -1;
+      while (++i < images.length) {
+        this.addImage(this.getImageDom(images[i].src, images[i].filename));
+      }
+    }
+
+    getImageDom (src, filename) {
+      if (src) {
+        return htmlToElement(`<div class="Image">
+        <div class="Image__container">
+          <img class="lazy miniarch" src="/assets/css/loading.gif" data-src="${src}" data-filename="${filename}" title="${filename} preview" />
+        </div>
+        <div class="Image__caption"><span contenteditable="true">${filename}</span></div>
+        </div>`)
+      }
+    }
+
     next () {
       const index = this.images.indexOf(this.currentImage);
       if (index >= 0 && index <= this.images.length - 2) {
@@ -1042,6 +860,349 @@
 
     reset () {
       document.dispatchEvent(new Event(EVENT_RESET));
+    }
+  }
+
+  function ProgressBar (progressBarSelector) {
+    let uploadProgress = [];
+    const progressBar = document.querySelector(progressBarSelector);
+
+    if (!progressBar) {
+      console.warn('ProgressBar, no selector provided!');
+    }
+
+    const updateProgress = (fileNumber, percent) => {
+      uploadProgress[fileNumber] = percent;
+      let total = uploadProgress.reduce((tot, curr) => tot + curr, 0) / uploadProgress.length;
+      console.debug('update', fileNumber, percent, total);
+      if (progressBar) {
+        progressBar.value = total;
+      }
+    };
+
+    const initializeProgress = (numFiles) => {
+      if (!progressBar) {
+        console.warn('ProgressBar, no selector provided!');
+      } else {
+        progressBar.value = 0;
+      }
+      uploadProgress = [];
+      for (let i = numFiles; i > 0; i--) {
+        uploadProgress.push(0);
+      }
+    };
+
+    return {
+      updateProgress: updateProgress,
+      initializeProgress: initializeProgress
+    }
+  }
+
+  const mergeSettings$1 = (options) => {
+    const settings = {
+      dropAreaSelector: '#drop-area',
+      fileInputSelector: '#file-input',
+      progressBarSelector: '.progress-bar',
+      previewBtnSelector: '.editbutton.preview',
+      cancelBtnSelector: '.editbutton.cancel',
+      saveBtnSelector: '.editbutton.save',
+      gallery: new Gallery({
+        gallerySelector: '.Gallery',
+        imageSelector: '.Image',
+        lazyloadSelector: '.lazy'
+      }),
+      fullscreenDropZone: true
+    };
+
+    for (const attrName in options) {
+      settings[attrName] = options[attrName];
+    }
+
+    return settings
+  };
+
+  class Editor {
+    constructor (options) {
+      this.config = mergeSettings$1(options);
+      this.uploadFile = this.uploadFile.bind(this);
+      this.previewFile = this.previewFile.bind(this);
+      this.files = [];
+      this.init();
+    }
+
+    init () {
+      const {
+        gallery,
+        dropAreaSelector,
+        fullscreenDropZone,
+        fileInputSelector,
+        progressBarSelector,
+        previewBtnSelector,
+        cancelBtnSelector,
+        saveBtnSelector
+      } = this.config;
+
+      this.gallery = gallery;
+      this.dropArea = document.querySelector(dropAreaSelector);
+      this.fileInput = document.querySelector(fileInputSelector);
+      this.fullscreenDropZone = Boolean(fullscreenDropZone);
+      this.cancelBtn = document.querySelector(cancelBtnSelector);
+      this.previewBtn = document.querySelector(previewBtnSelector);
+      this.saveBtn = document.querySelector(saveBtnSelector);
+
+      if (!this.gallery) {
+        console.warn(`\nModule: Editor.js\nError: Can't create editor.\nCause: No Gallery provided.\nResult: Editor can't initialize.`);
+        return
+      } else {
+        this.gallery.reset();
+      }
+      if (!this.dropArea) {
+        console.warn(`\nModule: Editor.js\nError: Can't create editor.\nCause: No drop area with selector [${dropAreaSelector}] found in document.\nResult: Editor can't initialize.`);
+        return
+      }
+      if (!this.fileInput) {
+        console.warn(`\nModule: Editor.js\nWarning: Can't create file input listener.\nCause: No file input with selector [${fileInputSelector}] found in document.\nResult: Upload by file input button is disabled.`);
+      }
+      if (!this.saveBtn) {
+        console.warn(`Module: Editor.js\nWarning: Can't add preview functionality.\nCause: No preview button with selector [${previewBtnSelector}] found in document.\nResult: Previewing is disabled.`);
+      }
+      if (!this.saveBtn) {
+        console.warn(`Module: Editor.js\nWarning: Can't add save functionality.\nCause: No save button with selector [${saveBtnSelector}] found in document.\nResult: Saving is disabled.`);
+      }
+      if (!this.cancelBtn) {
+        console.warn(`Module: Editor.js\nWarning: Can't add cancel functionality.\nCause: No cancel button with selector [${cancelBtnSelector}] found in document.\nResult: Undoing changes is disabled.`);
+      }
+      this.progressbar = new ProgressBar(progressBarSelector);
+      this.initListeners();
+      this.backup = this.getState();
+    }
+
+    initListeners () {
+  ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        this.dropArea.addEventListener(eventName, this.preventDefaults, false);
+        document.body.addEventListener(eventName, this.preventDefaults, false);
+      });
+
+      if (this.fullscreenDropZone) {
+  ['dragenter'].forEach(eventName => {
+          document.addEventListener(eventName, (e) => {
+            this.dropArea.classList.add('active');
+          }, true);
+        })
+        ;['dragleave', 'drop'].forEach(eventName => {
+          this.dropArea.addEventListener(eventName, (e) => {
+            this.dropArea.classList.remove('active');
+          }, true);
+        });
+      }
+  ['dragenter', 'dragover'].forEach(eventName => {
+        this.dropArea.addEventListener(eventName, () => {
+          this.highlight();
+        }, false);
+      })
+
+      ;['dragleave', 'drop'].forEach(eventName => {
+        this.dropArea.addEventListener(eventName, () => {
+          this.unhighlight();
+        }, false);
+      });
+
+      // Handle dropped files
+      this.dropArea.addEventListener('drop', (e) => {
+        this.handleDrop(e);
+      }, false);
+
+      if (this.fileInput) {
+        this.fileInput.addEventListener('change', (e) => {
+          if (e.target && e.target.files) {
+            this.handleFiles(e.target.files);
+          }
+        });
+      }
+
+      if (this.cancelBtn) {
+        this.cancelBtn.addEventListener('click', (e) => {
+          this.cancelChanges();
+        });
+      }
+
+      if (this.saveBtn) {
+        this.saveBtn.addEventListener('click', (e) => {
+          this.saveChanges();
+        });
+      }
+
+      if (this.previewBtn) {
+        this.previewBtn.addEventListener('click', (e) => {
+          this.previewChanges();
+        });
+      }
+    }
+
+    cancelChanges () {
+      if (!isEqual(this.getState(), this.backup)) {
+        this.save(this.backup);
+      }
+    }
+
+    saveChanges () {
+      const {
+        title,
+        note
+      } = this.getState();
+
+      if (!isEqual(this.getState(), this.backup)) {
+        this.save({
+          'title': title,
+          'note': note
+        });
+      }
+    }
+
+    save (data) {
+      document.dispatchEvent(new Event(EVENT_LOADING));
+      this.saveData(data, this.getCsrfToken(this.saveBtn))
+        .then((res) => {
+          if (res.data.images) {
+            this.gallery.setImages(res.data.images);
+          }
+          this.backup = this.getState();
+        })
+        .catch(err => console.log(err))
+        .finally(() => document.dispatchEvent(new Event(EVENT_LOADED)));
+    }
+
+    getState () {
+      const result = {
+        title: '',
+        note: '',
+        images: []
+      };
+      const title = document.querySelector(SELECTOR_TITLE);
+      const note = document.querySelector(SELECTOR_NOTE);
+      const images = this.gallery.images;
+
+      if (title) {
+        result.title = stripHtmlTags(title.innerHTML);
+      }
+      if (note) {
+        result.note = stripHtmlTags(note.innerHTML);
+      }
+      if (images && images.length) {
+        result.images = [...images].map((image) => {
+          return {
+            id: image.getId(),
+            filename: image.filename
+          }
+        });
+      }
+      return result
+    }
+
+    previewChanges () {
+      window.location = '/';
+    }
+
+    saveData (data, csrfToken) {
+      return new Promise((resolve, reject) => {
+        const api = new Fetch();
+        const url = API_URL;
+        const formData = new FormData();
+
+        formData.append('data', JSON.stringify(data));
+        formData.append('action', API_SAVE);
+        formData.append('csrf_token', csrfToken);
+        api.newRequest(url, formData)
+          .then(data => resolve(data))
+          .catch(err => reject(err));
+      })
+    }
+    uploadFile (file, csrfToken, i) {
+      return new Promise((resolve, reject) => {
+        const api = new Fetch();
+        const url = API_URL;
+        const formData = new FormData();
+
+        formData.append('file', file);
+        formData.append('action', API_UPLOAD);
+        formData.append('csrf_token', csrfToken);
+        api.newRequest(url, formData)
+          .then(data => resolve(data))
+          .catch(err => reject(err));
+      })
+    }
+
+    previewFile (file, filename) {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+
+      reader.onloadend = () => {
+        this.gallery.addImage(this.getPreviewDom(reader.result, filename));
+      };
+    }
+
+    getPreviewDom (src, filename) {
+      if (src) {
+        return htmlToElement(`<div class="Image">
+        <div class="Image__container">
+          <img class="lazy miniarch" src="/assets/css/loading.gif" data-src="${src}" data-filename="${filename}" title="${filename} preview" />
+        </div>
+        <div class="Image__caption"><span contenteditable="true">${filename}</span></div>
+        </div>`)
+      }
+    }
+
+    handleFiles (files) {
+      files = [...files];
+      this.progressbar.initializeProgress(files.length);
+      files.forEach(file => {
+        this.uploadFile(file, this.getCsrfToken(this.dropArea))
+          .then((result) => {
+            if (result && result.data && result.data.length && result.data[0]) {
+              this.previewFile(file, result.data[0].name);
+              this.files.push(result.data[0]);
+            }
+          })
+          .catch(err => {
+            console.log(err);
+          });
+      });
+    }
+
+    handleDrop (e) {
+      const files = e.dataTransfer.files;
+      const imageFiles = [];
+
+      let i = -1;
+      while (++i < files.length) {
+        if (files[i].type.match(/image.*/)) {
+          imageFiles.push(files[i]);
+        }
+      }
+      if (imageFiles.length > 0) {
+        this.handleFiles(imageFiles);
+      }
+    }
+
+    getCsrfToken (domNode) {
+      if (domNode && isDomNode(domNode)) {
+        const inputElement = domNode.querySelector('[name=csrf_token]');
+        return inputElement && inputElement.value
+      }
+      return undefined
+    }
+
+    preventDefaults (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
+    highlight (e) {
+      this.dropArea.classList.add('highlight');
+    }
+
+    unhighlight (e) {
+      this.dropArea.classList.remove('highlight');
     }
   }
 
@@ -1076,7 +1237,6 @@
       this.dom.classList.add(selector);
       this.dom.appendChild(content);
 
-      console.log(this.dom);
       document.body.appendChild(this.dom);
       this.initListeners();
     }
@@ -1112,18 +1272,8 @@
   }
 
   document.addEventListener('DOMContentLoaded', () => {
-    (() => new Loader())();
-    const gallery = new Gallery({
-      gallerySelector: '.Gallery',
-      imageSelector: '.Image',
-      lazyloadSelector: '.lazy'
-    })
-
-    ;(() => new Editor({
-      gallery: gallery
-    }))();
-
-    gallery.reset();
+    (() => new Loader())()
+    ;(() => new Editor())();
   });
 
 }());
