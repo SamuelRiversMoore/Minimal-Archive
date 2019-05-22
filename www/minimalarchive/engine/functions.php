@@ -93,6 +93,9 @@ function save_file($file, $name = null, $folder = VAR_FOLDER)
 {
     if ($file) {
         $filename = $name ? $name : $file['name'];
+        if (!$file["tmp_name"] || !$file["type"]) {
+            throw new Exception("bad_file", 1);
+        }
         $basename = basename($filename);
         $extension = pathinfo($basename, PATHINFO_EXTENSION);
         $name = pathinfo($basename, PATHINFO_FILENAME);

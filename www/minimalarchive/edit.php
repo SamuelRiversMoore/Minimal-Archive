@@ -172,7 +172,7 @@ try {
                 foreach ($images as $image) {
                     $output = "<div class='Image'>";
                     $output .= "<div class='Image__container'>";
-                    $output .= "<img class='lazy miniarch' src='" . url('assets/css/loading.gif') . "' data-src='" .  url("${imagesdir}/${image}") ."' title='" . $image . "'/>";
+                    $output .= "<img class='lazy miniarch' src='" . url('assets/css/loading.gif') . "' data-filename='" . $image . "' data-src='" .  url("${imagesdir}/${image}") ."' title='" . $image . "'/>";
                     $output .= "</div>";
                     $output .= "<div class='Image__caption'><span contenteditable='true'>" . $image . "</span></div>";
                     $output .= "</div>";

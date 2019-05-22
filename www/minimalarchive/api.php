@@ -48,7 +48,7 @@ function upload(array $files = [], $folder = DEFAULT_IMAGEFOLDER)
         apiResponse('ok', 200, $data);
         return;
     } catch (Exception $e) {
-        apiResponse($e->getMessage(), 500);
+        apiResponse($e->getMessage(), 400);
         return;
     }
 }
@@ -70,9 +70,47 @@ function save(array $data = null)
         }
 
         update_file($meta);
+        if (array_key_exists('images', $data)) {
+            $images = array();
+            foreach ($data['images'] as $dataimg) {
+                $images[] = $dataimg['filename'];
+            }
+            $result['images'] = deleteAllImagesExcept($images);
+        }
         apiResponse('ok', 200, $result);
         return;
     } catch (Exception $e) {
         apiResponse($e->getMessage(), 500);
+    }
+}
+
+function deleteAllImagesExcept(array $data = null)
+{
+    try {
+        $result = array();
+        $meta = textFileToArray(DEFAULT_METAFILE);
+        $imagesdir = array_key_exists('imagesfolder', $meta) ? $meta['imagesfolder'] : null;
+        $images = getImagesInFolder($imagesdir);
+        if (!$data || !count($data)) {
+            return $result;
+        }
+        if (!$imagesdir) {
+            throw new Exception("no_image_folder", 1);
+            return;
+        }
+        foreach ($images as $image) {
+            if (!in_array($image, $data)) {
+                if (@unlink(ROOT_FOLDER . DS . $imagesdir . DS . $image)) {
+                    $result[] = $image;
+                }
+            } else {
+                $result[] = array(
+                    'src' => DS . $imagesdir . DS . $image,
+                    'filename' => $image);
+            }
+        }
+        return $result;
+    } catch (Exception $e) {
+        throw new Exception($e->getMessage(), $e->getCode());
     }
 }
