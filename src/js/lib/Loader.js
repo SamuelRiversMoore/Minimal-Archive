@@ -34,7 +34,6 @@ class Loader {
     this.dom.classList.add(selector)
     this.dom.appendChild(content)
 
-    console.log(this.dom)
     document.body.appendChild(this.dom)
     this.initListeners()
   }
