@@ -13,7 +13,8 @@ const mergeSettings = (options) => {
   const settings = {
     gallerySelector: '.Gallery',
     imageSelector: '.Image',
-    lazyloadSelector: '.lazy'
+    lazyloadSelector: '.lazy',
+    active: true
   }
 
   for (const attrName in options) {
@@ -33,10 +34,13 @@ class Gallery {
     const {
       gallerySelector,
       imageSelector,
-      lazyloadSelector
+      lazyloadSelector,
+      active
     } = this.config
     const images = document.querySelectorAll(imageSelector)
 
+    this.keyHandler = this.keyHandler.bind(this)
+    this.updateImage = this.updateImage.bind(this)
     this.gallery = document.querySelector(gallerySelector)
     this.currentImage = null
 
@@ -47,26 +51,56 @@ class Gallery {
     let i = -1
     this.imgs = []
     while (++i < images.length) {
-      this.imgs.push(new Image(images[i]))
+      this.imgs.push(new Image(
+        {
+          image: images[i],
+          active: this.active
+        }))
     }
 
     this.lazyload = new LazyLoad({
       elements_selector: lazyloadSelector
     })
 
+    if (active) {
+      this.activate()
+    }
+  }
+
+  activate () {
+    this.active = true
+    this.gallery.classList.remove('Gallery--inactive')
+    this.gallery.classList.add('Gallery--active')
     this.initListeners()
   }
 
-  initListeners () {
-    document.addEventListener(EVENT_IMAGE_UPDATE, (e) => {
-      if (e.detail && e.detail.image && e.detail.image instanceof Image) {
-        this.updateCurrentImage(e.detail.image)
-      } else {
-        this.updateCurrentImage(null)
-      }
-    })
+  deactivate () {
+    this.active = false
+    this.gallery.classList.remove('Gallery--active')
+    this.gallery.classList.add('Gallery--inactive')
+    this.removeListeners()
+  }
 
-    document.addEventListener('keyup', this.keyHandler.bind(this))
+  toggleActive () {
+    this.active = !this.active
+  }
+
+  initListeners () {
+    document.addEventListener(EVENT_IMAGE_UPDATE, this.updateImage)
+    document.addEventListener('keyup', this.keyHandler)
+  }
+
+  removeListeners () {
+    document.removeEventListener(EVENT_IMAGE_UPDATE, this.updateImage)
+    document.removeEventListener('keyup', this.keyHandler)
+  }
+
+  updateImage (e) {
+    if (e.detail && e.detail.image && e.detail.image instanceof Image) {
+      this.updateCurrentImage(e.detail.image)
+    } else {
+      this.updateCurrentImage(null)
+    }
   }
 
   updateCurrentImage (image) {
