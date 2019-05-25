@@ -8,8 +8,30 @@ import {
   EVENT_IMAGE_UPDATE
 } from './Constants.js'
 
+const mergeSettings = (options) => {
+  const settings = {
+    image: null,
+    active: true,
+    imageSelector: '.Image',
+    lazyloadSelector: '.lazy'
+  }
+
+  for (const attrName in options) {
+    settings[attrName] = options[attrName]
+  }
+
+  return settings
+}
+
 class Image {
-  constructor (image) {
+  constructor (options) {
+    this.config = mergeSettings(options)
+
+    const {
+      image,
+      active
+    } = this.config
+
     if (!isDomNode(image)) {
       console.error('%o is not a dom element! aborting image creation', image)
     } else {
@@ -24,15 +46,19 @@ class Image {
         this.file = image.querySelector('img').src.substring(image.querySelector('img').src.lastIndexOf('/') + 1)
       }
 
+      this.active = active
       this.stat = false
+      this.applyStyle()
       this.initListeners()
       this.dispatchStatusUpdate = this.dispatchStatusUpdate.bind(this)
     }
   }
 
   initListeners () {
-    this.dom.addEventListener('click', this.toggleStatus.bind(this))
-    this.dom.addEventListener(EVENT_STATUS_CHANGE, this.applyStyle.bind(this))
+    if (this.active) {
+      this.dom.addEventListener('click', this.toggleStatus.bind(this))
+      this.dom.addEventListener(EVENT_STATUS_CHANGE, this.applyStyle.bind(this))
+    }
     document.addEventListener(EVENT_RESET, (e) => {
       this.stat = false
       this.dispatchStatusUpdate()
@@ -53,11 +79,13 @@ class Image {
     }))
   }
 
-  applyStyle (event) {
+  applyStyle () {
     if (this.stat) {
       this.dom.classList.add('Image--active')
+      this.dom.classList.remove('Image--inactive')
     } else {
       this.dom.classList.remove('Image--active')
+      this.dom.classList.add('Image--inactive')
     }
   }
 
