@@ -73,6 +73,7 @@ class Editor {
       console.warn(`\nModule: Editor.js\nError: Can't create editor.\nCause: No Gallery provided.\nResult: Editor can't initialize.`)
       return
     } else {
+      this.gallery.deactivate()
       this.gallery.reset()
     }
     if (!this.dropArea) {
