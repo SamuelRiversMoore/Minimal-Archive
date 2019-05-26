@@ -72,6 +72,10 @@ export const stripHtmlTags = (str) => {
   }
 }
 
+export const stripExtension = str => {
+  return str.replace(/\.[^/.]+$/, '')
+}
+
 export const scrollTo = (destination, duration = 200, easing = 'linear', callback) => {
   const easings = {
     linear (t) {
