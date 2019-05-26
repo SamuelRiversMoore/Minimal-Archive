@@ -1217,7 +1217,7 @@
     }
 
     previewChanges () {
-      window.location = '/';
+      window.location = baseUrl();
     }
 
     saveData (data, csrfToken) {
