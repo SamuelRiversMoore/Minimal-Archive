@@ -3,6 +3,11 @@ Options All -Indexes
 
 # rewrite rules
 <IfModule mod_rewrite.c>
+
+# If in subfolder
+RewriteEngine on
+#RewriteBase /minimalarchive/
+
 # HTTPS
 RewriteCond %{HTTP_HOST} ^www\. [NC,OR]
 RewriteCond %{HTTPS} off
@@ -10,11 +15,7 @@ RewriteCond %{HTTP_HOST} ^(?:www\.)?(.+)$ [NC]
 RewriteRule ^ https://%1%{REQUEST_URI} [R=301,L,NE]
 
 RewriteRule ^minimalarchive/(.*) index.php [L]
-
 RewriteRule ^install/(.*) minimalarchive/install.php [L]
-
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^editor/(.*) minimalarchive/editor/index.php [L]
 
 # make site links work
