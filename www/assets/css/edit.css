@@ -27,7 +27,7 @@ body {
   flex-direction: column;
   width: 160px;
   height: 150px;
-  padding: 20px;
+  padding: 2em 1em 1em 1em;
   overflow: hidden;
   transition: all 0.20s;
   cursor: pointer;
@@ -75,6 +75,7 @@ body {
   justify-content: center;
   align-items: flex-end; }
   .Image__caption span {
+    padding: 1em 0 0 0;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis; }
