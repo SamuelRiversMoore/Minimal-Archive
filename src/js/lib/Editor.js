@@ -10,6 +10,7 @@ import {
 import Gallery from './Gallery.js'
 import ProgressBar from './ProgressBar.js'
 import {
+  baseUrl,
   isDomNode,
   isEqual,
   htmlToElement,
@@ -217,7 +218,7 @@ class Editor {
   }
 
   previewChanges () {
-    window.location = '/'
+    window.location = baseUrl()
   }
 
   saveData (data, csrfToken) {
