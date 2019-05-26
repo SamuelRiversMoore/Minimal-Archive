@@ -646,7 +646,7 @@
       this._src = url;
       this._caption = caption;
       this._filename = filename;
-
+      this._captionSelector = this._dom && this._dom.querySelector('[contenteditable]');
       this._active = active;
       this._status = false;
 
@@ -663,6 +663,14 @@
         this._status = false;
         this.dispatchStatusUpdate();
       });
+
+      if (this._captionSelector) {
+        // 1. Listen for changes of the contenteditable element
+        this._captionSelector.addEventListener('input', (e) => {
+          // 2. Retrive the text from inside the element
+          this._caption = this._captionSelector.innerHTML;
+        });
+      }
     }
 
     toggleStatus (event) {
@@ -902,7 +910,7 @@
         } else {
           this.gallery.appendChild(dom);
         }
-        this._images.push(new Image(this.getNewImage(dom, this.active)));
+        this._images.push(this.getNewImage(dom, this.active));
       }
       this.lazyload.update();
     }
@@ -940,7 +948,7 @@
         <div class="Image__container">
           <img class="lazy miniarch" src="/assets/css/loading.gif" data-src="${src}" data-filename="${filename}" title="${filename} preview" />
         </div>
-        <div class="Image__caption"><span contenteditable="true">${filename}</span></div>
+        <div class="Image__caption"><span contenteditable="true">${stripExtension(filename)}</span></div>
         </div>`)
       }
     }
@@ -1152,16 +1160,9 @@
     }
 
     saveChanges () {
-      const {
-        title,
-        note
-      } = this.getState();
-
-      if (!isEqual(this.getState(), this.backup)) {
-        this.save({
-          'title': title,
-          'note': note
-        });
+      const state = this.getState();
+      if (!isEqual(state, this.backup)) {
+        this.save(state);
       }
     }
 
