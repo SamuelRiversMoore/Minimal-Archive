@@ -169,16 +169,9 @@ class Editor {
   }
 
   saveChanges () {
-    const {
-      title,
-      note
-    } = this.getState()
-
-    if (!isEqual(this.getState(), this.backup)) {
-      this.save({
-        'title': title,
-        'note': note
-      })
+    const state = this.getState()
+    if (!isEqual(state, this.backup)) {
+      this.save(state)
     }
   }
 

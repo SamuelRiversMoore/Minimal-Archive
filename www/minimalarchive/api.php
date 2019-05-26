@@ -60,7 +60,7 @@ function save(array $data = null)
         update_file($meta);
         if (array_key_exists('images', $data)) {
             $result['images'] = delete_all_files_except($data['images']);
-            $result['images'] = array_merge($result['images'], update_filenames($data['images']));
+            $result['images'] = update_filenames($data['images']);
         }
         json_response('ok', 200, $result);
         return;
@@ -112,9 +112,12 @@ function update_filenames(array $images = null)
         $result = array();
         foreach ($images as $image) {
             if (array_key_exists('filename', $image) && array_key_exists('newfilename', $image)) {
-                if (in_array($image['filename'], $images)) {
+                if (in_array($image['filename'], $existingImages)) {
                     $filename = update_filename(ROOT_FOLDER . DS . $imagesdir . DS . $image['filename'], $image['newfilename']);
-                    $result[] = array('src' => DS . $imagesdir . DS . $filename,'filename' => pathinfo($filename, PATHINFO_FILENAME));
+                    $result[] = array(
+                        'src' => DS . $imagesdir . DS . pathinfo($filename, PATHINFO_FILENAME) . '.' . pathinfo($filename, PATHINFO_EXTENSION),
+                        'filename' => pathinfo($filename, PATHINFO_FILENAME)
+                    );
                 }
             }
         }

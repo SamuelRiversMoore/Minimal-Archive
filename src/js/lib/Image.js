@@ -48,7 +48,7 @@ class Image {
     this._src = url
     this._caption = caption
     this._filename = filename
-
+    this._captionSelector = this._dom && this._dom.querySelector('[contenteditable]')
     this._active = active
     this._status = false
 
@@ -65,6 +65,14 @@ class Image {
       this._status = false
       this.dispatchStatusUpdate()
     })
+
+    if (this._captionSelector) {
+      // 1. Listen for changes of the contenteditable element
+      this._captionSelector.addEventListener('input', (e) => {
+        // 2. Retrive the text from inside the element
+        this._caption = this._captionSelector.innerHTML
+      })
+    }
   }
 
   toggleStatus (event) {

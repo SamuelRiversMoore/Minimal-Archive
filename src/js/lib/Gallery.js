@@ -166,7 +166,7 @@ class Gallery {
       } else {
         this.gallery.appendChild(dom)
       }
-      this._images.push(new Image(this.getNewImage(dom, this.active)))
+      this._images.push(this.getNewImage(dom, this.active))
     }
     this.lazyload.update()
   }
