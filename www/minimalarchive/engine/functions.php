@@ -1,7 +1,25 @@
 <?php
 if (!defined('minimalarchive')) {
-    header('location: /');
+    redirect('/');
+}
+
+function redirect ($url) {
+    if (isAbsoluteUrl($url)) {
+        header('location: ' . $url);
+    } else {
+        header('location: ' . url($url));
+    }
     exit();
+}
+
+function isAbsoluteUrl($url)
+{
+    $pattern = "/^(?:ftp|https?|feed)?:?\/\/(?:(?:(?:[\w\.\-\+!$&'\(\)*\+,;=]|%[0-9a-f]{2})+:)*
+    (?:[\w\.\-\+%!$&'\(\)*\+,;=]|%[0-9a-f]{2})+@)?(?:
+    (?:[a-z0-9\-\.]|%[0-9a-f]{2})+|(?:\[(?:[0-9a-f]{0,4}:)*(?:[0-9a-f]{0,4})\]))(?::[0-9]+)?(?:[\/|\?]
+    (?:[\w#!:\.\?\+\|=&@$'~*,;\/\(\)\[\]\-]|%[0-9a-f]{2})*)?$/xi";
+
+    return (bool) preg_match($pattern, $url);
 }
 
 function file_to_lines(string $file)
@@ -92,9 +110,66 @@ function check_uploadedfile($file, $uploadfolder = VAR_FOLDER, $max_filesize = 2
 function save_file($file, $name = null, $folder = VAR_FOLDER)
 {
     if ($file) {
-        if (!move_uploaded_file($file['tmp_name'], $folder . DS. basename($name ? $name : $file['name']))) {
+        $filename = $name ? $name : $file['name'];
+        if (!$file["tmp_name"] || !$file["type"]) {
+            throw new Exception("bad_file", 1);
+        }
+        $basename = basename($filename);
+        $extension = pathinfo($basename, PATHINFO_EXTENSION);
+        $name = pathinfo($basename, PATHINFO_FILENAME);
+        $correctFilename = "";
+        if (file_exists($folder . DS. $basename)) {
+            $correctFilename = $name . '_' . bin2hex(random_bytes(4)) . '.' . $extension;
+        } else {
+            $correctFilename = basename($filename);
+        }
+        if (!move_uploaded_file($file['tmp_name'], $folder . DS. $correctFilename)) {
             throw new Exception("file_upload_error", 1);
         }
+        return $correctFilename;
+    }
+}
+
+function update_filename($file = null, $newname = null)
+{
+    if (!$file || !$newname) {
+        return $file;
+    }
+    $dir = pathinfo($file, PATHINFO_DIRNAME);
+    $ext = pathinfo($file, PATHINFO_EXTENSION);
+    $filename = pathinfo($file, PATHINFO_FILENAME);
+    $sanitizedNewname = $dir . DS . sanitize_filename($newname) . '.' . $ext;
+    if ($newname !== $filename) {
+        if (file_exists($file)) {
+            while (file_exists($sanitizedNewname)) {
+                $sanitizedNewname = $dir . DS . sanitize_filename() . '.' . $ext;
+            }
+            rename($file, $sanitizedNewname);
+            return $sanitizedNewname;
+        }
+    }
+    return $file;
+}
+
+function update_file(array $data, $file = DEFAULT_METAFILE)
+{
+    try {
+        if (!$data || !count($data)) {
+            return true;
+        }
+        $dir = ROOT_FOLDER;
+        $filename = $file;
+        if (!file_exists($dir)) {
+            mkdir($dir, 0777, true);
+        }
+        $file = fopen($filename, "w");
+        foreach ($data as $key => $value) {
+            fwrite($file, "${key}: ${value}\n");
+        }
+        fclose($file);
+        return true;
+    } catch (Exception $e) {
+        throw new Exception($e->getMessage(), $e->getCode());
     }
 }
 
@@ -167,6 +242,113 @@ function create_token()
     }
 }
 
+function parse_sessions($content)
+{
+    if (!$content) {
+        return [];
+    }
+    $json = json_decode($content);
+    if ($json && count($json)) {
+        return $json;
+    }
+    return [];
+}
+
+function invalidate_session($id, $key)
+{
+    session_destroy();
+    $dir = VAR_FOLDER;
+    $filename = DEFAULT_SESSIONSFILE;
+    if (!file_exists($dir)) {
+        return false;
+    }
+    $sessions = array();
+    if (file_exists($filename)) {
+        $content = file_get_contents($filename);
+        $sessions = parse_sessions($content);
+        if (($index = getindex_sessionbykey($id, $key, $sessions)) > -1) {
+            $i = 0;
+            foreach ($sessions as $session) {
+                if ($i !== $index) {
+                    $sessions[$i] = $session;
+                }
+                $i++;
+            }
+        }
+        $file = fopen($filename, "w");
+        fwrite($file, json_encode($sessions). "\n");
+        fclose($file);
+    }
+}
+
+function validate_session($id, $key)
+{
+    $dir = VAR_FOLDER;
+    $filename = DEFAULT_SESSIONSFILE;
+    if (!file_exists($dir)) {
+        return false;
+    }
+    if (file_exists($filename)) {
+        $content = file_get_contents($filename);
+        $sessions = parse_sessions($content);
+        if (($index = getindex_sessionbykey($id, $key, $sessions)) > -1) {
+            if (((int)(new \DateTime())->getTimestamp() - (int)$sessions[$index]->time) / (60 * 60) < SESSION_MAXDURATION) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+function getindex_sessionbykey($id, $key, $sessions)
+{
+    if (!$sessions) {
+        return -1;
+    }
+    $i = -1;
+    while (++$i < count($sessions)) {
+        if (property_exists($sessions[$i], $key)) {
+            if (password_verify($id, $sessions[$i]->$key)) {
+                return $i;
+            }
+        }
+    }
+}
+
+function add_session($id, $key)
+{
+    try {
+        $dir = VAR_FOLDER;
+        $filename = DEFAULT_SESSIONSFILE;
+        if (!file_exists($dir)) {
+            mkdir($dir, 0777, true);
+        }
+        $sessions = array();
+        $account = null;
+        // if file exists, try to update the entry
+        if (file_exists($filename)) {
+            $content = file_get_contents($filename);
+            $sessions = parse_sessions($content);
+            if (($index = getindex_sessionbykey($id, $key, $sessions)) > -1) {
+                $sessions[$index]->time = (new \DateTime())->getTimestamp();
+            }
+        }
+        // else, create a new session
+        if (!$account) {
+            $sessions[] = (object) array(
+                'id' => password_hash($id, PASSWORD_DEFAULT),
+                'time' => (new \DateTime())->getTimestamp()
+            );
+        }
+        $file = fopen($filename, "w");
+        fwrite($file, json_encode($sessions). "\n");
+        fclose($file);
+        return true;
+    } catch (Exception $e) {
+        throw new Exception($e->getMessage(), $e->getCode());
+    }
+}
+
 function clean_installation()
 {
     $files = glob(VAR_FOLDER . DS . '*');
@@ -195,6 +377,18 @@ function put_success(string $message)
     echo "<aside class=\"notice success\">${message}</aside>";
 }
 
+function sanitize_filename(string $str = null, string $replace = '-')
+{
+    if (!$str) {
+        return bin2hex(random_bytes(4));
+    }
+    // Remove unwanted chars
+    $str = mb_ereg_replace("([^\w\s\d\-_~,;\[\]\(\).])", $replace, $str);
+    // Replace multiple dots by custom char
+    $str = mb_ereg_replace("([\.]{2,})", $replace, $str);
+    return $str;
+}
+
 function sanitize_email($text)
 {
     return filter_var(strtolower(trim($text)), FILTER_SANITIZE_EMAIL);
@@ -212,12 +406,12 @@ function sanitize_text($text)
 
 function has_account()
 {
-    return file_exists(VAR_FOLDER . DS . ".account");
+    return file_exists(DEFAULT_ACCOUNTFILE);
 }
 
 function has_meta()
 {
-    return file_exists(ROOT_FOLDER . DS . "meta.txt");
+    return file_exists(DEFAULT_METAFILE) && ($meta = textFileToArray(DEFAULT_METAFILE)) && count($meta);
 }
 
 function is_installed()
@@ -253,5 +447,30 @@ function url(string $path = '')
     $disp_port = ($protocol == 'http' && $port == 80 || $protocol == 'https' && $port == 443) ? '' : ":$port";
 
     // put em all together to get the complete base URL
-    return "${protocol}://${domain}${disp_port}" . ($path ? "/" . htmlspecialchars($path) : '');
+    return "${protocol}://${domain}${disp_port}" . DS . ROOT_URL . ($path && $path[0] !== '/' ? '/' : '') . ($path ? htmlspecialchars($path) : '');
+}
+
+function array_key_exists_in_array_of_arrays($needle, string $key, array $haystack = null)
+{
+    if (!$needle || !$key || !$haystack || !count($haystack)) {
+        return false;
+    }
+    foreach ($haystack as $item) {
+        if (array_key_exists($key, $item) && $needle === $item[$key]) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function json_response($message = 'Error', $code = 500, $data = null)
+{
+    header('Content-Type: application/json');
+    $response = array(
+        'code' => $code,
+        'data' => $data,
+        'message' => $message
+    );
+    http_response_code($code);
+    echo json_encode($response);
 }

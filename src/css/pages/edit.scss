@@ -1,6 +1,7 @@
 @import 'index';
 @import '../modules/modal';
 @import '../modules/buttons';
+@import '../modules/loader';
 
 body {
   background: pink;
@@ -26,32 +27,41 @@ body {
   font-size: 16px;
   line-height: 1.6em;
   .editbutton {
-    height: 44px;
+    // height: 44px;
     margin: 0.5em;
     overflow: hidden;
     cursor: pointer;
-    img {
-      height: 100%;
-      width: auto;
-    }
   }
 }
 
-#drop_file_zone {
-    background-color: #EEE;
-    border: #999 5px dashed;
-    width: 290px;
-    height: 200px;
-    padding: 8px;
-    font-size: 18px;
+#drop-area {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  z-index: -1;
+  opacity: 0;
+  background: blue;
+  transition: opacity 0.25s ease-in-out;
+  &.active {
+    z-index: 999;
+    opacity: 1;
+  }
+  .drop-message {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 2em;
+  }
 }
-#drag_upload_file {
-  width:50%;
-  margin:0 auto;
+
+.modal {
+  z-index: 99;
 }
-#drag_upload_file p {
-  text-align: center;
-}
-#drag_upload_file #selectfile {
-  display: none;
+
+.Image .Image__caption span {
+  cursor: text;
 }

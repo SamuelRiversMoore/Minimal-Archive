@@ -1,4 +1,7 @@
 <?php
+if (!defined('minimalarchive')) {
+    redirect('/');
+}
 
 function get_sanitizedform($args)
 {

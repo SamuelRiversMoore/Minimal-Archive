@@ -22,6 +22,70 @@ body {
 .success {
   background-color: #c0ffe3; }
 
+.Image {
+  display: flex;
+  flex-direction: column;
+  width: 160px;
+  height: 150px;
+  padding: 2em 1em 1em 1em;
+  overflow: hidden;
+  transition: all 0.20s;
+  cursor: pointer;
+  cursor: zoom-in;
+  cursor: -moz-zoom-in;
+  cursor: -webkit-zoom-in;
+  border-radius: 10px; }
+  .Image img {
+    max-width: 100%;
+    max-height: 90vh;
+    height: auto;
+    border-radius: 1px; }
+  .Image.Image--inactive {
+    cursor: default; }
+  .Image:hover {
+    background-color: rgba(200, 200, 200, 0.9); }
+
+.Image__container {
+  overflow: hidden;
+  text-align: center; }
+  .Image__container img {
+    max-height: 100%;
+    max-width: 80%; }
+
+.Image--active {
+  cursor: pointer;
+  cursor: zoom-out;
+  cursor: -moz-zoom-out;
+  cursor: -webkit-zoom-out;
+  width: auto;
+  height: auto;
+  max-height: calc(100vh - 250px);
+  flex: 100%; }
+  .Image--active img {
+    max-width: 100%;
+    max-height: 100%;
+    height: auto; }
+  .Image--active .Image__container img {
+    max-height: auto;
+    max-width: auto; }
+
+.Image__caption {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end; }
+  .Image__caption span {
+    padding: 1em 0 0 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; }
+
+.Gallery {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  width: 100%; }
+
 body {
   background: silver;
   color: #333; }
@@ -46,70 +110,6 @@ main {
   padding: 0;
   box-sizing: border-box; }
 
-.Gallery {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  width: 100%; }
-
-.Image {
-  display: flex;
-  flex-direction: column;
-  width: 160px;
-  height: 150px;
-  padding: 20px;
-  overflow: hidden;
-  transition: all 0.20s;
-  cursor: pointer;
-  cursor: zoom-in;
-  cursor: -moz-zoom-in;
-  cursor: -webkit-zoom-in;
-  border-radius: 10px; }
-
-.Image img {
-  max-width: 100%;
-  max-height: 90vh;
-  height: auto;
-  border-radius: 1px; }
-
-.Image:hover {
-  background-color: rgba(200, 200, 200, 0.9); }
-
-.Image--active {
-  cursor: pointer;
-  cursor: zoom-out;
-  cursor: -moz-zoom-out;
-  cursor: -webkit-zoom-out;
-  width: auto;
-  height: auto;
-  max-height: calc(100% - 250px);
-  max-width: 100%;
-  flex: 100%; }
-
-.Image__container {
-  overflow: hidden;
-  text-align: center; }
-
-.Image__container img {
-  max-height: 100%;
-  max-width: 80%; }
-
-.Image__caption {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: flex-end; }
-
-.Image__caption span {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis; }
-
-.Image--active img {
-  max-width: 100%;
-  max-height: 100%;
-  height: auto; }
-
 .caption {
   padding: 0 0 5px;
   text-align: left;
@@ -117,8 +117,274 @@ main {
   text-overflow: ellipsis;
   white-space: nowrap; }
 
+/* [Object] Modal
+ * =============================== */
+.modal {
+  opacity: 0;
+  visibility: hidden;
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  text-align: left;
+  background: rgba(0, 0, 0, 0.6);
+  transition: opacity .25s ease; }
+
+.modal__bg {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  cursor: pointer; }
+
+.modal-state {
+  display: none; }
+
+.modal-state:checked + .modal {
+  opacity: 1;
+  visibility: visible; }
+
+.modal-state:checked + .modal .modal__inner {
+  top: 0; }
+
+.modal__inner {
+  transition: top .25s ease;
+  position: absolute;
+  top: -20%;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: 50%;
+  margin: auto;
+  overflow: auto;
+  background: #fff;
+  border-radius: 5px;
+  padding: 1em 2em;
+  height: 50%; }
+
+.modal__close {
+  position: absolute;
+  right: 1em;
+  top: 1em;
+  width: 1.1em;
+  height: 1.1em;
+  cursor: pointer; }
+
+.modal__close:after,
+.modal__close:before {
+  content: '';
+  position: absolute;
+  width: 2px;
+  height: 1.5em;
+  background: #ccc;
+  display: block;
+  transform: rotate(45deg);
+  left: 50%;
+  margin: -3px 0 0 -1px;
+  top: 0; }
+
+.modal__close:hover:after,
+.modal__close:hover:before {
+  background: #aaa; }
+
+.modal__close:before {
+  transform: rotate(-45deg); }
+
+@media screen and (max-width: 768px) {
+  .modal__inner {
+    width: 90%;
+    height: 90%;
+    box-sizing: border-box; } }
+/*!
+Pure v1.0.0
+Copyright 2013 Yahoo!
+Licensed under the BSD License.
+https://github.com/yahoo/pure/blob/master/LICENSE.md
+*/
+.pure-button {
+  display: inline-block;
+  zoom: 1;
+  line-height: normal;
+  white-space: nowrap;
+  vertical-align: middle;
+  text-align: center;
+  cursor: pointer;
+  -webkit-user-drag: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  box-sizing: border-box; }
+
+.pure-button::-moz-focus-inner {
+  padding: 0;
+  border: 0; }
+
+.pure-button-group {
+  letter-spacing: -.31em;
+  text-rendering: optimizespeed; }
+
+.opera-only :-o-prefocus, .pure-button-group {
+  word-spacing: -.43em; }
+
+.pure-button {
+  font-family: inherit;
+  font-size: 100%;
+  padding: .5em 1em;
+  color: #444;
+  color: rgba(0, 0, 0, 0.8);
+  border: 1px solid #999;
+  border: transparent;
+  background-color: #E6E6E6;
+  text-decoration: none;
+  border-radius: 2px; }
+
+.pure-button-hover, .pure-button:focus, .pure-button:hover {
+  filter: alpha(opacity=90);
+  background-image: -webkit-linear-gradient(transparent, rgba(0, 0, 0, 0.05) 40%, rgba(0, 0, 0, 0.1));
+  background-image: linear-gradient(transparent, rgba(0, 0, 0, 0.05) 40%, rgba(0, 0, 0, 0.1)); }
+
+.pure-button:focus {
+  outline: 0; }
+
+.pure-button-active, .pure-button:active {
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15) inset, 0 0 6px rgba(0, 0, 0, 0.2) inset;
+  border-color: #000 \9; }
+
+.pure-button-disabled, .pure-button-disabled:active, .pure-button-disabled:focus, .pure-button-disabled:hover, .pure-button[disabled] {
+  border: none;
+  background-image: none;
+  filter: alpha(opacity=40);
+  opacity: .4;
+  cursor: not-allowed;
+  box-shadow: none;
+  pointer-events: none; }
+
+.pure-button-hidden {
+  display: none; }
+
+.pure-button-primary, .pure-button-selected, a.pure-button-primary, a.pure-button-selected {
+  background-color: #0078e7;
+  color: #fff; }
+
+.pure-button-group .pure-button {
+  letter-spacing: normal;
+  word-spacing: normal;
+  vertical-align: top;
+  text-rendering: auto;
+  margin: 0;
+  border-radius: 0;
+  border-right: 1px solid #111;
+  border-right: 1px solid rgba(0, 0, 0, 0.2); }
+
+.pure-button-group .pure-button:first-child {
+  border-top-left-radius: 2px;
+  border-bottom-left-radius: 2px; }
+
+.pure-button-group .pure-button:last-child {
+  border-top-right-radius: 2px;
+  border-bottom-right-radius: 2px;
+  border-right: none; }
+
+.button-success,
+.button-error,
+.button-warning,
+.button-secondary {
+  color: white;
+  border-radius: 4px;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2); }
+
+.button-success {
+  background: #1cb841;
+  /* this is a green */ }
+
+.button-error {
+  background: #ca3c3c;
+  /* this is a maroon */ }
+
+.button-warning {
+  background: #df7514;
+  /* this is an orange */ }
+
+.button-secondary {
+  background: #42b8dd;
+  /* this is a light blue */ }
+
+.Loader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  display: none;
+  z-index: 999;
+  margin: auto;
+  height: 100%;
+  width: 100%;
+  transition: all 0.25 ease-in-out;
+  justify-content: center; }
+  .Loader.transition-start {
+    display: flex;
+    align-items: center; }
+  .Loader.loading {
+    display: flex;
+    align-items: center;
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.7); }
+  .Loader.loaded {
+    opacity: 0; }
+    .Loader.loaded.transition-end {
+      display: none; }
+
 body {
   background: pink;
   color: #333; }
+
+.modal {
+  font-size: 16px; }
+  .modal p {
+    line-height: 1.3em; }
+  .modal li {
+    margin-bottom: 1em; }
+
+.controls {
+  position: fixed;
+  top: 0;
+  right: 0.6em;
+  display: flex;
+  flex-direction: column;
+  font-size: 16px;
+  line-height: 1.6em; }
+  .controls .editbutton {
+    margin: 0.5em;
+    overflow: hidden;
+    cursor: pointer; }
+
+#drop-area {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  z-index: -1;
+  opacity: 0;
+  background: blue;
+  transition: opacity 0.25s ease-in-out; }
+  #drop-area.active {
+    z-index: 999;
+    opacity: 1; }
+  #drop-area .drop-message {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 2em; }
+
+.modal {
+  z-index: 99; }
+
+.Image .Image__caption span {
+  cursor: text; }
 
 /*# sourceMappingURL=edit.css.map */

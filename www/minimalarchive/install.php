@@ -1,7 +1,6 @@
 <?php
 if (!defined('minimalarchive') || is_installed()) {
-    header('location: /');
-    exit();
+    redirect('/');
 }
 
 if (!isset($_POST['csrf_token'])) {
@@ -18,13 +17,35 @@ include_once(BASE_FOLDER . DS . 'engine' . DS . 'functions_install.php');
 <?php
 $error = "";
 $success = "";
+
+function install($data, $retry = 0)
+{
+    if ($retry === 3) {
+        throw new Exception("too_many_retries");
+        return;
+    }
+    try {
+        process_form($data);
+        return "installation_complete";
+    } catch (Exception $e) {
+        if ($e->getMessage() === 'account_exists') {
+            clean_installation();
+            return install($data, $retry + 1);
+        } else {
+            throw new Exception($e->getMessage());
+        }
+    }
+}
+
 if (isset($_POST['confirm']) && check_token($_POST['csrf_token'], 'install')) {
     try {
-        process_form($_POST);
-        $success .= translate("installation_complete");
+        $success .= translate(install($_POST));
     } catch (Exception $e) {
         $error .= translate($e->getMessage());
     }
+}
+if (!has_meta()) {
+    clean_installation();
 }
 ?>
 <html>
@@ -38,7 +59,7 @@ if (isset($_POST['confirm']) && check_token($_POST['csrf_token'], 'install')) {
         <main>
             <header>
                 Installation
-            </header><!-- /header -->
+            </header>
             <section class="Form">
                 <?php
                 if (strlen($error)) {
@@ -53,7 +74,7 @@ if (isset($_POST['confirm']) && check_token($_POST['csrf_token'], 'install')) {
                 ?>
 
                 <?php if (!strlen($success)): ?>
-                <form class="pure-form pure-form-stacked" action="/install?action=confirm" method="post" accept-charset="utf-8" enctype="multipart/form-data">
+                <form class="pure-form pure-form-stacked" action="<?= url('/install?action=confirm') ?>" method="post" accept-charset="utf-8" enctype="multipart/form-data">
                     <fieldset>
                         <legend>Configuration</legend>
 

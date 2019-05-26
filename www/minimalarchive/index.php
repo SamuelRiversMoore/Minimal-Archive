@@ -1,14 +1,12 @@
 <?php
     if (!defined('minimalarchive')) {
-        header('location: /');
-        exit();
+        redirect('/');
     }
 
     if (!has_meta()) {
-        header('location: /install');
-        exit();
+        redirect('/install');
     }
-    $meta = textFileToArray(ROOT_FOLDER . DS . 'meta.txt');
+    $meta = textFileToArray(DEFAULT_METAFILE);
     $imagesdir = array_key_exists('imagesfolder', $meta) ? $meta['imagesfolder'] : null;
     $title = array_key_exists('title', $meta) ? $meta['title'] : '';
     $description = array_key_exists('description', $meta) ? $meta['description'] : '';
@@ -44,7 +42,7 @@
         if ($error && strlen($error)) {
             put_error($error);
         } else {
-        ?>
+            ?>
         <header>
             <section class="title"><?= $title ?></section>
         </header>
@@ -54,14 +52,12 @@
                 foreach ($images as $image) {
                     $output = "<div class='Image'>";
                     $output .= "<div class='Image__container'>";
-                    $output .= "<img class='lazy miniarch' src='" . url('assets/css/loading.gif') . "' data-src='" .  url("${imagesdir}/${image}") ."' title='" . $image . "'/>";
+                    $output .= "<img class='lazy miniarch' src='" . url('assets/css/loading.gif') . "' data-filename='" . $image . "' data-src='" .  url("${imagesdir}/${image}") ."' title='" . $image . "'/>";
                     $output .= "</div>";
-                    $output .= "<div class='Image__caption'><span>" . $image . "</span></div>";
+                    $output .= "<div class='Image__caption'><span>" . pathinfo($image, PATHINFO_FILENAME) . "</span></div>";
                     $output .= "</div>";
                     echo $output;
-                }
-
-                ?>
+                } ?>
             </section>
             <span id="breaker"></span>
         </main>
