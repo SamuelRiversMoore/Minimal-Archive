@@ -447,7 +447,7 @@ function url(string $path = '')
     $disp_port = ($protocol == 'http' && $port == 80 || $protocol == 'https' && $port == 443) ? '' : ":$port";
 
     // put em all together to get the complete base URL
-    return "${protocol}://${domain}${disp_port}" . DS . ROOT_URL . DS . ($path ? "/" . htmlspecialchars($path) : '');
+    return "${protocol}://${domain}${disp_port}" . DS . ROOT_URL . ($path && $path[0] !== '/' ? '/' : '') . ($path ? htmlspecialchars($path) : '');
 }
 
 function array_key_exists_in_array_of_arrays($needle, string $key, array $haystack = null)
