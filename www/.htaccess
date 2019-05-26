@@ -6,7 +6,7 @@ Options All -Indexes
 
 # If in subfolder
 RewriteEngine on
-#RewriteBase /minimalarchive/
+#RewriteBase /minimalarchive
 
 # HTTPS
 RewriteCond %{HTTP_HOST} ^www\. [NC,OR]
