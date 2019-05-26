@@ -1,13 +1,14 @@
 import LazyLoad from './LazyLoad.js'
 import Image from './Image.js'
 import {
-  EVENT_RESET,
-  EVENT_IMAGE_UPDATE
+  EVENT_IMAGE_UPDATE,
+  EVENT_RESET
 } from './Constants.js'
 import {
-  scrollTo,
   htmlToElement,
-  isDomNode
+  isDomNode,
+  scrollTo,
+  stripExtension
 } from './Helpers.js'
 
 const mergeSettings = (options) => {
@@ -203,7 +204,7 @@ class Gallery {
         <div class="Image__container">
           <img class="lazy miniarch" src="/assets/css/loading.gif" data-src="${src}" data-filename="${filename}" title="${filename} preview" />
         </div>
-        <div class="Image__caption"><span contenteditable="true">${filename}</span></div>
+        <div class="Image__caption"><span contenteditable="true">${stripExtension(filename)}</span></div>
         </div>`)
     }
   }
