@@ -1,4 +1,8 @@
-export const API_URL = '/api'
+import {
+  baseUrl
+} from './Helpers.js'
+
+export const API_URL = baseUrl() + '/api'
 export const API_UPLOAD = 'upload'
 export const API_SAVE = 'save'
 

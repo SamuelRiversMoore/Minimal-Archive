@@ -4,6 +4,15 @@ export const uuidv4 = () => {
   )
 }
 
+export const baseUrl = (segment) => {
+  // get the segments
+  const pathArray = window.location.pathname.split('/')
+  // find where the segment is located
+  const indexOfSegment = pathArray.indexOf(segment)
+  // make base_url be the origin plus the path to the segment
+  return window.location.origin + pathArray.slice(0, indexOfSegment).join('/') + '/'
+}
+
 export const isEqual = (value, other) => {
   // Get the value type
   const type = Object.prototype.toString.call(value)
