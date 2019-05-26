@@ -14,7 +14,8 @@ import {
   isEqual,
   htmlToElement,
   Fetch,
-  stripHtmlTags
+  stripHtmlTags,
+  stripExtension
 } from './Helpers.js'
 
 const mergeSettings = (options) => {
@@ -214,7 +215,8 @@ class Editor {
       result.images = [...images].map((image) => {
         return {
           id: image.getId(),
-          filename: image.filename
+          filename: image.filename,
+          newfilename: image.caption
         }
       })
     }
@@ -269,7 +271,7 @@ class Editor {
         <div class="Image__container">
           <img class="lazy miniarch" src="/assets/css/loading.gif" data-src="${src}" data-filename="${filename}" title="${filename} preview" />
         </div>
-        <div class="Image__caption"><span contenteditable="true">${filename}</span></div>
+        <div class="Image__caption"><span contenteditable="true">${stripExtension(filename)}</span></div>
         </div>`)
     }
   }

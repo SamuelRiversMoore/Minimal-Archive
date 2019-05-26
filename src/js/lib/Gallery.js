@@ -6,7 +6,8 @@ import {
 } from './Constants.js'
 import {
   scrollTo,
-  htmlToElement
+  htmlToElement,
+  isDomNode
 } from './Helpers.js'
 
 const mergeSettings = (options) => {
@@ -42,20 +43,19 @@ class Gallery {
     this.keyHandler = this.keyHandler.bind(this)
     this.updateImage = this.updateImage.bind(this)
     this.gallery = document.querySelector(gallerySelector)
-    this.currentImage = null
+    this._current = null
 
     if (!this.gallery) {
       console.warn(`\nModule: Gallery.js\nWarning: No Gallery dom node found in document.\nCause: No gallerySelector provided.\nResult: Adding images may fail.`)
     }
 
     let i = -1
-    this.imgs = []
+    this._images = []
     while (++i < images.length) {
-      this.imgs.push(new Image(
-        {
-          image: images[i],
-          active: this.active
-        }))
+      const image = this.getNewImage(images[i], this.active)
+      if (image) {
+        this._images.push(image)
+      }
     }
 
     this.lazyload = new LazyLoad({
@@ -65,6 +65,25 @@ class Gallery {
     if (active) {
       this.activate()
     }
+  }
+
+  getNewImage (dom, active) {
+    if (!dom || !isDomNode(dom)) {
+      return null
+    }
+    const url = dom.querySelector('img') ? dom.querySelector('img').src : null
+    const datafilename = dom.querySelector('img') && dom.querySelector('img').getAttribute('data-filename') ? dom.querySelector('img').getAttribute('data-filename') : null
+    const filename = datafilename ? datafilename.substring(datafilename.lastIndexOf('/') + 1) : dom.querySelector('img') ? dom.querySelector('img').src.substring(dom.querySelector('img').src.lastIndexOf('/') + 1) : null
+    const caption = dom.querySelector('.Image__caption span') ? dom.querySelector('.Image__caption span').innerHTML : null
+
+    return new Image(
+      {
+        url: url,
+        filename: filename,
+        caption: caption,
+        dom: dom,
+        active: active
+      })
   }
 
   activate () {
@@ -104,13 +123,13 @@ class Gallery {
   }
 
   updateCurrentImage (image) {
-    if (this.currentImage instanceof Image) {
-      this.currentImage.status = false
+    if (this._current instanceof Image) {
+      this._current.status = false
     }
-    this.currentImage = image
-    if (this.currentImage instanceof Image) {
-      this.currentImage.status = true
-      scrollTo(this.currentImage.dom)
+    this._current = image
+    if (this._current instanceof Image) {
+      this._current.status = true
+      scrollTo(this._current.dom)
     } else {
       scrollTo(0)
     }
@@ -119,13 +138,13 @@ class Gallery {
   keyHandler (e) {
     switch (e.key) {
       case 'ArrowLeft':
-        if (this.currentImage) {
+        if (this._current) {
           e.preventDefault()
           this.prev()
         }
         break
       case 'ArrowRight':
-        if (this.currentImage) {
+        if (this._current) {
           e.preventDefault()
           this.next()
         }
@@ -138,7 +157,7 @@ class Gallery {
 
   addImage (dom) {
     if (dom && document.body.contains(dom)) {
-      this.imgs.push(new Image(dom))
+      this._images.push(this.getNewImage(dom, this.active))
     } else if (dom && !document.body.contains(dom)) {
       const images = document.querySelectorAll(this.config.imageSelector)
       if (images.length) {
@@ -146,25 +165,24 @@ class Gallery {
       } else {
         this.gallery.appendChild(dom)
       }
-      this.imgs.push(new Image(dom))
+      this._images.push(new Image(this.getNewImage(dom, this.active)))
     }
     this.lazyload.update()
-  }
-
-  get current () {
-    return this.currentImage
   }
 
   set current (image) {
     this.updateCurrentImage(image)
   }
+  get current () {
+    return this._current
+  }
 
   get images () {
-    return this.imgs
+    return this._images
   }
 
   set images (images) {
-    this.imgs = images
+    this._images = images
   }
 
   setImages (images) {
@@ -191,7 +209,7 @@ class Gallery {
   }
 
   next () {
-    const index = this.images.indexOf(this.currentImage)
+    const index = this.images.indexOf(this._current)
     if (index >= 0 && index <= this.images.length - 2) {
       this.updateCurrentImage(this.images[index + 1])
     } else if (index > this.images.length - 2) {
@@ -200,7 +218,7 @@ class Gallery {
   }
 
   prev () {
-    const index = this.images.indexOf(this.currentImage)
+    const index = this.images.indexOf(this._current)
     if (index > 0) {
       this.updateCurrentImage(this.images[index - 1])
     } else if (index === 0) {
