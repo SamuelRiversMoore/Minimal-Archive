@@ -1,6 +1,7 @@
 import {
   isDomNode,
-  uuidv4
+  uuidv4,
+  htmlToElement
 } from './Helpers.js'
 import {
   EVENT_RESET,
@@ -10,8 +11,11 @@ import {
 
 const mergeSettings = (options) => {
   const settings = {
-    image: null,
+    dom: null,
+    filename: null,
     active: true,
+    url: null,
+    caption: null,
     imageSelector: '.Image',
     lazyloadSelector: '.lazy'
   }
@@ -26,103 +30,122 @@ const mergeSettings = (options) => {
 class Image {
   constructor (options) {
     this.config = mergeSettings(options)
+    this.dispatchStatusUpdate = this.dispatchStatusUpdate.bind(this)
 
     const {
-      image,
+      url,
+      filename,
+      caption,
+      dom,
       active
     } = this.config
 
-    if (!isDomNode(image)) {
-      console.error('%o is not a dom element! aborting image creation', image)
-    } else {
-      this.id = uuidv4()
-      this.dom = image
-      this.url = image.querySelector('img').src
-
-      const datafilename = image.querySelector('img').getAttribute('data-filename')
-      if (datafilename) {
-        this.file = datafilename.substring(datafilename.lastIndexOf('/') + 1)
-      } else {
-        this.file = image.querySelector('img').src.substring(image.querySelector('img').src.lastIndexOf('/') + 1)
-      }
-
-      this.active = active
-      this.stat = false
-      this.applyStyle()
-      this.initListeners()
-      this.dispatchStatusUpdate = this.dispatchStatusUpdate.bind(this)
+    this._id = uuidv4()
+    this._dom = isDomNode(dom) ? dom : this.generateDom(url, filename, caption)
+    if (!this._dom) {
+      console.warn('%o is not a dom element. Can\'t get image dom.', dom)
     }
+    this._src = url
+    this._caption = caption
+    this._filename = filename
+
+    this._active = active
+    this._status = false
+
+    this.applyStyle()
+    this.initListeners()
   }
 
   initListeners () {
-    if (this.active) {
-      this.dom.addEventListener('click', this.toggleStatus.bind(this))
-      this.dom.addEventListener(EVENT_STATUS_CHANGE, this.applyStyle.bind(this))
+    if (this._active && this._dom) {
+      this._dom.addEventListener('click', this.toggleStatus.bind(this))
+      this._dom.addEventListener(EVENT_STATUS_CHANGE, this.applyStyle.bind(this))
     }
     document.addEventListener(EVENT_RESET, (e) => {
-      this.stat = false
+      this._status = false
       this.dispatchStatusUpdate()
     })
   }
 
   toggleStatus (event) {
-    this.stat = !this.stat
+    this._status = !this._status
     this.dispatchStatusUpdate()
   }
 
   dispatchStatusUpdate (event) {
-    this.dom.dispatchEvent(new Event(EVENT_STATUS_CHANGE))
+    if (this._dom) {
+      this._dom.dispatchEvent(new Event(EVENT_STATUS_CHANGE))
+    }
     document.dispatchEvent(new CustomEvent(EVENT_IMAGE_UPDATE, {
       detail: {
-        image: this.stat ? this : null
+        image: this._status ? this : null
       }
     }))
   }
 
   applyStyle () {
-    if (this.stat) {
-      this.dom.classList.add('Image--active')
-      this.dom.classList.remove('Image--inactive')
+    if (this._dom) {
+      if (this._status) {
+        this._dom.classList.add('Image--active')
+        this._dom.classList.remove('Image--inactive')
+      } else {
+        this._dom.classList.remove('Image--active')
+        this._dom.classList.add('Image--inactive')
+      }
+    }
+  }
+
+  generateDom (src, filename, caption) {
+    if (src) {
+      return htmlToElement(`<div class="Image">
+        <div class="Image__container">
+          <img class="lazy miniarch" src="/assets/css/loading.gif" data-src="${src}" data-filename="${filename}" title="${filename} preview" />
+        </div>
+        <div class="Image__caption"><span contenteditable="true">${caption}</span></div>
+        </div>`)
     } else {
-      this.dom.classList.remove('Image--active')
-      this.dom.classList.add('Image--inactive')
+      return null
     }
   }
 
   getId () {
-    return this.id
+    return this._id
   }
 
-  set image (image) {
-    this.dom = image
+  set dom (dom) {
+    this._dom = dom
   }
-
-  get image () {
-    return this.dom
+  get dom () {
+    return this._dom ? this._dom : this.generateDom(this._src, this._filename, this._caption)
   }
 
   set status (status) {
-    this.stat = status
-    this.dom.dispatchEvent(new Event(EVENT_STATUS_CHANGE))
+    this._status = status
+    this._dom && this._dom.dispatchEvent(new Event(EVENT_STATUS_CHANGE))
+  }
+  get status () {
+    return this._status
   }
 
-  get status () {
-    return this.stat
+  set caption (caption) {
+    this._caption = caption
+  }
+  get caption () {
+    return this._caption
   }
 
   set filename (filename) {
-    this.file = filename
+    this._filename = filename
   }
-
   get filename () {
-    return this.file
+    return this._filename
   }
 
   set src (src) {
-    this.url = src
+    this._src = src
   }
   get src () {
-    return this.url
+    return this._src
   }
 }
 
