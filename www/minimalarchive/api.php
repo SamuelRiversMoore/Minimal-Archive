@@ -9,7 +9,6 @@ if (!validate_session($_SESSION['id'], 'id')) {
     exit();
 }
 
-header('Content-Type: application/json');
 switch ($_POST['action']) {
     case 'upload':
         upload($_FILES);
@@ -20,17 +19,6 @@ switch ($_POST['action']) {
     default:
         # code...
         break;
-}
-
-function apiResponse($message = 'Error', $code = 500, $data = null)
-{
-    $response = array(
-        'code' => $code,
-        'data' => $data,
-        'message' => $message
-    );
-    http_response_code($code);
-    echo json_encode($response);
 }
 
 function upload(array $files = [], $folder = DEFAULT_IMAGEFOLDER)
@@ -45,10 +33,10 @@ function upload(array $files = [], $folder = DEFAULT_IMAGEFOLDER)
                 'extension' => pathinfo($file['name'], PATHINFO_EXTENSION)
             );
         }
-        apiResponse('ok', 200, $data);
+        json_response('ok', 200, $data);
         return;
     } catch (Exception $e) {
-        apiResponse($e->getMessage(), 400);
+        json_response($e->getMessage(), 400);
         return;
     }
 }
@@ -56,7 +44,7 @@ function upload(array $files = [], $folder = DEFAULT_IMAGEFOLDER)
 function save(array $data = null)
 {
     if (!$data || !count($data)) {
-        apiResponse('Bad query', 400);
+        json_response('Bad query', 400);
         return;
     }
     try {
@@ -71,42 +59,63 @@ function save(array $data = null)
 
         update_file($meta);
         if (array_key_exists('images', $data)) {
-            $images = array();
-            foreach ($data['images'] as $dataimg) {
-                $images[] = $dataimg['filename'];
-            }
-            $result['images'] = deleteAllImagesExcept($images);
+            $result['images'] = delete_all_files_except($data['images']);
+            $result['images'] = array_merge($result['images'], update_filenames($data['images']));
         }
-        apiResponse('ok', 200, $result);
+        json_response('ok', 200, $result);
         return;
     } catch (Exception $e) {
-        apiResponse($e->getMessage(), 500);
+        json_response($e->getMessage(), 500);
     }
 }
 
-function deleteAllImagesExcept(array $data = null)
+function delete_all_files_except(array $data = null)
 {
     try {
-        $result = array();
         $meta = textFileToArray(DEFAULT_METAFILE);
-        $imagesdir = array_key_exists('imagesfolder', $meta) ? $meta['imagesfolder'] : null;
+        $imagesdir = is_array($meta) && array_key_exists('imagesfolder', $meta) ? $meta['imagesfolder'] : null;
         $images = getImagesInFolder($imagesdir);
         if (!$data || !count($data)) {
-            return $result;
+            return array();
         }
         if (!$imagesdir) {
             throw new Exception("no_image_folder", 1);
             return;
         }
+        $result = array();
         foreach ($images as $image) {
-            if (!in_array($image, $data)) {
-                if (@unlink(ROOT_FOLDER . DS . $imagesdir . DS . $image)) {
-                    $result[] = $image;
-                }
+            if (!array_key_exists_in_array_of_arrays($image, 'filename', $data)) {
+                @unlink(ROOT_FOLDER . DS . $imagesdir . DS . $image);
             } else {
-                $result[] = array(
-                    'src' => DS . $imagesdir . DS . $image,
-                    'filename' => $image);
+                $result[] = array('src' => DS . $imagesdir . DS . $image, 'filename' => $image);
+            }
+        }
+        return $result;
+    } catch (Exception $e) {
+        throw new Exception($e->getMessage(), $e->getCode());
+    }
+}
+
+function update_filenames(array $images = null)
+{
+    try {
+        $meta = textFileToArray(DEFAULT_METAFILE);
+        $imagesdir = array_key_exists('imagesfolder', $meta) ? $meta['imagesfolder'] : null;
+        $existingImages = getImagesInFolder($imagesdir);
+        if (!$images || !count($images)) {
+            return array();
+        }
+        if (!$imagesdir) {
+            throw new Exception("no_image_folder", 1);
+            return;
+        }
+        $result = array();
+        foreach ($images as $image) {
+            if (array_key_exists('filename', $image) && array_key_exists('newfilename', $image)) {
+                if (in_array($image['filename'], $images)) {
+                    $filename = update_filename(ROOT_FOLDER . DS . $imagesdir . DS . $image['filename'], $image['newfilename']);
+                    $result[] = array('src' => DS . $imagesdir . DS . $filename,'filename' => pathinfo($filename, PATHINFO_FILENAME));
+                }
             }
         }
         return $result;

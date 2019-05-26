@@ -109,16 +109,9 @@ try {
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         <title>Edit - <?= $title; ?></title>
-        <meta name="description" content="<?= $description ?>" />
-
-        <meta property="og:title" content="<?= $title ?>">
-        <meta property="og:description" content="<?= $description ?>">
-        <meta property="og:image" content="<?= url($socialimage) ?>">
-        <meta property="og:url" content="<?= url() ?>">
-
+        <meta name="robots" content="noindex, nofollow">
         <link rel="icon" type="image/png" href="<?= url($favicon) ?>"/>
         <link rel="stylesheet" href="<?= url('assets/css/edit.css') ?>" type="text/css" media="screen"/>
-
     </head>
     <body>
         <?php
@@ -143,7 +136,7 @@ try {
                     <ul>
                         <li>📝 All the text is editable, just click on the text to change it.</li>
                         <li>🖼 To add an image, just drag and drop it on the screen.</li>
-                        <li>🔁 Reorder the images by moving them around.</li>
+                        <li>🔁 Reorder the images by renaming them.</li>
                     </ul>
 
                     <br/>
@@ -174,7 +167,7 @@ try {
                     $output .= "<div class='Image__container'>";
                     $output .= "<img class='lazy miniarch' src='" . url('assets/css/loading.gif') . "' data-filename='" . $image . "' data-src='" .  url("${imagesdir}/${image}") ."' title='" . $image . "'/>";
                     $output .= "</div>";
-                    $output .= "<div class='Image__caption'><span contenteditable='true'>" . $image . "</span></div>";
+                    $output .= "<div class='Image__caption'><span contenteditable='true'>" . pathinfo($image, PATHINFO_FILENAME) . "</span></div>";
                     $output .= "</div>";
                     echo $output;
                 } ?>

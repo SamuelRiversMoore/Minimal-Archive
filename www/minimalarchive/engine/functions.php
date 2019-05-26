@@ -112,6 +112,27 @@ function save_file($file, $name = null, $folder = VAR_FOLDER)
     }
 }
 
+function update_filename($file = null, $newname = null)
+{
+    if (!$file || !$newname) {
+        return $file;
+    }
+    $dir = pathinfo($file, PATHINFO_DIRNAME);
+    $ext = pathinfo($file, PATHINFO_EXTENSION);
+    $filename = pathinfo($file, PATHINFO_FILENAME);
+    $sanitizedNewname = $dir . DS . sanitize_filename($newname) . '.' . $ext;
+    if ($newname !== $filename) {
+        if (file_exists($file)) {
+            while (file_exists($sanitizedNewname)) {
+                $sanitizedNewname = $dir . DS . sanitize_filename() . '.' . $ext;
+            }
+            rename($file, $sanitizedNewname);
+            return $sanitizedNewname;
+        }
+    }
+    return $file;
+}
+
 function update_file(array $data, $file = DEFAULT_METAFILE)
 {
     try {
@@ -338,6 +359,18 @@ function put_success(string $message)
     echo "<aside class=\"notice success\">${message}</aside>";
 }
 
+function sanitize_filename(string $str = null, string $replace = '-')
+{
+    if (!$str) {
+        return bin2hex(random_bytes(4));
+    }
+    // Remove unwanted chars
+    $str = mb_ereg_replace("([^\w\s\d\-_~,;\[\]\(\).])", $replace, $str);
+    // Replace multiple dots by custom char
+    $str = mb_ereg_replace("([\.]{2,})", $replace, $str);
+    return $str;
+}
+
 function sanitize_email($text)
 {
     return filter_var(strtolower(trim($text)), FILTER_SANITIZE_EMAIL);
@@ -397,4 +430,29 @@ function url(string $path = '')
 
     // put em all together to get the complete base URL
     return "${protocol}://${domain}${disp_port}" . ($path ? "/" . htmlspecialchars($path) : '');
+}
+
+function array_key_exists_in_array_of_arrays($needle, string $key, array $haystack = null)
+{
+    if (!$needle || !$key || !$haystack || !count($haystack)) {
+        return false;
+    }
+    foreach ($haystack as $item) {
+        if (array_key_exists($key, $item) && $needle === $item[$key]) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function json_response($message = 'Error', $code = 500, $data = null)
+{
+    header('Content-Type: application/json');
+    $response = array(
+        'code' => $code,
+        'data' => $data,
+        'message' => $message
+    );
+    http_response_code($code);
+    echo json_encode($response);
 }
