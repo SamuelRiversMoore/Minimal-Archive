@@ -1,9 +1,8 @@
 <?php
 if (!defined('minimalarchive'))
 {
-    header('location: /');
-    exit();
+    redirect('/');
 }
 
-echo "404"
+echo "404";
 ?>

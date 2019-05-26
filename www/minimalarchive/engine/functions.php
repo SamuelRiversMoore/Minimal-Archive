@@ -1,7 +1,25 @@
 <?php
 if (!defined('minimalarchive')) {
-    header('location: /');
+    redirect('/');
+}
+
+function redirect ($url) {
+    if (isAbsoluteUrl($url)) {
+        header('location: ' . $url);
+    } else {
+        header('location: ' . url($url));
+    }
     exit();
+}
+
+function isAbsoluteUrl($url)
+{
+    $pattern = "/^(?:ftp|https?|feed)?:?\/\/(?:(?:(?:[\w\.\-\+!$&'\(\)*\+,;=]|%[0-9a-f]{2})+:)*
+    (?:[\w\.\-\+%!$&'\(\)*\+,;=]|%[0-9a-f]{2})+@)?(?:
+    (?:[a-z0-9\-\.]|%[0-9a-f]{2})+|(?:\[(?:[0-9a-f]{0,4}:)*(?:[0-9a-f]{0,4})\]))(?::[0-9]+)?(?:[\/|\?]
+    (?:[\w#!:\.\?\+\|=&@$'~*,;\/\(\)\[\]\-]|%[0-9a-f]{2})*)?$/xi";
+
+    return (bool) preg_match($pattern, $url);
 }
 
 function file_to_lines(string $file)
@@ -429,7 +447,7 @@ function url(string $path = '')
     $disp_port = ($protocol == 'http' && $port == 80 || $protocol == 'https' && $port == 443) ? '' : ":$port";
 
     // put em all together to get the complete base URL
-    return "${protocol}://${domain}${disp_port}" . ($path ? "/" . htmlspecialchars($path) : '');
+    return "${protocol}://${domain}${disp_port}" . DS . ROOT_URL . DS . ($path ? "/" . htmlspecialchars($path) : '');
 }
 
 function array_key_exists_in_array_of_arrays($needle, string $key, array $haystack = null)

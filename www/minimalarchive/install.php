@@ -1,7 +1,6 @@
 <?php
 if (!defined('minimalarchive') || is_installed()) {
-    header('location: /');
-    exit();
+    redirect('/');
 }
 
 if (!isset($_POST['csrf_token'])) {
@@ -75,7 +74,7 @@ if (!has_meta()) {
                 ?>
 
                 <?php if (!strlen($success)): ?>
-                <form class="pure-form pure-form-stacked" action="/install?action=confirm" method="post" accept-charset="utf-8" enctype="multipart/form-data">
+                <form class="pure-form pure-form-stacked" action="<?= url('/install?action=confirm') ?>" method="post" accept-charset="utf-8" enctype="multipart/form-data">
                     <fieldset>
                         <legend>Configuration</legend>
 

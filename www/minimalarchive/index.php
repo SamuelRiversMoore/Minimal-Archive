@@ -1,12 +1,10 @@
 <?php
     if (!defined('minimalarchive')) {
-        header('location: /');
-        exit();
+        redirect('/');
     }
 
     if (!has_meta()) {
-        header('location: /install');
-        exit();
+        redirect('/install');
     }
     $meta = textFileToArray(DEFAULT_METAFILE);
     $imagesdir = array_key_exists('imagesfolder', $meta) ? $meta['imagesfolder'] : null;

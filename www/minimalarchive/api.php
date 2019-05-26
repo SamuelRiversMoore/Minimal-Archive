@@ -87,7 +87,7 @@ function delete_all_files_except(array $data = null)
             if (!array_key_exists_in_array_of_arrays($image, 'filename', $data)) {
                 @unlink(ROOT_FOLDER . DS . $imagesdir . DS . $image);
             } else {
-                $result[] = array('src' => DS . $imagesdir . DS . $image, 'filename' => $image);
+                $result[] = array('src' => DS . ROOT_URL . DS . $imagesdir . DS . $image, 'filename' => $image);
             }
         }
         return $result;
@@ -115,7 +115,7 @@ function update_filenames(array $images = null)
                 if (in_array($image['filename'], $existingImages)) {
                     $filename = update_filename(ROOT_FOLDER . DS . $imagesdir . DS . $image['filename'], $image['newfilename']);
                     $result[] = array(
-                        'src' => DS . $imagesdir . DS . pathinfo($filename, PATHINFO_FILENAME) . '.' . pathinfo($filename, PATHINFO_EXTENSION),
+                        'src' => DS . ROOT_URL . DS . $imagesdir . DS . pathinfo($filename, PATHINFO_FILENAME) . '.' . pathinfo($filename, PATHINFO_EXTENSION),
                         'filename' => pathinfo($filename, PATHINFO_FILENAME)
                     );
                 }

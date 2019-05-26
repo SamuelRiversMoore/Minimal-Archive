@@ -1,4 +1,8 @@
 <?php
+if (!defined('minimalarchive')) {
+    redirect('/');
+}
+
 return [
     'en' => [
         'account_created'   => "😀 Account has been created",

@@ -1,12 +1,10 @@
 <?php
 if (!defined('minimalarchive')) {
-    header('location: /');
-    exit();
+    redirect('/');
 }
 
 if (!has_account()) {
-    header('location: /install');
-    exit();
+    redirect('/install');
 }
 
 if (!isset($_POST['csrf_token'])) {
@@ -44,12 +42,12 @@ if (isset($_POST['email']) && isset($_POST['password']) && check_token($_POST['c
     <body>
         <main>
             <?php if (strlen($error)) {
-                put_error($error);
-            }?>
+    put_error($error);
+}?>
 
             <?php if (strlen($success)) {
-                put_success($success);
-            }?>
+    put_success($success);
+}?>
 
             <?php if (!strlen($success)): ?>
             <section class="Form">

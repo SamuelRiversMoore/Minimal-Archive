@@ -1,11 +1,9 @@
 <?php
 if (!defined('minimalarchive') || !is_installed()) {
-    header('location: /');
-    exit();
+    redirect('/');
 }
 if (!has_meta()) {
-    header('location: /install');
-    exit();
+    redirect('/install');
 }
 if (!isset($_POST['csrf_token'])) {
     create_token();
@@ -58,7 +56,7 @@ if (isset($_SESSION['id'])) {
             }
             ?>
             <section class="Form">
-                <form class="pure-form pure-form-stacked" action="/edit" method="post" accept-charset="utf-8">
+                <form class="pure-form pure-form-stacked" action="<?= url('/edit')?>" method="post" accept-charset="utf-8">
                     <fieldset>
                         <legend>Edit</legend>
                         <div class="pure-control-group">
