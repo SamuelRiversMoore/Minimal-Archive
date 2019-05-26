@@ -16,23 +16,23 @@ switch ($base) {
   case '':
   case '/':
   case ROOT_URL:
-  case (preg_match("/(index|home|homepage|index\.php|index\.html)\/?$/", $base) ? true : false):
+  case (preg_match("/(\bindex|\bhome|\bhomepage|\bindex\.php|\bindex\.html)\/?$/", $base) ? true : false):
     require BASE_FOLDER . DS . 'index.php';
     break;
   // Installation page
-  case (preg_match("/(install)\/?$/", $base) ? true : false):
+  case (preg_match("/(\binstall)\/?$/", $base) ? true : false):
     require BASE_FOLDER . DS . 'install.php';
     break;
   // Installation page
-  case (preg_match("/(uninstall)\/?$/", $base) ? true : false):
+  case (preg_match("/(\buninstall)\/?$/", $base) ? true : false):
     require BASE_FOLDER . DS . 'uninstall.php';
     break;
   // Editor page
-  case (preg_match("/(edit)\/?$/", $base) ? true : false):
+  case (preg_match("/(\bedit)\/?$/", $base) ? true : false):
     require BASE_FOLDER . DS . 'edit.php';
     break;
   // API
-  case (preg_match("/(api)\/?$/", $base) ? true : false):
+  case (preg_match("/(\bapi)\/?$/", $base) ? true : false):
     require BASE_FOLDER . DS . 'api.php';
     break;
   // Everything else
