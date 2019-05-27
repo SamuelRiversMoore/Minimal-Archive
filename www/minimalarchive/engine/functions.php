@@ -119,9 +119,9 @@ function save_file($file, $name = null, $folder = VAR_FOLDER)
         $name = pathinfo($basename, PATHINFO_FILENAME);
         $correctFilename = "";
         if (file_exists($folder . DS. $basename)) {
-            $correctFilename = $name . '_' . bin2hex(random_bytes(4)) . '.' . $extension;
+            $correctFilename = sanitize_filename($name) . '_' . bin2hex(random_bytes(4)) . '.' . $extension;
         } else {
-            $correctFilename = basename($filename);
+            $correctFilename = sanitize_filename(basename($filename));
         }
         if (!move_uploaded_file($file['tmp_name'], $folder . DS. $correctFilename)) {
             throw new Exception("file_upload_error", 1);
@@ -447,7 +447,7 @@ function url(string $path = '')
     $disp_port = ($protocol == 'http' && $port == 80 || $protocol == 'https' && $port == 443) ? '' : ":$port";
 
     // put em all together to get the complete base URL
-    return "${protocol}://${domain}${disp_port}" . DS . ROOT_URL . ($path && $path[0] !== '/' ? '/' : '') . ($path ? htmlspecialchars($path) : '');
+    return "${protocol}://${domain}${disp_port}" . (!ROOT_URL ? '' : DS . ROOT_URL) . ($path && $path[0] !== '/' ? '/' : '') . ($path ? htmlspecialchars($path) : '');
 }
 
 function array_key_exists_in_array_of_arrays($needle, string $key, array $haystack = null)
