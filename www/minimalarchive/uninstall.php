@@ -51,7 +51,7 @@ if (isset($_POST['email']) && isset($_POST['password']) && check_token($_POST['c
 
             <?php if (!strlen($success)): ?>
             <section class="Form">
-                <form class="pure-form pure-form-stacked" action="/uninstall" method="post" accept-charset="utf-8">
+                <form class="pure-form pure-form-stacked" action="<?= url('/uninstall') ?>" method="post" accept-charset="utf-8">
                     <fieldset>
                         <legend>Uninstallation</legend>
                         <div class="pure-control-group">
