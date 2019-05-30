@@ -20,7 +20,8 @@ const mergeSettings = (options) => {
     url: null,
     caption: null,
     imageSelector: '.Image',
-    lazyloadSelector: '.lazy'
+    lazyloadSelector: '.lazy',
+    editable: false
   }
 
   for (const attrName in options) {
@@ -40,7 +41,8 @@ class Image {
       filename,
       caption,
       dom,
-      active
+      active,
+      editable
     } = this.config
 
     this._id = uuidv4()
@@ -54,6 +56,7 @@ class Image {
     this._captionSelector = this._dom && this._dom.querySelector('[contenteditable]')
     this._active = active
     this._status = false
+    this._editable = editable
 
     this.applyStyle()
     this.initListeners()
@@ -69,7 +72,7 @@ class Image {
       this.dispatchStatusUpdate()
     })
 
-    if (this._captionSelector) {
+    if (this._editable && this._captionSelector) {
       this._captionSelector.addEventListener('input', (e) => {
         this._caption = removeHtml(this._captionSelector.innerHTML)
       })

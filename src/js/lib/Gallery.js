@@ -86,7 +86,8 @@ class Gallery {
         filename: filename,
         caption: caption,
         dom: dom,
-        active: active
+        active: active,
+        editable: !active
       })
   }
 
