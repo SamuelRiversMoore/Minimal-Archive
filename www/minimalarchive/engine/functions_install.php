@@ -35,7 +35,7 @@ function check_form($args)
         throw $e;
     }
     try {
-        check_imagesfolder(ROOT_FOLDER . DS . $args['imagesfolder']);
+        folder_is_writable(ROOT_FOLDER . DS . $args['imagesfolder']);
     } catch (Exception $e) {
         throw $e;
     }
