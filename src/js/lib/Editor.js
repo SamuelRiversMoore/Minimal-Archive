@@ -1,5 +1,8 @@
 /* global Event, FormData, FileReader */
 
+import Menu from './Menu.js'
+import Gallery from './Gallery.js'
+import ProgressBar from './ProgressBar.js'
 import {
   API_URL,
   API_SAVE,
@@ -9,8 +12,6 @@ import {
   SELECTOR_TITLE,
   SELECTOR_NOTE
 } from './Constants.js'
-import Gallery from './Gallery.js'
-import ProgressBar from './ProgressBar.js'
 import {
   areObjectsEqual,
   baseUrl,
@@ -88,7 +89,7 @@ class Editor {
     if (!this.fileInput) {
       console.warn(`\nModule: Editor.js\nWarning: Can't create file input listener.\nCause: No file input with selector [${fileInputSelector}] found in document.\nResult: Upload by file input button is disabled.`)
     }
-    if (!this.buttonSave) {
+    if (!this.buttonPreview) {
       console.warn(`Module: Editor.js\nWarning: Can't add preview functionality.\nCause: No preview button with selector [${buttonPreviewSelector}] found in document.\nResult: Previewing is disabled.`)
     }
     if (!this.buttonSave) {
@@ -98,6 +99,12 @@ class Editor {
       console.warn(`Module: Editor.js\nWarning: Can't add cancel functionality.\nCause: No cancel button with selector [${buttonCancelSelector}] found in document.\nResult: Undoing changes is disabled.`)
     }
     this.progressbar = new ProgressBar(progressBarSelector)
+
+    this.menu = new Menu()
+    this.menu.addButton(this.buttonSave, this.editSave.bind(this))
+    this.menu.addButton(this.buttonPreview, this.editPreview.bind(this))
+    this.menu.addButton(this.buttonCancel, this.editCancel.bind(this))
+
     this.initListeners()
     this.backup = this.getState()
   }
@@ -144,24 +151,6 @@ class Editor {
         if (e.target && e.target.files) {
           this.handleFiles(e.target.files)
         }
-      })
-    }
-
-    if (this.buttonCancel) {
-      this.buttonCancel.addEventListener('click', (e) => {
-        this.editCancel()
-      })
-    }
-
-    if (this.buttonSave) {
-      this.buttonSave.addEventListener('click', (e) => {
-        this.editSave()
-      })
-    }
-
-    if (this.buttonPreview) {
-      this.buttonPreview.addEventListener('click', (e) => {
-        this.editPreview()
       })
     }
   }

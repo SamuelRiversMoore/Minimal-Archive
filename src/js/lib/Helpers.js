@@ -138,6 +138,15 @@ export const isDomNode = (input) => {
 }
 
 /**
+ * Tests if input is function
+ * @param  {any} input
+ * @return {Boolean}
+ */
+export const isFunction = (input) => {
+  return input instanceof Function
+}
+
+/**
  * Provides shorthand
  * @param  {event} event
  * @return {[type]}       [description]
