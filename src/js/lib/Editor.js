@@ -1,3 +1,5 @@
+/* global Event, FormData, FileReader */
+
 import {
   API_URL,
   API_SAVE,
@@ -10,13 +12,14 @@ import {
 import Gallery from './Gallery.js'
 import ProgressBar from './ProgressBar.js'
 import {
-  baseUrl,
-  isDomNode,
   areObjectsEqual,
+  baseUrl,
   htmlToElement,
-  Fetch,
-  stripHtmlTags,
-  stripExtension
+  isDomNode,
+  preventDefaults,
+  stripExtension,
+  removeHtml,
+  Fetch
 } from './Helpers.js'
 
 const mergeSettings = (options) => {
@@ -24,9 +27,9 @@ const mergeSettings = (options) => {
     dropAreaSelector: '#drop-area',
     fileInputSelector: '#file-input',
     progressBarSelector: '.progress-bar',
-    previewBtnSelector: '.editbutton.preview',
-    cancelBtnSelector: '.editbutton.cancel',
-    saveBtnSelector: '.editbutton.save',
+    buttonPreviewSelector: '.editbutton.preview',
+    buttonCancelSelector: '.editbutton.cancel',
+    buttonSaveSelector: '.editbutton.save',
     gallery: new Gallery({
       gallerySelector: '.Gallery',
       imageSelector: '.Image',
@@ -58,18 +61,18 @@ class Editor {
       fullscreenDropZone,
       fileInputSelector,
       progressBarSelector,
-      previewBtnSelector,
-      cancelBtnSelector,
-      saveBtnSelector
+      buttonPreviewSelector,
+      buttonCancelSelector,
+      buttonSaveSelector
     } = this.config
 
     this.gallery = gallery
     this.dropArea = document.querySelector(dropAreaSelector)
     this.fileInput = document.querySelector(fileInputSelector)
     this.fullscreenDropZone = Boolean(fullscreenDropZone)
-    this.cancelBtn = document.querySelector(cancelBtnSelector)
-    this.previewBtn = document.querySelector(previewBtnSelector)
-    this.saveBtn = document.querySelector(saveBtnSelector)
+    this.buttonCancel = document.querySelector(buttonCancelSelector)
+    this.buttonPreview = document.querySelector(buttonPreviewSelector)
+    this.buttonSave = document.querySelector(buttonSaveSelector)
 
     if (!this.gallery) {
       console.warn(`\nModule: Editor.js\nError: Can't create editor.\nCause: No Gallery provided.\nResult: Editor can't initialize.`)
@@ -85,14 +88,14 @@ class Editor {
     if (!this.fileInput) {
       console.warn(`\nModule: Editor.js\nWarning: Can't create file input listener.\nCause: No file input with selector [${fileInputSelector}] found in document.\nResult: Upload by file input button is disabled.`)
     }
-    if (!this.saveBtn) {
-      console.warn(`Module: Editor.js\nWarning: Can't add preview functionality.\nCause: No preview button with selector [${previewBtnSelector}] found in document.\nResult: Previewing is disabled.`)
+    if (!this.buttonSave) {
+      console.warn(`Module: Editor.js\nWarning: Can't add preview functionality.\nCause: No preview button with selector [${buttonPreviewSelector}] found in document.\nResult: Previewing is disabled.`)
     }
-    if (!this.saveBtn) {
-      console.warn(`Module: Editor.js\nWarning: Can't add save functionality.\nCause: No save button with selector [${saveBtnSelector}] found in document.\nResult: Saving is disabled.`)
+    if (!this.buttonSave) {
+      console.warn(`Module: Editor.js\nWarning: Can't add save functionality.\nCause: No save button with selector [${buttonSaveSelector}] found in document.\nResult: Saving is disabled.`)
     }
-    if (!this.cancelBtn) {
-      console.warn(`Module: Editor.js\nWarning: Can't add cancel functionality.\nCause: No cancel button with selector [${cancelBtnSelector}] found in document.\nResult: Undoing changes is disabled.`)
+    if (!this.buttonCancel) {
+      console.warn(`Module: Editor.js\nWarning: Can't add cancel functionality.\nCause: No cancel button with selector [${buttonCancelSelector}] found in document.\nResult: Undoing changes is disabled.`)
     }
     this.progressbar = new ProgressBar(progressBarSelector)
     this.initListeners()
@@ -102,8 +105,8 @@ class Editor {
   initListeners () {
     // Prevent default drag behaviors
     ;['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-      this.dropArea.addEventListener(eventName, this.preventDefaults, false)
-      document.body.addEventListener(eventName, this.preventDefaults, false)
+      this.dropArea.addEventListener(eventName, preventDefaults, false)
+      document.body.addEventListener(eventName, preventDefaults, false)
     })
 
     if (this.fullscreenDropZone) {
@@ -144,32 +147,36 @@ class Editor {
       })
     }
 
-    if (this.cancelBtn) {
-      this.cancelBtn.addEventListener('click', (e) => {
-        this.cancelChanges()
+    if (this.buttonCancel) {
+      this.buttonCancel.addEventListener('click', (e) => {
+        this.editCancel()
       })
     }
 
-    if (this.saveBtn) {
-      this.saveBtn.addEventListener('click', (e) => {
-        this.saveChanges()
+    if (this.buttonSave) {
+      this.buttonSave.addEventListener('click', (e) => {
+        this.editSave()
       })
     }
 
-    if (this.previewBtn) {
-      this.previewBtn.addEventListener('click', (e) => {
-        this.previewChanges()
+    if (this.buttonPreview) {
+      this.buttonPreview.addEventListener('click', (e) => {
+        this.editPreview()
       })
     }
   }
 
-  cancelChanges () {
+  editCancel () {
     if (!areObjectsEqual(this.getState(), this.backup)) {
       this.save(this.backup)
     }
   }
 
-  saveChanges () {
+  editPreview () {
+    window.location = baseUrl()
+  }
+
+  editSave () {
     const state = this.getState()
     if (!areObjectsEqual(state, this.backup)) {
       this.save(state)
@@ -178,7 +185,7 @@ class Editor {
 
   save (data) {
     document.dispatchEvent(new Event(EVENT_LOADING))
-    this.saveData(data, this.getCsrfToken(this.saveBtn))
+    this.uploadData(data, this.getCsrfToken(this.buttonSave))
       .then((res) => {
         if (res.data.images) {
           this.gallery.setImages(res.data.images)
@@ -200,50 +207,49 @@ class Editor {
     const images = this.gallery.images
 
     if (title) {
-      result.title = stripHtmlTags(title.innerHTML)
+      result.title = removeHtml(title.innerHTML)
     }
     if (note) {
-      result.note = stripHtmlTags(note.innerHTML)
+      result.note = removeHtml(note.innerHTML)
     }
     if (images && images.length) {
       result.images = [...images].map((image) => {
         return {
           id: image.getId(),
           filename: image.filename,
-          newfilename: stripHtmlTags(image.caption)
+          newfilename: removeHtml(image.caption)
         }
       })
     }
     return result
   }
 
-  previewChanges () {
-    window.location = baseUrl()
-  }
+  uploadData (data, csrfToken) {
+    const api = new Fetch()
+    const formData = new FormData()
+    const url = API_URL
 
-  saveData (data, csrfToken) {
+    formData.append('data', JSON.stringify(data))
+    formData.append('action', API_SAVE)
+    formData.append('csrf_token', csrfToken)
+
     return new Promise((resolve, reject) => {
-      const api = new Fetch()
-      const url = API_URL
-      const formData = new FormData()
-
-      formData.append('data', JSON.stringify(data))
-      formData.append('action', API_SAVE)
-      formData.append('csrf_token', csrfToken)
       api.newRequest(url, formData)
         .then(data => resolve(data))
         .catch(err => reject(err))
     })
   }
-  uploadFile (file, csrfToken, i) {
-    return new Promise((resolve, reject) => {
-      const api = new Fetch()
-      const url = API_URL
-      const formData = new FormData()
 
-      formData.append('file', file)
-      formData.append('action', API_UPLOAD)
-      formData.append('csrf_token', csrfToken)
+  uploadFile (file, csrfToken, i) {
+    const api = new Fetch()
+    const url = API_URL
+    const formData = new FormData()
+
+    formData.append('file', file)
+    formData.append('action', API_UPLOAD)
+    formData.append('csrf_token', csrfToken)
+
+    return new Promise((resolve, reject) => {
       api.newRequest(url, formData)
         .then(data => resolve(data))
         .catch(err => reject(err))
@@ -259,6 +265,13 @@ class Editor {
     }
   }
 
+  getCsrfToken (domNode) {
+    if (domNode && isDomNode(domNode)) {
+      const inputElement = domNode.querySelector('[name=csrf_token]')
+      return inputElement && inputElement.value
+    }
+  }
+
   getPreviewDom (src, filename) {
     if (src) {
       return htmlToElement(`<div class="Image">
@@ -267,6 +280,21 @@ class Editor {
         </div>
         <div class="Image__caption"><span contenteditable="true">${stripExtension(filename)}</span></div>
         </div>`)
+    }
+  }
+
+  handleDrop (e) {
+    const files = e.dataTransfer.files
+    const imageFiles = []
+
+    let i = -1
+    while (++i < files.length) {
+      if (files[i].type.match(/image.*/)) {
+        imageFiles.push(files[i])
+      }
+    }
+    if (imageFiles.length > 0) {
+      this.handleFiles(imageFiles)
     }
   }
 
@@ -285,34 +313,6 @@ class Editor {
           console.log(err)
         })
     })
-  }
-
-  handleDrop (e) {
-    const files = e.dataTransfer.files
-    const imageFiles = []
-
-    let i = -1
-    while (++i < files.length) {
-      if (files[i].type.match(/image.*/)) {
-        imageFiles.push(files[i])
-      }
-    }
-    if (imageFiles.length > 0) {
-      this.handleFiles(imageFiles)
-    }
-  }
-
-  getCsrfToken (domNode) {
-    if (domNode && isDomNode(domNode)) {
-      const inputElement = domNode.querySelector('[name=csrf_token]')
-      return inputElement && inputElement.value
-    }
-    return undefined
-  }
-
-  preventDefaults (e) {
-    e.preventDefault()
-    e.stopPropagation()
   }
 
   highlight (e) {

@@ -1,9 +1,10 @@
+/* global CustomEvent, Event */
+
 import {
   isDomNode,
   uuidv4,
   htmlToElement,
-  removeHtml,
-  stripHtmlTags
+  removeHtml
 } from './Helpers.js'
 import {
   EVENT_RESET,
@@ -48,7 +49,7 @@ class Image {
       console.warn('%o is not a dom element. Can\'t get image dom.', dom)
     }
     this._src = url
-    this._caption = stripHtmlTags(caption)
+    this._caption = removeHtml(caption)
     this._filename = filename
     this._captionSelector = this._dom && this._dom.querySelector('[contenteditable]')
     this._active = active
@@ -69,10 +70,8 @@ class Image {
     })
 
     if (this._captionSelector) {
-      // 1. Listen for changes of the contenteditable element
       this._captionSelector.addEventListener('input', (e) => {
-        // 2. Retrive the text from inside the element
-        this._caption = this._captionSelector.innerHTML
+        this._caption = removeHtml(this._captionSelector.innerHTML)
       })
     }
   }
@@ -111,10 +110,8 @@ class Image {
         <div class="Image__container">
           <img class="lazy miniarch" src="/assets/css/loading.gif" data-src="${removeHtml(src)}" data-filename="${removeHtml(filename)}" title="${filename} preview" />
         </div>
-        <div class="Image__caption"><span contenteditable="true">${stripHtmlTags(caption)}</span></div>
+        <div class="Image__caption"><span contenteditable="true">${removeHtml(caption)}</span></div>
         </div>`)
-    } else {
-      return null
     }
   }
 
@@ -138,14 +135,14 @@ class Image {
   }
 
   set caption (caption) {
-    this._caption = stripHtmlTags(caption)
+    this._caption = caption
   }
   get caption () {
     return this._caption
   }
 
   set filename (filename) {
-    this._filename = stripHtmlTags(filename)
+    this._filename = removeHtml(filename)
   }
   get filename () {
     return this._filename

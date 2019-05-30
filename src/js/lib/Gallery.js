@@ -1,3 +1,5 @@
+/* global Event */
+
 import LazyLoad from './LazyLoad.js'
 import Image from './Image.js'
 import {
@@ -172,21 +174,6 @@ class Gallery {
     this.lazyload.update()
   }
 
-  set current (image) {
-    this.updateCurrentImage(image)
-  }
-  get current () {
-    return this._current
-  }
-
-  get images () {
-    return this._images
-  }
-
-  set images (images) {
-    this._images = images
-  }
-
   setImages (images) {
     if (!images || !images.length) {
       return
@@ -230,6 +217,21 @@ class Gallery {
 
   reset () {
     document.dispatchEvent(new Event(EVENT_RESET))
+  }
+
+  set current (image) {
+    this.updateCurrentImage(image)
+  }
+  get current () {
+    return this._current
+  }
+
+  get images () {
+    return this._images
+  }
+
+  set images (images) {
+    this._images = images
   }
 }
 
