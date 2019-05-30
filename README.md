@@ -16,9 +16,10 @@ A minimal tool (javascript with no dependencies, php) to display images on a web
 
 ## Usage
 1. Head to `{your-url}/editor` with your email and password
-2. <del>Add a bunch of images</del>
-3. <del>Re-order</del>
-4. <del>Re-name</del>
+2. Add a bunch of images
+3. Edit the title and the note
+4. Rename them
+5. Save or cancel your changes
 
 ## Project structure
 
