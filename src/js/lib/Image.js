@@ -1,16 +1,17 @@
 /* global CustomEvent, Event */
 
 import {
+  EVENT_RESET,
+  EVENT_STATUS_CHANGE,
+  EVENT_IMAGE_UPDATE
+} from './Constants.js'
+
+import {
   isDomNode,
   uuidv4,
   htmlToElement,
   removeHtml
 } from './Helpers.js'
-import {
-  EVENT_RESET,
-  EVENT_STATUS_CHANGE,
-  EVENT_IMAGE_UPDATE
-} from './Constants.js'
 
 const mergeSettings = (options) => {
   const settings = {
