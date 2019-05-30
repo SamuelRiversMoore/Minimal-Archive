@@ -1,6 +1,7 @@
 @import 'index';
 @import '../modules/modal';
 @import '../modules/buttons';
+@import '../modules/controls';
 @import '../modules/loader';
 
 body {
@@ -15,22 +16,6 @@ body {
   }
   li {
     margin-bottom: 1em;
-  }
-}
-
-.controls {
-  position: fixed;
-  top: 0;
-  right: 0.6em;
-  display: flex;
-  flex-direction: column;
-  font-size: 16px;
-  line-height: 1.6em;
-  .editbutton {
-    // height: 44px;
-    margin: 0.5em;
-    overflow: hidden;
-    cursor: pointer;
   }
 }
 
