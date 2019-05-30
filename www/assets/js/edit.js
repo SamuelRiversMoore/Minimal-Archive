@@ -1,35 +1,26 @@
 (function () {
   'use strict';
 
-  const uuidv4 = () => {
-    return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c =>
-      (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
-    )
-  };
-
-  const baseUrl = (segment) => {
-    // get the segments
-    const pathArray = window.location.pathname.split('/');
-    // find where the segment is located
-    const indexOfSegment = pathArray.indexOf(segment);
-    // make base_url be the origin plus the path to the segment
-    return window.location.origin + pathArray.slice(0, indexOfSegment).join('/') + '/'
-  };
-
-  const isEqual = (value, other) => {
-    // Get the value type
-    const type = Object.prototype.toString.call(value);
+  /**
+   * Tests two Objects / arrays equality
+   * @param  {Object | Array} a [description]
+   * @param  {Object | Array} other [description]
+   * @return {Boolean}
+   */
+  const areObjectsEqual = (a, b) => {
+    // Get the a type
+    const type = Object.prototype.toString.call(a);
 
     // If the two objects are not the same type, return false
-    if (type !== Object.prototype.toString.call(other)) return false
+    if (type !== Object.prototype.toString.call(b)) return false
 
     // If items are not an object or array, return false
     if (['[object Array]', '[object Object]'].indexOf(type) < 0) return false
 
     // Compare the length of the length of the two items
-    const valueLen = type === '[object Array]' ? value.length : Object.keys(value).length;
-    const otherLen = type === '[object Array]' ? other.length : Object.keys(other).length;
-    if (valueLen !== otherLen) return false
+    const aLen = type === '[object Array]' ? a.length : Object.keys(a).length;
+    const bLen = type === '[object Array]' ? b.length : Object.keys(b).length;
+    if (aLen !== bLen) return false
 
     // Compare two items
     const compare = function (item1, item2) {
@@ -38,7 +29,7 @@
 
       // If an object or array, compare recursively
       if (['[object Array]', '[object Object]'].indexOf(itemType) >= 0) {
-        if (!isEqual(item1, item2)) {
+        if (!areObjectsEqual(item1, item2)) {
           return false
         }
       } else {
@@ -59,13 +50,13 @@
 
     // Compare properties
     if (type === '[object Array]') {
-      for (var i = 0; i < valueLen; i++) {
-        if (compare(value[i], other[i]) === false) return false
+      for (var i = 0; i < aLen; i++) {
+        if (compare(a[i], b[i]) === false) return false
       }
     } else {
-      for (var key in value) {
-        if (value.hasOwnProperty(key)) {
-          if (compare(value[key], other[key]) === false) return false
+      for (var key in a) {
+        if (a.hasOwnProperty(key)) {
+          if (compare(a[key], b[key]) === false) return false
         }
       }
     }
@@ -74,20 +65,119 @@
     return true
   };
 
-  const isDomNode = (element) => {
-    return element instanceof Element || element instanceof HTMLDocument
+  const basename = (url) => {
+    return url.split(/[\\/]/).pop()
   };
 
+  const baseUrl = (segment) => {
+    // get the segments
+    const pathArray = window.location.pathname.split('/');
+    // find where the segment is located
+    const indexOfSegment = pathArray.indexOf(segment);
+    // make base_url be the origin plus the path to the segment
+    return window.location.origin + pathArray.slice(0, indexOfSegment).join('/') + '/'
+  };
+
+  class Fetch {
+    newRequest (url, request, credentials = 'same-origin', headers = { 'Content-Type': 'application/x-www-form-urlencoded' }) {
+      function processResponse (response) {
+        return new Promise((resolve, reject) => {
+          // will resolve or reject depending on status, will pass both "status" and "data" in either case
+          let func;
+          response.status < 400 ? func = resolve : func = reject;
+          response.json().then(data => func({
+            'status': response.status,
+            'code': data.code,
+            'data': data.data,
+            'message': data.message
+          }));
+        })
+      }
+
+      return new Promise((resolve, reject) => {
+        fetch(url, {
+          method: 'POST',
+          body: request,
+          credentials: credentials,
+          headers: {
+            headers
+          }
+        })
+          .then(processResponse)
+          .then((response) => {
+            resolve(response);
+          })
+          .catch(response => {
+            console.log(response);
+            reject(response.message);
+          });
+      })
+    }
+  }
+
+  /**
+   * Converts html string to dom node
+   * @param  {string} html HTML string to be processed
+   * @return {DOMNode}      valid DOMNode
+   */
+  const htmlToElement = (html) => {
+    const template = document.createElement('template');
+
+    // removing extra white spaces
+    html = html.trim();
+    template.innerHTML = html;
+    return template.content.firstChild
+  };
+
+  /**
+   * Tests if input is a DOMNode
+   * @param  {any} input input
+   * @return {Boolean}
+   */
+  const isDomNode = (input) => {
+    return input instanceof Element || input instanceof HTMLDocument
+  };
+
+  /**
+   * Removes HTML content from string
+   * @param  {String} str input
+   * @return {String}     output
+   */
+  const removeHtml = (str) => {
+    const tmp = document.createElement('div');
+    tmp.innerHTML = str;
+    const result = tmp.textContent || tmp.innerText;
+    return tmp.textContent || tmp.innerText
+  };
+
+  /**
+   * Removes extension from filename
+   * @param  {String} str input
+   * @return {String}     output
+   */
+  const stripExtension = str => {
+    return str.replace(/\.[^/.]+$/, '')
+  };
+
+  /**
+   * Strips HTML tags from string
+   * @param  {String} str input
+   * @return {String}     output
+   */
   const stripHtmlTags = (str) => {
     if (typeof str === 'string') {
       return str.replace(/(<([^>]+)>)/ig, '')
     }
   };
 
-  const stripExtension = str => {
-    return str.replace(/\.[^/.]+$/, '')
-  };
-
+  /**
+   * Scrolls to location
+   * @param  {Number | DOMNode}   destination Number or domnode
+   * @param  {Number}   duration
+   * @param  {String}   easing      linear only
+   * @param  {Function} callback    callback function to call after scroll
+   * @return {null}               no return
+   */
   const scrollTo = (destination, duration = 200, easing = 'linear', callback) => {
     const easings = {
       linear (t) {
@@ -130,49 +220,15 @@
     scroll();
   };
 
-  const htmlToElement = (html) => {
-    const template = document.createElement('template');
-    html = html.trim(); // Never return a text node of whitespace as the result
-    template.innerHTML = html;
-    return template.content.firstChild
+  /**
+   * Returns a UUIDv4 string
+   * @return {String}
+   */
+  const uuidv4 = () => {
+    return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c =>
+      (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+    )
   };
-
-  class Fetch {
-    newRequest (url, request, credentials = 'same-origin', headers = { 'Content-Type': 'application/x-www-form-urlencoded' }) {
-      function processResponse (response) {
-        return new Promise((resolve, reject) => {
-          // will resolve or reject depending on status, will pass both "status" and "data" in either case
-          let func;
-          response.status < 400 ? func = resolve : func = reject;
-          response.json().then(data => func({
-            'status': response.status,
-            'code': data.code,
-            'data': data.data,
-            'message': data.message
-          }));
-        })
-      }
-
-      return new Promise((resolve, reject) => {
-        fetch(url, {
-          method: 'POST',
-          body: request,
-          credentials: credentials,
-          headers: {
-            headers
-          }
-        })
-          .then(processResponse)
-          .then((response) => {
-            resolve(response);
-          })
-          .catch(response => {
-            console.log(response);
-            reject(response.message);
-          });
-      })
-    }
-  }
 
   const API_URL = baseUrl() + '/api';
   const API_UPLOAD = 'upload';
@@ -653,7 +709,7 @@
         console.warn('%o is not a dom element. Can\'t get image dom.', dom);
       }
       this._src = url;
-      this._caption = caption;
+      this._caption = stripHtmlTags(caption);
       this._filename = filename;
       this._captionSelector = this._dom && this._dom.querySelector('[contenteditable]');
       this._active = active;
@@ -714,9 +770,9 @@
       if (src) {
         return htmlToElement(`<div class="Image">
         <div class="Image__container">
-          <img class="lazy miniarch" src="/assets/css/loading.gif" data-src="${src}" data-filename="${filename}" title="${filename} preview" />
+          <img class="lazy miniarch" src="/assets/css/loading.gif" data-src="${removeHtml(src)}" data-filename="${removeHtml(filename)}" title="${filename} preview" />
         </div>
-        <div class="Image__caption"><span contenteditable="true">${caption}</span></div>
+        <div class="Image__caption"><span contenteditable="true">${stripHtmlTags(caption)}</span></div>
         </div>`)
       } else {
         return null
@@ -743,21 +799,21 @@
     }
 
     set caption (caption) {
-      this._caption = caption;
+      this._caption = stripHtmlTags(caption);
     }
     get caption () {
       return this._caption
     }
 
     set filename (filename) {
-      this._filename = filename;
+      this._filename = stripHtmlTags(filename);
     }
     get filename () {
       return this._filename
     }
 
     set src (src) {
-      this._src = src;
+      this._src = removeHtml(src);
     }
     get src () {
       return this._src
@@ -825,10 +881,10 @@
       if (!dom || !isDomNode(dom)) {
         return null
       }
-      const url = dom.querySelector('img') ? dom.querySelector('img').src : null;
-      const datafilename = dom.querySelector('img') && dom.querySelector('img').getAttribute('data-filename') ? dom.querySelector('img').getAttribute('data-filename') : null;
-      const filename = datafilename ? datafilename.substring(datafilename.lastIndexOf('/') + 1) : dom.querySelector('img') ? dom.querySelector('img').src.substring(dom.querySelector('img').src.lastIndexOf('/') + 1) : null;
-      const caption = dom.querySelector('.Image__caption span') ? dom.querySelector('.Image__caption span').innerHTML : null;
+      const url = dom.querySelector('img') && dom.querySelector('img').src;
+      const datafilename = dom.querySelector('img') && dom.querySelector('img').getAttribute('data-filename');
+      const filename = datafilename ? basename(datafilename) : dom.querySelector('img') ? basename(dom.querySelector('img').src) : null;
+      const caption = dom.querySelector('.Image__caption span') && dom.querySelector('.Image__caption span').innerHTML;
 
       return new Image(
         {
@@ -1163,14 +1219,14 @@
     }
 
     cancelChanges () {
-      if (!isEqual(this.getState(), this.backup)) {
+      if (!areObjectsEqual(this.getState(), this.backup)) {
         this.save(this.backup);
       }
     }
 
     saveChanges () {
       const state = this.getState();
-      if (!isEqual(state, this.backup)) {
+      if (!areObjectsEqual(state, this.backup)) {
         this.save(state);
       }
     }
@@ -1209,7 +1265,7 @@
           return {
             id: image.getId(),
             filename: image.filename,
-            newfilename: image.caption
+            newfilename: stripHtmlTags(image.caption)
           }
         });
       }
