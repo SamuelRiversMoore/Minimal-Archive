@@ -57,7 +57,7 @@ function save(array $data = null)
             }
         }
 
-        update_file($meta);
+        array_to_file($meta);
         if (array_key_exists('images', $data)) {
             $result['images'] = delete_all_files_except($data['images']);
             $result['images'] = update_filenames($data['images']);
@@ -116,7 +116,7 @@ function update_filenames(array $images = null)
                     $filename = update_filename(ROOT_FOLDER . DS . $imagesdir . DS . $image['filename'], $image['newfilename']);
                     $result[] = array(
                         'src' => url($imagesdir . DS . pathinfo($filename, PATHINFO_FILENAME) . '.' . pathinfo($filename, PATHINFO_EXTENSION)),
-                        'filename' => pathinfo($filename, PATHINFO_FILENAME)
+                        'filename' => pathinfo($filename, PATHINFO_FILENAME) . '.' . pathinfo($filename, PATHINFO_EXTENSION)
                     );
                 }
             }
