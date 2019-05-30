@@ -5,6 +5,7 @@ import {
   EVENT_RESET
 } from './Constants.js'
 import {
+  basename,
   htmlToElement,
   isDomNode,
   scrollTo,
@@ -72,10 +73,10 @@ class Gallery {
     if (!dom || !isDomNode(dom)) {
       return null
     }
-    const url = dom.querySelector('img') ? dom.querySelector('img').src : null
-    const datafilename = dom.querySelector('img') && dom.querySelector('img').getAttribute('data-filename') ? dom.querySelector('img').getAttribute('data-filename') : null
-    const filename = datafilename ? datafilename.substring(datafilename.lastIndexOf('/') + 1) : dom.querySelector('img') ? dom.querySelector('img').src.substring(dom.querySelector('img').src.lastIndexOf('/') + 1) : null
-    const caption = dom.querySelector('.Image__caption span') ? dom.querySelector('.Image__caption span').innerHTML : null
+    const url = dom.querySelector('img') && dom.querySelector('img').src
+    const datafilename = dom.querySelector('img') && dom.querySelector('img').getAttribute('data-filename')
+    const filename = datafilename ? basename(datafilename) : dom.querySelector('img') ? basename(dom.querySelector('img').src) : null
+    const caption = dom.querySelector('.Image__caption span') && dom.querySelector('.Image__caption span').innerHTML
 
     return new Image(
       {
