@@ -12,7 +12,7 @@ import ProgressBar from './ProgressBar.js'
 import {
   baseUrl,
   isDomNode,
-  isEqual,
+  areObjectsEqual,
   htmlToElement,
   Fetch,
   stripHtmlTags,
@@ -164,14 +164,14 @@ class Editor {
   }
 
   cancelChanges () {
-    if (!isEqual(this.getState(), this.backup)) {
+    if (!areObjectsEqual(this.getState(), this.backup)) {
       this.save(this.backup)
     }
   }
 
   saveChanges () {
     const state = this.getState()
-    if (!isEqual(state, this.backup)) {
+    if (!areObjectsEqual(state, this.backup)) {
       this.save(state)
     }
   }
@@ -210,7 +210,7 @@ class Editor {
         return {
           id: image.getId(),
           filename: image.filename,
-          newfilename: image.caption
+          newfilename: stripHtmlTags(image.caption)
         }
       })
     }
