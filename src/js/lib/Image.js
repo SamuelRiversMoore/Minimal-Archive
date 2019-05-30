@@ -1,7 +1,9 @@
 import {
   isDomNode,
   uuidv4,
-  htmlToElement
+  htmlToElement,
+  removeHtml,
+  stripHtmlTags
 } from './Helpers.js'
 import {
   EVENT_RESET,
@@ -46,7 +48,7 @@ class Image {
       console.warn('%o is not a dom element. Can\'t get image dom.', dom)
     }
     this._src = url
-    this._caption = caption
+    this._caption = stripHtmlTags(caption)
     this._filename = filename
     this._captionSelector = this._dom && this._dom.querySelector('[contenteditable]')
     this._active = active
@@ -107,9 +109,9 @@ class Image {
     if (src) {
       return htmlToElement(`<div class="Image">
         <div class="Image__container">
-          <img class="lazy miniarch" src="/assets/css/loading.gif" data-src="${src}" data-filename="${filename}" title="${filename} preview" />
+          <img class="lazy miniarch" src="/assets/css/loading.gif" data-src="${removeHtml(src)}" data-filename="${removeHtml(filename)}" title="${filename} preview" />
         </div>
-        <div class="Image__caption"><span contenteditable="true">${caption}</span></div>
+        <div class="Image__caption"><span contenteditable="true">${stripHtmlTags(caption)}</span></div>
         </div>`)
     } else {
       return null
@@ -136,21 +138,21 @@ class Image {
   }
 
   set caption (caption) {
-    this._caption = caption
+    this._caption = stripHtmlTags(caption)
   }
   get caption () {
     return this._caption
   }
 
   set filename (filename) {
-    this._filename = filename
+    this._filename = stripHtmlTags(filename)
   }
   get filename () {
     return this._filename
   }
 
   set src (src) {
-    this._src = src
+    this._src = removeHtml(src)
   }
   get src () {
     return this._src
