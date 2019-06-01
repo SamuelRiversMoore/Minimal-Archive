@@ -101,12 +101,21 @@ class Editor {
     this.progressbar = new ProgressBar(progressBarSelector)
 
     this.menu = new Menu()
-    this.menu.addButton(this.buttonSave, this.editSave.bind(this))
-    this.menu.addButton(this.buttonPreview, this.editPreview.bind(this))
-    this.menu.addButton(this.buttonCancel, this.editCancel.bind(this))
+    this.menu.addButton({
+      domNode: this.buttonSave,
+      callback: this.editSave.bind(this)
+    })
+    this.menu.addButton({
+      domNode: this.buttonPreview,
+      callback: this.editPreview.bind(this)
+    })
+    this.menu.addButton({
+      domNode: this.buttonCancel,
+      callback: this.editCancel.bind(this)
+    })
 
-    this.initListeners()
     this.backup = this.getState()
+    this.initListeners()
   }
 
   initListeners () {
@@ -153,6 +162,28 @@ class Editor {
         }
       })
     }
+
+    this.gallery.images.map(image => {
+      const deleteButton = this.getButton('Delete', 'button--delete', image.getId())
+      const revertButton = this.getButton('Revert', 'button--revert', image.getId())
+      const imageControls = htmlToElement('<div class="Image__controls"></div>')
+
+      imageControls.appendChild(deleteButton)
+      imageControls.appendChild(revertButton)
+      image.dom.appendChild(imageControls)
+      this.menu.addButton({
+        type: 'toggle',
+        domNode: deleteButton,
+        domNode2: revertButton,
+        callback: this.editDelete.bind(this),
+        callback2: this.editRevert.bind(this)
+      })
+    })
+  }
+
+  getButton (content, buttonClass, id) {
+    const dom = htmlToElement(`<div class="pure-button ${buttonClass}" data-id="${id}"><span>${content}</span></div>`)
+    return dom
   }
 
   editCancel () {
@@ -169,6 +200,24 @@ class Editor {
     const state = this.getState()
     if (!areObjectsEqual(state, this.backup)) {
       this.save(state)
+    }
+  }
+
+  editDelete (e) {
+    if (e) {
+      const id = e.target.getAttribute('data-id') || e.target.parentNode.getAttribute('data-id')
+      if (id) {
+        this.gallery.removeImageById(id)
+      }
+    }
+  }
+
+  editRevert (e) {
+    if (e) {
+      const id = e.target.getAttribute('data-id') || e.target.parentNode.getAttribute('data-id')
+      if (id) {
+        this.gallery.revertRemoveImageById(id)
+      }
     }
   }
 
@@ -250,7 +299,8 @@ class Editor {
     reader.readAsDataURL(file)
 
     reader.onloadend = () => {
-      this.gallery.addImage(this.getPreviewDom(reader.result, filename))
+      const image = this.gallery.addImage(this.getPreviewDom(reader.result, filename))
+      image && image.dom.appendChild(this.getDeleteButton(image.getId()))
     }
   }
 
