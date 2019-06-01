@@ -1,3 +1,5 @@
+/* global crypto, fetch, performance, requestAnimationFrame, window, Element, HTMLDocument */
+
 /**
  * Tests two Objects / arrays equality
  * @param  {Object | Array} a [description]
@@ -136,6 +138,27 @@ export const isDomNode = (input) => {
 }
 
 /**
+ * Tests if input is function
+ * @param  {any} input
+ * @return {Boolean}
+ */
+export const isFunction = (input) => {
+  return input instanceof Function
+}
+
+/**
+ * Provides shorthand
+ * @param  {event} event
+ * @return {[type]}       [description]
+ */
+export const preventDefaults = (event) => {
+  if (event && event.target) {
+    event.preventDefault()
+    event.stopPropagation()
+  }
+}
+
+/**
  * Removes HTML content from string
  * @param  {String} str input
  * @return {String}     output
@@ -143,7 +166,6 @@ export const isDomNode = (input) => {
 export const removeHtml = (str) => {
   const tmp = document.createElement('div')
   tmp.innerHTML = str
-  const result = tmp.textContent || tmp.innerText
   return tmp.textContent || tmp.innerText
 }
 
@@ -154,17 +176,6 @@ export const removeHtml = (str) => {
  */
 export const stripExtension = str => {
   return str.replace(/\.[^/.]+$/, '')
-}
-
-/**
- * Strips HTML tags from string
- * @param  {String} str input
- * @return {String}     output
- */
-export const stripHtmlTags = (str) => {
-  if (typeof str === 'string') {
-    return str.replace(/(<([^>]+)>)/ig, '')
-  }
 }
 
 /**

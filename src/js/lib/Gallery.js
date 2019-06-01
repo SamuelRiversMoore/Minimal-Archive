@@ -1,3 +1,5 @@
+/* global Event */
+
 import LazyLoad from './LazyLoad.js'
 import Image from './Image.js'
 import {
@@ -59,6 +61,7 @@ class Gallery {
         this._images.push(image)
       }
     }
+    this._imagesBackup = this._images
 
     this.lazyload = new LazyLoad({
       elements_selector: lazyloadSelector
@@ -67,25 +70,6 @@ class Gallery {
     if (active) {
       this.activate()
     }
-  }
-
-  getNewImage (dom, active) {
-    if (!dom || !isDomNode(dom)) {
-      return null
-    }
-    const url = dom.querySelector('img') && dom.querySelector('img').src
-    const datafilename = dom.querySelector('img') && dom.querySelector('img').getAttribute('data-filename')
-    const filename = datafilename ? basename(datafilename) : dom.querySelector('img') ? basename(dom.querySelector('img').src) : null
-    const caption = dom.querySelector('.Image__caption span') && dom.querySelector('.Image__caption span').innerHTML
-
-    return new Image(
-      {
-        url: url,
-        filename: filename,
-        caption: caption,
-        dom: dom,
-        active: active
-      })
   }
 
   activate () {
@@ -124,6 +108,30 @@ class Gallery {
     }
   }
 
+  removeImageById (id) {
+    let target = null
+    this._images = this._images.filter(image => {
+      if (image.getId() === id) {
+        target = image
+        return false
+      }
+      return true
+    })
+    if (target) {
+      target.dom.classList.add('Image--markedfordeletion')
+    }
+    return this._images
+  }
+
+  revertRemoveImageById (id) {
+    const match = this._imagesBackup.find(image => image.getId() === id)
+    if (match) {
+      match.dom.classList.remove('Image--markedfordeletion')
+      this._images.push(match)
+    }
+    return this._images
+  }
+
   updateCurrentImage (image) {
     if (this._current instanceof Image) {
       this._current.status = false
@@ -157,36 +165,6 @@ class Gallery {
     }
   }
 
-  addImage (dom) {
-    if (dom && document.body.contains(dom)) {
-      this._images.push(this.getNewImage(dom, this.active))
-    } else if (dom && !document.body.contains(dom)) {
-      const images = document.querySelectorAll(this.config.imageSelector)
-      if (images.length) {
-        images[images.length - 1].parentNode.insertBefore(dom, images[images.length - 1].nextSibling)
-      } else {
-        this.gallery.appendChild(dom)
-      }
-      this._images.push(this.getNewImage(dom, this.active))
-    }
-    this.lazyload.update()
-  }
-
-  set current (image) {
-    this.updateCurrentImage(image)
-  }
-  get current () {
-    return this._current
-  }
-
-  get images () {
-    return this._images
-  }
-
-  set images (images) {
-    this._images = images
-  }
-
   setImages (images) {
     if (!images || !images.length) {
       return
@@ -195,8 +173,48 @@ class Gallery {
     this.images = []
     let i = -1
     while (++i < images.length) {
-      this.addImage(this.getImageDom(images[i].src, images[i].filename))
+      if ('src' in images[i] && 'filename' in images[i]) {
+        this.addImage(this.getImageDom(images[i].src, images[i].filename))
+      }
     }
+  }
+
+  addImage (dom) {
+    const image = this.getNewImage(dom, this.active)
+    if (dom && document.body.contains(dom)) {
+      this._images.push(image)
+    } else if (dom && !document.body.contains(dom)) {
+      const images = document.querySelectorAll(this.config.imageSelector)
+      if (images.length) {
+        images[images.length - 1].parentNode.insertBefore(dom, images[images.length - 1].nextSibling)
+      } else {
+        this.gallery.appendChild(dom)
+      }
+      this._images.push(image)
+    }
+    this._imagesBackup = this._images
+    this.lazyload.update()
+    return image
+  }
+
+  getNewImage (dom, active) {
+    if (!dom || !isDomNode(dom)) {
+      return null
+    }
+    const url = dom.querySelector('img') && dom.querySelector('img').src
+    const datafilename = dom.querySelector('img') && dom.querySelector('img').getAttribute('data-filename')
+    const filename = datafilename ? basename(datafilename) : dom.querySelector('img') ? basename(dom.querySelector('img').src) : null
+    const caption = dom.querySelector('.Image__caption span') && dom.querySelector('.Image__caption span').innerHTML
+
+    return new Image(
+      {
+        url: url,
+        filename: filename,
+        caption: caption,
+        dom: dom,
+        active: active,
+        editable: !active
+      })
   }
 
   getImageDom (src, filename) {
@@ -230,6 +248,21 @@ class Gallery {
 
   reset () {
     document.dispatchEvent(new Event(EVENT_RESET))
+  }
+
+  set current (image) {
+    this.updateCurrentImage(image)
+  }
+  get current () {
+    return this._current
+  }
+
+  get images () {
+    return this._images
+  }
+
+  set images (images) {
+    this._images = images
   }
 }
 
