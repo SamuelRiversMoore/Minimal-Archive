@@ -129,7 +129,7 @@ if (!has_meta()) {
                     </fieldset>
                     <div class="pure-controls">
                         <label for="cb" class="pure-checkbox">
-                            <input id="cb" type="checkbox" name="confirm" required="true"> <?= translate('double_check') ?>
+                            <input id="cb" type="checkbox" name="confirm" required="true"> <?= translate('double_check') ?> *
                         </label>
                     </div>
                     <input type="hidden" name="csrf_token" value="<?= get_token('install') ?>" />
