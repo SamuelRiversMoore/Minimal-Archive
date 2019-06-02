@@ -124,12 +124,12 @@ if (!has_meta()) {
 
                         <div class="pure-control-group">
                             <label for="password"><?= translate('password') ?> *</label>
-                            <input id="password" type="password" placeholder="Password" required="true" name="password" autocomplete="off">
+                            <input id="password" type="password" placeholder="Password" required="true" name="password" autocomplete="new-password">
                         </div>
                     </fieldset>
                     <div class="pure-controls">
                         <label for="cb" class="pure-checkbox">
-                            <input id="cb" type="checkbox" name="confirm" required="true"><?= translate('double_check') ?>
+                            <input id="cb" type="checkbox" name="confirm" required="true"> <?= translate('double_check') ?>
                         </label>
                     </div>
                     <input type="hidden" name="csrf_token" value="<?= get_token('install') ?>" />
