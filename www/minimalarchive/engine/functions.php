@@ -464,16 +464,15 @@ function clean_installation()
 
 function uninstall(bool $deleteimages = false)
 {
+    if (file_exists(DEFAULT_METAFILE)) {
+        $meta = textFileToArray(DEFAULT_METAFILE);
+    }
     $files = glob(VAR_FOLDER . DS . '{,.}[!.,!..]*', GLOB_MARK|GLOB_BRACE);
     foreach ($files as $file) {
         unlink($file);
     }
 
     if (true === $deleteimages) {
-        if (file_exists(DEFAULT_METAFILE)) {
-            $meta = textFileToArray(DEFAULT_METAFILE);
-        }
-
         $imagesdir = $meta && count($meta) && array_key_exists('imagesfolder', $meta) ? ROOT_FOLDER . DS . $meta['imagesfolder'] : DEFAULT_IMAGEFOLDER;
 
         $files = glob($imagesdir . DS . '{,.}[!.,!..]*', GLOB_MARK|GLOB_BRACE);
@@ -481,6 +480,8 @@ function uninstall(bool $deleteimages = false)
             unlink($file);
         }
     }
+
+    unlink(DEFAULT_METAFILE);
 }
 
 function put_error(string $message)
