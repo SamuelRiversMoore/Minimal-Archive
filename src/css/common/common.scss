@@ -7,6 +7,10 @@ body {
   overflow-x: hidden;
 }
 
+* {
+  box-sizing: border-box;
+}
+
 *:focus {
   outline: none !important;
   box-sizing: border-box;
