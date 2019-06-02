@@ -6,6 +6,9 @@ body {
   width: 100%;
   overflow-x: hidden; }
 
+* {
+  box-sizing: border-box; }
+
 *:focus {
   outline: none !important;
   box-sizing: border-box; }
@@ -75,6 +78,10 @@ body {
     display: block; }
   .Image__controls .button--revert {
     display: none; }
+  .Image__controls .button--on {
+    display: block; }
+  .Image__controls .button--off {
+    display: none; }
 
 .Image--active {
   cursor: pointer;
@@ -92,6 +99,9 @@ body {
   .Image--active .Image__container img {
     max-height: auto;
     max-width: auto; }
+
+.Image--markedfordeletion .Image__container {
+  opacity: 0.3; }
 
 .Image__caption {
   flex: 1;
