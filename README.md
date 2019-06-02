@@ -8,18 +8,17 @@ A minimal tool (javascript with no dependencies, php) to display images on a web
 - `php` >= 7.0
 
 ## Installation
-1. Put everything inside the `./www` folder in your server
-2. Head to `{your-url}/install`
+1. Put everything inside the `./www` folder in your server. Make sure the folder is writable.
+2. Head to `{your-url}/install`.
 3. Add a title, description, favicon, social image, email and password.
-6. Enjoy `{your-url}` (+ keyboard navigation)
-7. Uninstall using `{your-url}/uninstall`. This will remove the account and the meta file.
+6. Enjoy `{your-url}` (+ keyboard navigation).
+7. Uninstall using `{your-url}/uninstall`. This will remove the account and the meta file but keep the images.
 
 ## Usage
-1. Head to `{your-url}/editor` with your email and password
-2. Add a bunch of images
-3. Edit the title and the note
-4. Rename them
-5. Save or cancel your changes
+1. Head to `{your-url}/editor` with your email and password.
+2. Edit the title and the note.
+3. Add, rename or delete a bunch of images.
+4. Save or cancel your changes.
 
 ## Project structure
 

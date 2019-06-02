@@ -130,7 +130,7 @@ function process_form($args)
         create_accountfile($form['email'], $form['password']);
         create_metafile($form);
     } catch (Exception $e) {
-        uninstall();
+        uninstall(true);
         throw $e;
     }
     clean_installation();

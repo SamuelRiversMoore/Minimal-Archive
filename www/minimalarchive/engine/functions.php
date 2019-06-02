@@ -462,11 +462,24 @@ function clean_installation()
     }
 }
 
-function uninstall()
+function uninstall(bool $deleteimages = false)
 {
     $files = glob(VAR_FOLDER . DS . '{,.}[!.,!..]*', GLOB_MARK|GLOB_BRACE);
     foreach ($files as $file) {
         unlink($file);
+    }
+
+    if (true === $deleteimages) {
+        if (file_exists(DEFAULT_METAFILE)) {
+            $meta = textFileToArray(DEFAULT_METAFILE);
+        }
+
+        $imagesdir = $meta && count($meta) && array_key_exists('imagesfolder', $meta) ? ROOT_FOLDER . DS . $meta['imagesfolder'] : DEFAULT_IMAGEFOLDER;
+
+        $files = glob($imagesdir . DS . '{,.}[!.,!..]*', GLOB_MARK|GLOB_BRACE);
+        foreach ($files as $file) {
+            unlink($file);
+        }
     }
 }
 
