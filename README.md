@@ -15,7 +15,7 @@ A minimal tool (javascript with no dependencies, php) to display images on a web
 7. Uninstall using `{your-url}/uninstall`. This will remove the account and the meta file but keep the images.
 
 ## Usage
-1. Head to `{your-url}/editor` with your email and password.
+1. Head to `{your-url}/edit` with your email and password.
 2. Edit the title and the note.
 3. Add, rename or delete a bunch of images.
 4. Save or cancel your changes.
