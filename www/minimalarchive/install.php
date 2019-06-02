@@ -58,7 +58,7 @@ if (!has_meta()) {
     <body>
         <main>
             <header>
-                Installation
+                <?= translate('setup') ?>
             </header>
             <section class="Form">
                 <?php
@@ -95,7 +95,7 @@ if (!has_meta()) {
                     </fieldset>
 
                     <fieldset>
-                        <legend>Social</legend>
+                        <legend><?= translate('social') ?></legend>
                         <div class="pure-control-group">
                             <label for="description"><?= translate('description')?></label>
                             <textarea id="description" class="pure-input-1-2" placeholder="Description" name="description"></textarea>
@@ -108,7 +108,7 @@ if (!has_meta()) {
                     </fieldset>
 
                     <fieldset>
-                        <legend>Advanced</legend>
+                        <legend><?= translate('advanced') ?></legend>
                         <div class="pure-control-group">
                             <label for="imagefolder"><?= translate('custom_image_folder')?></label>
                             <input id="imagefolder" type="text" class="pure-input-1-2" placeholder="Folder name without trailing slash (default: images)" name="imagefolder">
@@ -116,15 +116,15 @@ if (!has_meta()) {
                     </fieldset>
 
                     <fieldset>
-                        <legend>Account</legend>
+                        <legend><?= translate('account') ?></legend>
                         <div class="pure-control-group">
                             <label for="email"><?= translate('email_address') ?> *</label>
-                            <input id="email" type="email" placeholder="Email Address" required="true" name="email">
+                            <input id="email" type="email" placeholder="Email Address" required="true" name="email" autocomplete="off">
                         </div>
 
                         <div class="pure-control-group">
                             <label for="password"><?= translate('password') ?> *</label>
-                            <input id="password" type="password" placeholder="Password" required="true" name="password">
+                            <input id="password" type="password" placeholder="Password" required="true" name="password" autocomplete="off">
                         </div>
                     </fieldset>
                     <div class="pure-controls">
