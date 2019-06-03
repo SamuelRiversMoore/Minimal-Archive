@@ -6,6 +6,9 @@ body {
   width: 100%;
   overflow-x: hidden; }
 
+* {
+  box-sizing: border-box; }
+
 *:focus {
   outline: none !important;
   box-sizing: border-box; }
@@ -34,7 +37,18 @@ body {
   cursor: zoom-in;
   cursor: -moz-zoom-in;
   cursor: -webkit-zoom-in;
-  border-radius: 10px; }
+  border-radius: 10px;
+  position: relative; }
+  @media screen and (max-width: 550px) {
+    .Image {
+      flex: 100%;
+      width: auto;
+      height: auto;
+      max-height: calc(100vh - 250px); }
+      .Image img {
+        max-width: 100% !important;
+        max-height: 100% !important;
+        height: auto !important; } }
   .Image img {
     max-width: 100%;
     max-height: 90vh;
@@ -52,6 +66,23 @@ body {
     max-height: 100%;
     max-width: 80%; }
 
+.Image:hover .Image__controls {
+  display: block; }
+
+.Image__controls {
+  display: none;
+  position: absolute;
+  top: 5px;
+  right: 5px; }
+  .Image__controls .button--delete {
+    display: block; }
+  .Image__controls .button--revert {
+    display: none; }
+  .Image__controls .button--on {
+    display: block; }
+  .Image__controls .button--off {
+    display: none; }
+
 .Image--active {
   cursor: pointer;
   cursor: zoom-out;
@@ -68,6 +99,9 @@ body {
   .Image--active .Image__container img {
     max-height: auto;
     max-width: auto; }
+
+.Image--markedfordeletion .Image__container {
+  opacity: 0.3; }
 
 .Image__caption {
   flex: 1;
@@ -312,6 +346,20 @@ https://github.com/yahoo/pure/blob/master/LICENSE.md
   background: #42b8dd;
   /* this is a light blue */ }
 
+.controls {
+  position: fixed;
+  top: 0;
+  right: 0.6em;
+  display: flex;
+  flex-direction: column;
+  font-size: 16px;
+  line-height: 1.6em;
+  z-index: 1; }
+  .controls .editbutton {
+    margin: 0.5em;
+    overflow: hidden;
+    cursor: pointer; }
+
 .Loader {
   position: fixed;
   top: 0;
@@ -346,19 +394,6 @@ body {
     line-height: 1.3em; }
   .modal li {
     margin-bottom: 1em; }
-
-.controls {
-  position: fixed;
-  top: 0;
-  right: 0.6em;
-  display: flex;
-  flex-direction: column;
-  font-size: 16px;
-  line-height: 1.6em; }
-  .controls .editbutton {
-    margin: 0.5em;
-    overflow: hidden;
-    cursor: pointer; }
 
 #drop-area {
   position: fixed;

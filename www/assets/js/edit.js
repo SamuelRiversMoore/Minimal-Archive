@@ -1,35 +1,28 @@
 (function () {
   'use strict';
 
-  const uuidv4 = () => {
-    return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c =>
-      (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
-    )
-  };
+  /* global crypto, fetch, performance, requestAnimationFrame, window, Element, HTMLDocument */
 
-  const baseUrl = (segment) => {
-    // get the segments
-    const pathArray = window.location.pathname.split('/');
-    // find where the segment is located
-    const indexOfSegment = pathArray.indexOf(segment);
-    // make base_url be the origin plus the path to the segment
-    return window.location.origin + pathArray.slice(0, indexOfSegment).join('/') + '/'
-  };
-
-  const isEqual = (value, other) => {
-    // Get the value type
-    const type = Object.prototype.toString.call(value);
+  /**
+   * Tests two Objects / arrays equality
+   * @param  {Object | Array} a [description]
+   * @param  {Object | Array} other [description]
+   * @return {Boolean}
+   */
+  const areObjectsEqual = (a, b) => {
+    // Get the a type
+    const type = Object.prototype.toString.call(a);
 
     // If the two objects are not the same type, return false
-    if (type !== Object.prototype.toString.call(other)) return false
+    if (type !== Object.prototype.toString.call(b)) return false
 
     // If items are not an object or array, return false
     if (['[object Array]', '[object Object]'].indexOf(type) < 0) return false
 
     // Compare the length of the length of the two items
-    const valueLen = type === '[object Array]' ? value.length : Object.keys(value).length;
-    const otherLen = type === '[object Array]' ? other.length : Object.keys(other).length;
-    if (valueLen !== otherLen) return false
+    const aLen = type === '[object Array]' ? a.length : Object.keys(a).length;
+    const bLen = type === '[object Array]' ? b.length : Object.keys(b).length;
+    if (aLen !== bLen) return false
 
     // Compare two items
     const compare = function (item1, item2) {
@@ -38,7 +31,7 @@
 
       // If an object or array, compare recursively
       if (['[object Array]', '[object Object]'].indexOf(itemType) >= 0) {
-        if (!isEqual(item1, item2)) {
+        if (!areObjectsEqual(item1, item2)) {
           return false
         }
       } else {
@@ -59,13 +52,13 @@
 
     // Compare properties
     if (type === '[object Array]') {
-      for (var i = 0; i < valueLen; i++) {
-        if (compare(value[i], other[i]) === false) return false
+      for (var i = 0; i < aLen; i++) {
+        if (compare(a[i], b[i]) === false) return false
       }
     } else {
-      for (var key in value) {
-        if (value.hasOwnProperty(key)) {
-          if (compare(value[key], other[key]) === false) return false
+      for (var key in a) {
+        if (a.hasOwnProperty(key)) {
+          if (compare(a[key], b[key]) === false) return false
         }
       }
     }
@@ -74,20 +67,128 @@
     return true
   };
 
-  const isDomNode = (element) => {
-    return element instanceof Element || element instanceof HTMLDocument
+  const basename = (url) => {
+    return url.split(/[\\/]/).pop()
   };
 
-  const stripHtmlTags = (str) => {
-    if (typeof str === 'string') {
-      return str.replace(/(<([^>]+)>)/ig, '')
+  const baseUrl = (segment) => {
+    // get the segments
+    const pathArray = window.location.pathname.split('/');
+    // find where the segment is located
+    const indexOfSegment = pathArray.indexOf(segment);
+    // make base_url be the origin plus the path to the segment
+    return window.location.origin + pathArray.slice(0, indexOfSegment).join('/') + '/'
+  };
+
+  class Fetch {
+    newRequest (url, request, credentials = 'same-origin', headers = { 'Content-Type': 'application/x-www-form-urlencoded' }) {
+      function processResponse (response) {
+        return new Promise((resolve, reject) => {
+          // will resolve or reject depending on status, will pass both "status" and "data" in either case
+          let func;
+          response.status < 400 ? func = resolve : func = reject;
+          response.json().then(data => func({
+            'status': response.status,
+            'code': data.code,
+            'data': data.data,
+            'message': data.message
+          }));
+        })
+      }
+
+      return new Promise((resolve, reject) => {
+        fetch(url, {
+          method: 'POST',
+          body: request,
+          credentials: credentials,
+          headers: {
+            headers
+          }
+        })
+          .then(processResponse)
+          .then((response) => {
+            resolve(response);
+          })
+          .catch(response => {
+            console.log(response);
+            reject(response.message);
+          });
+      })
+    }
+  }
+
+  /**
+   * Converts html string to dom node
+   * @param  {string} html HTML string to be processed
+   * @return {DOMNode}      valid DOMNode
+   */
+  const htmlToElement = (html) => {
+    const template = document.createElement('template');
+
+    // removing extra white spaces
+    html = html.trim();
+    template.innerHTML = html;
+    return template.content.firstChild
+  };
+
+  /**
+   * Tests if input is a DOMNode
+   * @param  {any} input input
+   * @return {Boolean}
+   */
+  const isDomNode = (input) => {
+    return input instanceof Element || input instanceof HTMLDocument
+  };
+
+  /**
+   * Tests if input is function
+   * @param  {any} input
+   * @return {Boolean}
+   */
+  const isFunction = (input) => {
+    return input instanceof Function
+  };
+
+  /**
+   * Provides shorthand
+   * @param  {event} event
+   * @return {[type]}       [description]
+   */
+  const preventDefaults = (event) => {
+    if (event && event.target) {
+      event.preventDefault();
+      event.stopPropagation();
     }
   };
 
+  /**
+   * Removes HTML content from string
+   * @param  {String} str input
+   * @return {String}     output
+   */
+  const removeHtml = (str) => {
+    const tmp = document.createElement('div');
+    tmp.innerHTML = str;
+    return tmp.textContent || tmp.innerText
+  };
+
+  /**
+   * Removes extension from filename
+   * @param  {String} str input
+   * @return {String}     output
+   */
   const stripExtension = str => {
     return str.replace(/\.[^/.]+$/, '')
   };
 
+  /**
+   * Scrolls to location
+   * @param  {Number | DOMNode}   destination Number or domnode
+   * @param  {Number}   duration
+   * @param  {String}   easing      linear only
+   * @param  {Function} callback    callback function to call after scroll
+   * @return {null}               no return
+   */
   const scrollTo = (destination, duration = 200, easing = 'linear', callback) => {
     const easings = {
       linear (t) {
@@ -130,62 +231,109 @@
     scroll();
   };
 
-  const htmlToElement = (html) => {
-    const template = document.createElement('template');
-    html = html.trim(); // Never return a text node of whitespace as the result
-    template.innerHTML = html;
-    return template.content.firstChild
+  /**
+   * Returns a UUIDv4 string
+   * @return {String}
+   */
+  const uuidv4 = () => {
+    return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c =>
+      (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+    )
   };
 
-  class Fetch {
-    newRequest (url, request, credentials = 'same-origin', headers = { 'Content-Type': 'application/x-www-form-urlencoded' }) {
-      function processResponse (response) {
-        return new Promise((resolve, reject) => {
-          // will resolve or reject depending on status, will pass both "status" and "data" in either case
-          let func;
-          response.status < 400 ? func = resolve : func = reject;
-          response.json().then(data => func({
-            'status': response.status,
-            'code': data.code,
-            'data': data.data,
-            'message': data.message
-          }));
-        })
-      }
+  const mergeSettings = (options) => {
+    const settings = {
+    };
 
-      return new Promise((resolve, reject) => {
-        fetch(url, {
-          method: 'POST',
-          body: request,
-          credentials: credentials,
-          headers: {
-            headers
+    for (const attrName in options) {
+      settings[attrName] = options[attrName];
+    }
+
+    return settings
+  };
+
+  class Menu {
+    constructor (options) {
+      this.config = mergeSettings(options);
+      this.init();
+    }
+
+    init () {
+      this._buttons = [];
+      this._callback = null;
+    }
+
+    addButton (options) {
+      const {
+        domNode,
+        callback,
+        type,
+        domNode2,
+        callback2
+      } = this.getButtonOptions(options);
+      const id = uuidv4();
+
+      if (isDomNode(domNode)) {
+        this._buttons[id] = {};
+        this._buttons[id].dom = domNode;
+
+        if (isFunction(callback)) {
+          this._buttons[id].callback = callback;
+          domNode.addEventListener('click', callback);
+        }
+
+        if (type === 'toggle') {
+          this._buttons[id].dom = domNode;
+          this._buttons[id].dom2 = domNode2;
+          this._buttons[id].state = false;
+          domNode.addEventListener('click', () => this.toggleButtonById(id));
+          domNode2.addEventListener('click', () => this.toggleButtonById(id));
+          if (isFunction(callback2)) {
+            this._buttons[id].callback2 = callback2;
+            domNode2.addEventListener('click', callback2);
           }
-        })
-          .then(processResponse)
-          .then((response) => {
-            resolve(response);
-          })
-          .catch(response => {
-            console.log(response);
-            reject(response.message);
-          });
-      })
+        }
+        return id
+      }
+    }
+
+    toggleButtonById (id) {
+      if (this._buttons[id]) {
+        this._buttons[id].state = !this._buttons[id].state;
+
+        const on = this._buttons[id].state ? 'button--off' : 'button--on';
+        const off = this._buttons[id].state ? 'button--on' : 'button--off';
+        this._buttons[id].dom.classList.add(on);
+        this._buttons[id].dom.classList.remove(off);
+        this._buttons[id].dom2.classList.add(off);
+        this._buttons[id].dom2.classList.remove(on);
+      }
+    }
+
+    getButtonOptions (options) {
+      const result = {
+        domNode: undefined,
+        callback: undefined,
+        type: 'regular',
+        domNode2: undefined,
+        callback2: undefined
+      };
+
+      for (const attrName in options) {
+        result[attrName] = options[attrName];
+      }
+      return result
+    }
+
+    removeButton (id) {
+      if (this._buttons[id]) {
+        this._buttons[id].removeEventListener('click', this._callback);
+        this._buttons.remove(id);
+        return true
+      }
+      return false
     }
   }
-
-  const API_URL = baseUrl() + '/api';
-  const API_UPLOAD = 'upload';
-  const API_SAVE = 'save';
-
-  const SELECTOR_TITLE = '.title';
-  const SELECTOR_NOTE = '.note';
-
-  const EVENT_RESET = 'reset';
-  const EVENT_STATUS_CHANGE = 'status-change';
-  const EVENT_LOADED = 'loaded';
-  const EVENT_LOADING = 'loading';
-  const EVENT_IMAGE_UPDATE = 'image-update';
 
   const runningOnBrowser = typeof window !== 'undefined';
 
@@ -616,7 +764,22 @@
     autoInitialize(LazyLoad, window.lazyLoadOptions);
   }
 
-  const mergeSettings = (options) => {
+  const API_URL = baseUrl() + '/api';
+  const API_UPLOAD = 'upload';
+  const API_SAVE = 'save';
+
+  const SELECTOR_TITLE = '.title';
+  const SELECTOR_NOTE = '.note';
+
+  const EVENT_RESET = 'reset';
+  const EVENT_STATUS_CHANGE = 'status-change';
+  const EVENT_LOADED = 'loaded';
+  const EVENT_LOADING = 'loading';
+  const EVENT_IMAGE_UPDATE = 'image-update';
+
+  /* global CustomEvent, Event */
+
+  const mergeSettings$1 = (options) => {
     const settings = {
       dom: null,
       filename: null,
@@ -624,7 +787,8 @@
       url: null,
       caption: null,
       imageSelector: '.Image',
-      lazyloadSelector: '.lazy'
+      lazyloadSelector: '.lazy',
+      editable: false
     };
 
     for (const attrName in options) {
@@ -636,7 +800,7 @@
 
   class Image {
     constructor (options) {
-      this.config = mergeSettings(options);
+      this.config = mergeSettings$1(options);
       this.dispatchStatusUpdate = this.dispatchStatusUpdate.bind(this);
 
       const {
@@ -644,7 +808,8 @@
         filename,
         caption,
         dom,
-        active
+        active,
+        editable
       } = this.config;
 
       this._id = uuidv4();
@@ -653,11 +818,12 @@
         console.warn('%o is not a dom element. Can\'t get image dom.', dom);
       }
       this._src = url;
-      this._caption = caption;
+      this._caption = removeHtml(caption);
       this._filename = filename;
       this._captionSelector = this._dom && this._dom.querySelector('[contenteditable]');
       this._active = active;
       this._status = false;
+      this._editable = editable;
 
       this.applyStyle();
       this.initListeners();
@@ -673,11 +839,9 @@
         this.dispatchStatusUpdate();
       });
 
-      if (this._captionSelector) {
-        // 1. Listen for changes of the contenteditable element
+      if (this._editable && this._captionSelector) {
         this._captionSelector.addEventListener('input', (e) => {
-          // 2. Retrive the text from inside the element
-          this._caption = this._captionSelector.innerHTML;
+          this._caption = removeHtml(this._captionSelector.innerHTML);
         });
       }
     }
@@ -714,12 +878,10 @@
       if (src) {
         return htmlToElement(`<div class="Image">
         <div class="Image__container">
-          <img class="lazy miniarch" src="/assets/css/loading.gif" data-src="${src}" data-filename="${filename}" title="${filename} preview" />
+          <img class="lazy miniarch" src="/assets/css/loading.gif" data-src="${removeHtml(src)}" data-filename="${removeHtml(filename)}" title="${filename} preview" />
         </div>
-        <div class="Image__caption"><span contenteditable="true">${caption}</span></div>
+        <div class="Image__caption"><span contenteditable="true">${removeHtml(caption)}</span></div>
         </div>`)
-      } else {
-        return null
       }
     }
 
@@ -750,21 +912,23 @@
     }
 
     set filename (filename) {
-      this._filename = filename;
+      this._filename = removeHtml(filename);
     }
     get filename () {
       return this._filename
     }
 
     set src (src) {
-      this._src = src;
+      this._src = removeHtml(src);
     }
     get src () {
       return this._src
     }
   }
 
-  const mergeSettings$1 = (options) => {
+  /* global Event */
+
+  const mergeSettings$2 = (options) => {
     const settings = {
       gallerySelector: '.Gallery',
       imageSelector: '.Image',
@@ -781,7 +945,7 @@
 
   class Gallery {
     constructor (options) {
-      this.config = mergeSettings$1(options);
+      this.config = mergeSettings$2(options);
       this.init();
     }
 
@@ -811,6 +975,7 @@
           this._images.push(image);
         }
       }
+      this._imagesBackup = this._images;
 
       this.lazyload = new LazyLoad({
         elements_selector: lazyloadSelector
@@ -819,25 +984,6 @@
       if (active) {
         this.activate();
       }
-    }
-
-    getNewImage (dom, active) {
-      if (!dom || !isDomNode(dom)) {
-        return null
-      }
-      const url = dom.querySelector('img') ? dom.querySelector('img').src : null;
-      const datafilename = dom.querySelector('img') && dom.querySelector('img').getAttribute('data-filename') ? dom.querySelector('img').getAttribute('data-filename') : null;
-      const filename = datafilename ? datafilename.substring(datafilename.lastIndexOf('/') + 1) : dom.querySelector('img') ? dom.querySelector('img').src.substring(dom.querySelector('img').src.lastIndexOf('/') + 1) : null;
-      const caption = dom.querySelector('.Image__caption span') ? dom.querySelector('.Image__caption span').innerHTML : null;
-
-      return new Image(
-        {
-          url: url,
-          filename: filename,
-          caption: caption,
-          dom: dom,
-          active: active
-        })
     }
 
     activate () {
@@ -876,6 +1022,30 @@
       }
     }
 
+    removeImageById (id) {
+      let target = null;
+      this._images = this._images.filter(image => {
+        if (image.getId() === id) {
+          target = image;
+          return false
+        }
+        return true
+      });
+      if (target) {
+        target.dom.classList.add('Image--markedfordeletion');
+      }
+      return this._images
+    }
+
+    revertRemoveImageById (id) {
+      const match = this._imagesBackup.find(image => image.getId() === id);
+      if (match) {
+        match.dom.classList.remove('Image--markedfordeletion');
+        this._images.push(match);
+      }
+      return this._images
+    }
+
     updateCurrentImage (image) {
       if (this._current instanceof Image) {
         this._current.status = false;
@@ -909,36 +1079,6 @@
       }
     }
 
-    addImage (dom) {
-      if (dom && document.body.contains(dom)) {
-        this._images.push(this.getNewImage(dom, this.active));
-      } else if (dom && !document.body.contains(dom)) {
-        const images = document.querySelectorAll(this.config.imageSelector);
-        if (images.length) {
-          images[images.length - 1].parentNode.insertBefore(dom, images[images.length - 1].nextSibling);
-        } else {
-          this.gallery.appendChild(dom);
-        }
-        this._images.push(this.getNewImage(dom, this.active));
-      }
-      this.lazyload.update();
-    }
-
-    set current (image) {
-      this.updateCurrentImage(image);
-    }
-    get current () {
-      return this._current
-    }
-
-    get images () {
-      return this._images
-    }
-
-    set images (images) {
-      this._images = images;
-    }
-
     setImages (images) {
       if (!images || !images.length) {
         return
@@ -947,8 +1087,48 @@
       this.images = [];
       let i = -1;
       while (++i < images.length) {
-        this.addImage(this.getImageDom(images[i].src, images[i].filename));
+        if ('src' in images[i] && 'filename' in images[i]) {
+          this.addImage(this.getImageDom(images[i].src, images[i].filename));
+        }
       }
+    }
+
+    addImage (dom) {
+      const image = this.getNewImage(dom, this.active);
+      if (dom && document.body.contains(dom)) {
+        this._images.push(image);
+      } else if (dom && !document.body.contains(dom)) {
+        const images = document.querySelectorAll(this.config.imageSelector);
+        if (images.length) {
+          images[images.length - 1].parentNode.insertBefore(dom, images[images.length - 1].nextSibling);
+        } else {
+          this.gallery.appendChild(dom);
+        }
+        this._images.push(image);
+      }
+      this._imagesBackup = this._images;
+      this.lazyload.update();
+      return image
+    }
+
+    getNewImage (dom, active) {
+      if (!dom || !isDomNode(dom)) {
+        return null
+      }
+      const url = dom.querySelector('img') && dom.querySelector('img').src;
+      const datafilename = dom.querySelector('img') && dom.querySelector('img').getAttribute('data-filename');
+      const filename = datafilename ? basename(datafilename) : dom.querySelector('img') ? basename(dom.querySelector('img').src) : null;
+      const caption = dom.querySelector('.Image__caption span') && dom.querySelector('.Image__caption span').innerHTML;
+
+      return new Image(
+        {
+          url: url,
+          filename: filename,
+          caption: caption,
+          dom: dom,
+          active: active,
+          editable: !active
+        })
     }
 
     getImageDom (src, filename) {
@@ -982,6 +1162,21 @@
 
     reset () {
       document.dispatchEvent(new Event(EVENT_RESET));
+    }
+
+    set current (image) {
+      this.updateCurrentImage(image);
+    }
+    get current () {
+      return this._current
+    }
+
+    get images () {
+      return this._images
+    }
+
+    set images (images) {
+      this._images = images;
     }
   }
 
@@ -1020,14 +1215,16 @@
     }
   }
 
-  const mergeSettings$2 = (options) => {
+  /* global Event, FormData, FileReader */
+
+  const mergeSettings$3 = (options) => {
     const settings = {
       dropAreaSelector: '#drop-area',
       fileInputSelector: '#file-input',
       progressBarSelector: '.progress-bar',
-      previewBtnSelector: '.editbutton.preview',
-      cancelBtnSelector: '.editbutton.cancel',
-      saveBtnSelector: '.editbutton.save',
+      buttonPreviewSelector: '.editbutton.preview',
+      buttonCancelSelector: '.editbutton.cancel',
+      buttonSaveSelector: '.editbutton.save',
       gallery: new Gallery({
         gallerySelector: '.Gallery',
         imageSelector: '.Image',
@@ -1045,7 +1242,7 @@
 
   class Editor {
     constructor (options) {
-      this.config = mergeSettings$2(options);
+      this.config = mergeSettings$3(options);
       this.uploadFile = this.uploadFile.bind(this);
       this.previewFile = this.previewFile.bind(this);
       this.files = [];
@@ -1059,18 +1256,18 @@
         fullscreenDropZone,
         fileInputSelector,
         progressBarSelector,
-        previewBtnSelector,
-        cancelBtnSelector,
-        saveBtnSelector
+        buttonPreviewSelector,
+        buttonCancelSelector,
+        buttonSaveSelector
       } = this.config;
 
       this.gallery = gallery;
       this.dropArea = document.querySelector(dropAreaSelector);
       this.fileInput = document.querySelector(fileInputSelector);
       this.fullscreenDropZone = Boolean(fullscreenDropZone);
-      this.cancelBtn = document.querySelector(cancelBtnSelector);
-      this.previewBtn = document.querySelector(previewBtnSelector);
-      this.saveBtn = document.querySelector(saveBtnSelector);
+      this.buttonCancel = document.querySelector(buttonCancelSelector);
+      this.buttonPreview = document.querySelector(buttonPreviewSelector);
+      this.buttonSave = document.querySelector(buttonSaveSelector);
 
       if (!this.gallery) {
         console.warn(`\nModule: Editor.js\nError: Can't create editor.\nCause: No Gallery provided.\nResult: Editor can't initialize.`);
@@ -1086,24 +1283,39 @@
       if (!this.fileInput) {
         console.warn(`\nModule: Editor.js\nWarning: Can't create file input listener.\nCause: No file input with selector [${fileInputSelector}] found in document.\nResult: Upload by file input button is disabled.`);
       }
-      if (!this.saveBtn) {
-        console.warn(`Module: Editor.js\nWarning: Can't add preview functionality.\nCause: No preview button with selector [${previewBtnSelector}] found in document.\nResult: Previewing is disabled.`);
+      if (!this.buttonPreview) {
+        console.warn(`Module: Editor.js\nWarning: Can't add preview functionality.\nCause: No preview button with selector [${buttonPreviewSelector}] found in document.\nResult: Previewing is disabled.`);
       }
-      if (!this.saveBtn) {
-        console.warn(`Module: Editor.js\nWarning: Can't add save functionality.\nCause: No save button with selector [${saveBtnSelector}] found in document.\nResult: Saving is disabled.`);
+      if (!this.buttonSave) {
+        console.warn(`Module: Editor.js\nWarning: Can't add save functionality.\nCause: No save button with selector [${buttonSaveSelector}] found in document.\nResult: Saving is disabled.`);
       }
-      if (!this.cancelBtn) {
-        console.warn(`Module: Editor.js\nWarning: Can't add cancel functionality.\nCause: No cancel button with selector [${cancelBtnSelector}] found in document.\nResult: Undoing changes is disabled.`);
+      if (!this.buttonCancel) {
+        console.warn(`Module: Editor.js\nWarning: Can't add cancel functionality.\nCause: No cancel button with selector [${buttonCancelSelector}] found in document.\nResult: Undoing changes is disabled.`);
       }
       this.progressbar = new ProgressBar(progressBarSelector);
-      this.initListeners();
+
+      this.menu = new Menu();
+      this.menu.addButton({
+        domNode: this.buttonSave,
+        callback: this.editSave.bind(this)
+      });
+      this.menu.addButton({
+        domNode: this.buttonPreview,
+        callback: this.editPreview.bind(this)
+      });
+      this.menu.addButton({
+        domNode: this.buttonCancel,
+        callback: this.editCancel.bind(this)
+      });
+
       this.backup = this.getState();
+      this.initListeners();
     }
 
     initListeners () {
   ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-        this.dropArea.addEventListener(eventName, this.preventDefaults, false);
-        document.body.addEventListener(eventName, this.preventDefaults, false);
+        this.dropArea.addEventListener(eventName, preventDefaults, false);
+        document.body.addEventListener(eventName, preventDefaults, false);
       });
 
       if (this.fullscreenDropZone) {
@@ -1143,41 +1355,67 @@
         });
       }
 
-      if (this.cancelBtn) {
-        this.cancelBtn.addEventListener('click', (e) => {
-          this.cancelChanges();
-        });
-      }
+      this.gallery.images.map(image => {
+        const deleteButton = this.getButton('Delete', 'button--delete', image.getId());
+        const revertButton = this.getButton('Revert', 'button--revert', image.getId());
+        const imageControls = htmlToElement('<div class="Image__controls"></div>');
 
-      if (this.saveBtn) {
-        this.saveBtn.addEventListener('click', (e) => {
-          this.saveChanges();
+        imageControls.appendChild(deleteButton);
+        imageControls.appendChild(revertButton);
+        image.dom.appendChild(imageControls);
+        this.menu.addButton({
+          type: 'toggle',
+          domNode: deleteButton,
+          domNode2: revertButton,
+          callback: this.editDelete.bind(this),
+          callback2: this.editRevert.bind(this)
         });
-      }
-
-      if (this.previewBtn) {
-        this.previewBtn.addEventListener('click', (e) => {
-          this.previewChanges();
-        });
-      }
+      });
     }
 
-    cancelChanges () {
-      if (!isEqual(this.getState(), this.backup)) {
+    getButton (content, buttonClass, id) {
+      const dom = htmlToElement(`<div class="pure-button ${buttonClass}" data-id="${id}"><span>${content}</span></div>`);
+      return dom
+    }
+
+    editCancel () {
+      if (!areObjectsEqual(this.getState(), this.backup)) {
         this.save(this.backup);
       }
     }
 
-    saveChanges () {
+    editPreview () {
+      window.location = baseUrl();
+    }
+
+    editSave () {
       const state = this.getState();
-      if (!isEqual(state, this.backup)) {
+      if (!areObjectsEqual(state, this.backup)) {
         this.save(state);
+      }
+    }
+
+    editDelete (e) {
+      if (e) {
+        const id = e.target.getAttribute('data-id') || e.target.parentNode.getAttribute('data-id');
+        if (id) {
+          this.gallery.removeImageById(id);
+        }
+      }
+    }
+
+    editRevert (e) {
+      if (e) {
+        const id = e.target.getAttribute('data-id') || e.target.parentNode.getAttribute('data-id');
+        if (id) {
+          this.gallery.revertRemoveImageById(id);
+        }
       }
     }
 
     save (data) {
       document.dispatchEvent(new Event(EVENT_LOADING));
-      this.saveData(data, this.getCsrfToken(this.saveBtn))
+      this.uploadData(data, this.getCsrfToken(this.buttonSave))
         .then((res) => {
           if (res.data.images) {
             this.gallery.setImages(res.data.images);
@@ -1199,50 +1437,49 @@
       const images = this.gallery.images;
 
       if (title) {
-        result.title = stripHtmlTags(title.innerHTML);
+        result.title = removeHtml(title.innerHTML);
       }
       if (note) {
-        result.note = stripHtmlTags(note.innerHTML);
+        result.note = removeHtml(note.innerHTML);
       }
       if (images && images.length) {
         result.images = [...images].map((image) => {
           return {
             id: image.getId(),
             filename: image.filename,
-            newfilename: image.caption
+            newfilename: removeHtml(image.caption)
           }
         });
       }
       return result
     }
 
-    previewChanges () {
-      window.location = baseUrl();
-    }
+    uploadData (data, csrfToken) {
+      const api = new Fetch();
+      const formData = new FormData();
+      const url = API_URL;
 
-    saveData (data, csrfToken) {
+      formData.append('data', JSON.stringify(data));
+      formData.append('action', API_SAVE);
+      formData.append('csrf_token', csrfToken);
+
       return new Promise((resolve, reject) => {
-        const api = new Fetch();
-        const url = API_URL;
-        const formData = new FormData();
-
-        formData.append('data', JSON.stringify(data));
-        formData.append('action', API_SAVE);
-        formData.append('csrf_token', csrfToken);
         api.newRequest(url, formData)
           .then(data => resolve(data))
           .catch(err => reject(err));
       })
     }
-    uploadFile (file, csrfToken, i) {
-      return new Promise((resolve, reject) => {
-        const api = new Fetch();
-        const url = API_URL;
-        const formData = new FormData();
 
-        formData.append('file', file);
-        formData.append('action', API_UPLOAD);
-        formData.append('csrf_token', csrfToken);
+    uploadFile (file, csrfToken, i) {
+      const api = new Fetch();
+      const url = API_URL;
+      const formData = new FormData();
+
+      formData.append('file', file);
+      formData.append('action', API_UPLOAD);
+      formData.append('csrf_token', csrfToken);
+
+      return new Promise((resolve, reject) => {
         api.newRequest(url, formData)
           .then(data => resolve(data))
           .catch(err => reject(err));
@@ -1254,8 +1491,16 @@
       reader.readAsDataURL(file);
 
       reader.onloadend = () => {
-        this.gallery.addImage(this.getPreviewDom(reader.result, filename));
+        const image = this.gallery.addImage(this.getPreviewDom(reader.result, filename));
+        image && image.dom.appendChild(this.getDeleteButton(image.getId()));
       };
+    }
+
+    getCsrfToken (domNode) {
+      if (domNode && isDomNode(domNode)) {
+        const inputElement = domNode.querySelector('[name=csrf_token]');
+        return inputElement && inputElement.value
+      }
     }
 
     getPreviewDom (src, filename) {
@@ -1266,6 +1511,21 @@
         </div>
         <div class="Image__caption"><span contenteditable="true">${stripExtension(filename)}</span></div>
         </div>`)
+      }
+    }
+
+    handleDrop (e) {
+      const files = e.dataTransfer.files;
+      const imageFiles = [];
+
+      let i = -1;
+      while (++i < files.length) {
+        if (files[i].type.match(/image.*/)) {
+          imageFiles.push(files[i]);
+        }
+      }
+      if (imageFiles.length > 0) {
+        this.handleFiles(imageFiles);
       }
     }
 
@@ -1286,34 +1546,6 @@
       });
     }
 
-    handleDrop (e) {
-      const files = e.dataTransfer.files;
-      const imageFiles = [];
-
-      let i = -1;
-      while (++i < files.length) {
-        if (files[i].type.match(/image.*/)) {
-          imageFiles.push(files[i]);
-        }
-      }
-      if (imageFiles.length > 0) {
-        this.handleFiles(imageFiles);
-      }
-    }
-
-    getCsrfToken (domNode) {
-      if (domNode && isDomNode(domNode)) {
-        const inputElement = domNode.querySelector('[name=csrf_token]');
-        return inputElement && inputElement.value
-      }
-      return undefined
-    }
-
-    preventDefaults (e) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-
     highlight (e) {
       this.dropArea.classList.add('highlight');
     }
@@ -1323,7 +1555,7 @@
     }
   }
 
-  const mergeSettings$3 = (options) => {
+  const mergeSettings$4 = (options) => {
     const settings = {
       selector: 'Loader'
     };
@@ -1337,7 +1569,7 @@
 
   class Loader {
     constructor (options) {
-      this.config = mergeSettings$3(options);
+      this.config = mergeSettings$4(options);
       this.init();
     }
 

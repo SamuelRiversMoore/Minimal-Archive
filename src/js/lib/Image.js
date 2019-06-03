@@ -1,13 +1,17 @@
-import {
-  isDomNode,
-  uuidv4,
-  htmlToElement
-} from './Helpers.js'
+/* global CustomEvent, Event */
+
 import {
   EVENT_RESET,
   EVENT_STATUS_CHANGE,
   EVENT_IMAGE_UPDATE
 } from './Constants.js'
+
+import {
+  isDomNode,
+  uuidv4,
+  htmlToElement,
+  removeHtml
+} from './Helpers.js'
 
 const mergeSettings = (options) => {
   const settings = {
@@ -17,7 +21,8 @@ const mergeSettings = (options) => {
     url: null,
     caption: null,
     imageSelector: '.Image',
-    lazyloadSelector: '.lazy'
+    lazyloadSelector: '.lazy',
+    editable: false
   }
 
   for (const attrName in options) {
@@ -37,7 +42,8 @@ class Image {
       filename,
       caption,
       dom,
-      active
+      active,
+      editable
     } = this.config
 
     this._id = uuidv4()
@@ -46,11 +52,12 @@ class Image {
       console.warn('%o is not a dom element. Can\'t get image dom.', dom)
     }
     this._src = url
-    this._caption = caption
+    this._caption = removeHtml(caption)
     this._filename = filename
     this._captionSelector = this._dom && this._dom.querySelector('[contenteditable]')
     this._active = active
     this._status = false
+    this._editable = editable
 
     this.applyStyle()
     this.initListeners()
@@ -66,11 +73,9 @@ class Image {
       this.dispatchStatusUpdate()
     })
 
-    if (this._captionSelector) {
-      // 1. Listen for changes of the contenteditable element
+    if (this._editable && this._captionSelector) {
       this._captionSelector.addEventListener('input', (e) => {
-        // 2. Retrive the text from inside the element
-        this._caption = this._captionSelector.innerHTML
+        this._caption = removeHtml(this._captionSelector.innerHTML)
       })
     }
   }
@@ -107,12 +112,10 @@ class Image {
     if (src) {
       return htmlToElement(`<div class="Image">
         <div class="Image__container">
-          <img class="lazy miniarch" src="/assets/css/loading.gif" data-src="${src}" data-filename="${filename}" title="${filename} preview" />
+          <img class="lazy miniarch" src="/assets/css/loading.gif" data-src="${removeHtml(src)}" data-filename="${removeHtml(filename)}" title="${filename} preview" />
         </div>
-        <div class="Image__caption"><span contenteditable="true">${caption}</span></div>
+        <div class="Image__caption"><span contenteditable="true">${removeHtml(caption)}</span></div>
         </div>`)
-    } else {
-      return null
     }
   }
 
@@ -143,14 +146,14 @@ class Image {
   }
 
   set filename (filename) {
-    this._filename = filename
+    this._filename = removeHtml(filename)
   }
   get filename () {
     return this._filename
   }
 
   set src (src) {
-    this._src = src
+    this._src = removeHtml(src)
   }
   get src () {
     return this._src

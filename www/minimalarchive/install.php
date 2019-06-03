@@ -52,13 +52,13 @@ if (!has_meta()) {
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         <meta name="robots" content="noindex, nofollow">
-        <title>Installation</title>
+        <title><?= translate('setup')?></title>
         <link rel="stylesheet" href="<?= url('assets/css/install.css') ?>">
     </head>
     <body>
         <main>
             <header>
-                Installation
+                <?= translate('setup') ?>
             </header>
             <section class="Form">
                 <?php
@@ -76,64 +76,64 @@ if (!has_meta()) {
                 <?php if (!strlen($success)): ?>
                 <form class="pure-form pure-form-stacked" action="<?= url('/install?action=confirm') ?>" method="post" accept-charset="utf-8" enctype="multipart/form-data">
                     <fieldset>
-                        <legend>Configuration</legend>
+                        <legend><?= translate('configuration')?></legend>
 
                         <div class="pure-control-group">
-                            <label for="foo">Title *</label>
+                            <label for="foo"><?= translate('title') ?> *</label>
                             <input id="foo" type="text" class="pure-input-1-2" placeholder="Enter something here..." required="true" name="title">
                         </div>
 
                         <div class="pure-control-group">
-                            <label for="note">Note (visible at the bottom of the page)</label>
+                            <label for="note"><?= translate('note')?></label>
                             <textarea id="note" class="pure-input-1-2" placeholder="Note" name="note"></textarea>
                         </div>
 
                         <div class="pure-control-group">
-                            <label for="favicon">Favicon</label>
+                            <label for="favicon"><?= translate('favicon')?></label>
                             <input id="favicon" type="file" accept="image/*" class="pure-input-1-2" name="favicon">
                         </div>
                     </fieldset>
 
                     <fieldset>
-                        <legend>Social</legend>
+                        <legend><?= translate('social') ?></legend>
                         <div class="pure-control-group">
-                            <label for="description">Description</label>
+                            <label for="description"><?= translate('description')?></label>
                             <textarea id="description" class="pure-input-1-2" placeholder="Description" name="description"></textarea>
                         </div>
 
                         <div class="pure-control-group">
-                            <label for="socialimage">Share Image</label>
+                            <label for="socialimage"><?= translate('share_image')?></label>
                             <input id="socialimage" type="file" accept="image/*" class="pure-input-1-2" name="socialimage">
                         </div>
                     </fieldset>
 
                     <fieldset>
-                        <legend>Advanced</legend>
+                        <legend><?= translate('advanced') ?></legend>
                         <div class="pure-control-group">
-                            <label for="imagefolder">Custom Images Folder</label>
+                            <label for="imagefolder"><?= translate('custom_image_folder')?></label>
                             <input id="imagefolder" type="text" class="pure-input-1-2" placeholder="Folder name without trailing slash (default: images)" name="imagefolder">
                         </div>
                     </fieldset>
 
                     <fieldset>
-                        <legend>Account</legend>
+                        <legend><?= translate('account') ?></legend>
                         <div class="pure-control-group">
-                            <label for="email">Email Address *</label>
-                            <input id="email" type="email" placeholder="Email Address" required="true" name="email">
+                            <label for="email"><?= translate('email_address') ?> *</label>
+                            <input id="email" type="email" placeholder="Email Address" required="true" name="email" autocomplete="off">
                         </div>
 
                         <div class="pure-control-group">
-                            <label for="password">Password *</label>
-                            <input id="password" type="password" placeholder="Password" required="true" name="password">
+                            <label for="password"><?= translate('password') ?> *</label>
+                            <input id="password" type="password" placeholder="Password" required="true" name="password" autocomplete="new-password">
                         </div>
                     </fieldset>
                     <div class="pure-controls">
                         <label for="cb" class="pure-checkbox">
-                            <input id="cb" type="checkbox" name="confirm" required="true"> Double check everything and tick the box
+                            <input id="cb" type="checkbox" name="confirm" required="true"> <?= translate('double_check') ?> *
                         </label>
                     </div>
                     <input type="hidden" name="csrf_token" value="<?= get_token('install') ?>" />
-                    <button type="submit" class="pure-button pure-button-primary">Submit</button>
+                    <button type="submit" class="pure-button pure-button-primary"><?= translate('confirm') ?></button>
                 </form>
             </section>
             <?php endif; ?>
