@@ -63,7 +63,7 @@ function create_accountfile($email, $password)
         $hashedPass = password_hash($password, PASSWORD_DEFAULT);
         $hashedEmail = password_hash($email, PASSWORD_DEFAULT);
         if (!file_exists($dir)) {
-            mkdir($dir, 0777, true);
+            mkdir($dir, 0755, true);
         }
         if (file_exists($filename)) {
             throw new Exception("account_exists", 1);
@@ -92,7 +92,7 @@ function create_metafile($args)
         $dir = ROOT_FOLDER;
         $filename = DEFAULT_METAFILE;
         if (!file_exists($dir)) {
-            mkdir($dir, 0777, true);
+            mkdir($dir, 0755, true);
         }
         $file = fopen($filename, "w");
         foreach ($args as $key => $value) {
@@ -108,6 +108,18 @@ function create_metafile($args)
         return true;
     } catch (Exception $e) {
         throw new Exception($e->getMessage(), $e->getCode());
+    }
+}
+
+function create_imagefolder()
+{
+    try {
+        $dir = DEFAULT_IMAGEFOLDER;
+        if (!file_exists($dir)) {
+            mkdir($dir, 0755, true);
+        }
+    } catch (Exception $e) {
+        throw $e;
     }
 }
 
@@ -129,6 +141,7 @@ function process_form($args)
         save_uploadedfiles($form);
         create_accountfile($form['email'], $form['password']);
         create_metafile($form);
+        create_imagefolder();
     } catch (Exception $e) {
         uninstall(true);
         throw $e;
