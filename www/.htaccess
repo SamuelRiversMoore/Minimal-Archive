@@ -6,7 +6,6 @@ Options All -Indexes
 
 # If in subfolder
 RewriteEngine on
-#RewriteBase /minimalarchive
 
 # HTTPS
 RewriteCond %{HTTP_HOST} ^www\. [NC,OR]
@@ -14,23 +13,12 @@ RewriteCond %{HTTPS} off
 RewriteCond %{HTTP_HOST} ^(?:www\.)?(.+)$ [NC]
 RewriteRule ^ https://%1%{REQUEST_URI} [R=301,L,NE]
 
-RewriteRule ^minimalarchive/(.*) index.php [L]
-RewriteRule ^install/(.*) minimalarchive/install.php [L]
-RewriteRule ^editor/(.*) minimalarchive/editor/index.php [L]
-
 # make site links work
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(.*) index.php [L]
 
 </IfModule>
-
-# Additional recommended values
-# Remove comments for those you want to use.
-#
-# AddDefaultCharset UTF-8
-#
-# php_flag short_open_tag on
 
 # Security Headers
 <IfModule mod_headers.c>
@@ -56,21 +44,8 @@ RewriteRule ^(.*) index.php [L]
   #This opens support to older browsers that support X-WebKit-CSP but not Content-Security-Policy
   Header unset X-WebKit-CSP
   Header add X-WebKit-CSP "default-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src * 'self' data: about: blob:; script-src 'self' 'unsafe-inline'; frame-src 'self';  connect-src 'self'; worker-src 'self';
-
 </IfModule>
 
-<IfModule mod_expires.c>
-  #  ExpiresActive On
-  #  ExpiresDefault "access plus 10 days"
-  #  ExpiresByType text/css "access plus 1 week"
-  #  ExpiresByType text/plain "access plus 1 month"
-  #  ExpiresByType image/gif "access plus 1 month"
-  #  ExpiresByType image/png "access plus 1 month"
-  #  ExpiresByType image/jpeg "access plus 1 month"
-  #  ExpiresByType image/svg+xml "access plus 1 month"
-  #  ExpiresByType application/javascript "access plus 1 week"
-  #  ExpiresByType application/x-icon "access plus 1 year"
-</IfModule>
 <IfModule mod_filter.c>
   AddOutputFilterByType DEFLATE \
   "application/atom+xml" \
@@ -113,4 +88,18 @@ RewriteRule ^(.*) index.php [L]
   Header set Pragma "no-cache"
   Header set Expires 0
   Header set Accept-Ranges "bytes"
+</IfModule>
+
+#ENABLE CACHING
+<IfModule mod_expires.c>
+  #  ExpiresActive On
+  #  ExpiresDefault "access plus 10 days"
+  #  ExpiresByType text/css "access plus 1 week"
+  #  ExpiresByType text/plain "access plus 1 month"
+  #  ExpiresByType image/gif "access plus 1 month"
+  #  ExpiresByType image/png "access plus 1 month"
+  #  ExpiresByType image/jpeg "access plus 1 month"
+  #  ExpiresByType image/svg+xml "access plus 1 month"
+  #  ExpiresByType application/javascript "access plus 1 week"
+  #  ExpiresByType application/x-icon "access plus 1 year"
 </IfModule>
