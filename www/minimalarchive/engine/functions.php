@@ -252,7 +252,7 @@ function array_to_file(array $data, $file = DEFAULT_METAFILE)
         $dir = ROOT_FOLDER;
         $filename = $file;
         if (!file_exists($dir)) {
-            mkdir($dir, 0777, true);
+            mkdir($dir, 0755, true);
         }
         $file = fopen($filename, "w");
         foreach ($data as $key => $value) {
@@ -335,7 +335,7 @@ function create_token()
         $dir = VAR_FOLDER . DS;
         $filename = ".token";
         if (!file_exists($dir)) {
-            mkdir($dir, 0777, true);
+            mkdir($dir, 0755, true);
         }
         $file = fopen($dir . DS . $filename, "w");
         fwrite($file, bin2hex(random_bytes(32)) . "\n");
@@ -424,7 +424,7 @@ function add_session($id, $key)
         $dir = VAR_FOLDER;
         $filename = DEFAULT_SESSIONSFILE;
         if (!file_exists($dir)) {
-            mkdir($dir, 0777, true);
+            mkdir($dir, 0755, true);
         }
         $sessions = array();
         $account = null;
