@@ -3,6 +3,16 @@ Minimal-Archive
 
 A minimal tool (javascript with no dependencies, php) to display images on a web page.
 
+## Table of Contents
+
+1. Prerequisites
+2. Installation
+3. Usage
+4. Project structure
+5. Translation
+6. Compilation
+7. Extras (fonts etc.)
+
 ## Prerequisites
 
 - `php` >= 7.0
@@ -61,8 +71,12 @@ If you wish to edit the css, you may want to use the scss sources. Compile using
 
 ```sh
 # index page
-sass --watch --scss src/css/pages/index.scss:www/assets/css/index.css
+sass --watch src/css/pages/index.scss:www/assets/css/index.css
 
 # installation page
-sass --watch --scss src/css/pages/install.scss:www/assets/css/install.css
+sass --watch src/css/pages/install.scss:www/assets/css/install.css
 ```
+
+## Extra
+
+Suggested Font: [Arcadia Textbook](https://github.com/SamuelRiversMoore/Arcadia-Textbook)
