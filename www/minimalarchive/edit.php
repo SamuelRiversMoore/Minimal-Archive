@@ -116,7 +116,7 @@ try {
         if ($error && strlen($error)) {
             put_error($error);
         } else {
-            ?>
+        ?>
 
         <div id="drop-area">
             <span class="drop-message"><?= translate('edit_dragzone') ?></span>
@@ -124,6 +124,7 @@ try {
                 <input type="hidden" name="csrf_token" value="<?= get_token('upload') ?>" />
             </form>
         </div>
+        
         <input class="modal-state" id="modal-1" type="checkbox" checked />
         <aside class="modal">
             <label class="modal__bg" for="modal-1"></label>
@@ -143,21 +144,25 @@ try {
         </aside>
 
         <aside class="controls">
-            <div class="editbutton preview pure-button">
-                <span><?= translate('exit') ?></span>
+            <div class="title"><?= translate('editor_title') ?></div>
+            <div class="editbutton preview">
+                <span class="icon">🏃 </span><span><?= translate('exit') ?></span>
             </div>
-            <div class="editbutton save pure-button">
+            <div class="editbutton save">
                 <input type="hidden" name="csrf_token" value="<?= get_token('save') ?>" />
-                <span><?= translate('save') ?></span>
+                <span class="icon">✍️ </span><span><?= translate('save') ?></span>
             </div>
-            <div class="editbutton cancel pure-button">
-                <span><?= translate('cancel') ?></span>
+            <div class="editbutton cancel">
+                <span class="icon">🙅</span><span><?= translate('cancel') ?></span>
             </div>
+            <div class="footer"><?= translate('instructions_add_pic') ?></div>
         </aside>
-        <header>
-            <section class="title" contenteditable='true'><?= $title ?></section>
-        </header>
         <main>
+
+            <header>
+                <section class="title" contenteditable='true'><?= $title ?></section>
+            </header>
+
             <section class="Gallery">
                 <?php
                 foreach ($images as $image) {
@@ -170,13 +175,13 @@ try {
                     echo $output;
                 } ?>
             </section>
-            <span id="breaker"></span>
+
+            <footer>
+                <section class="note" contenteditable='true'>
+                    <?= $note ?>
+                </section>
+            </footer>
         </main>
-        <footer>
-            <section class="note" contenteditable='true'>
-                <?= $note ?>
-            </section>
-        </footer>
         <?php
         }
         ?>

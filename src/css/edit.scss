@@ -1,12 +1,19 @@
-@import 'index';
-@import '../modules/modal';
-@import '../modules/buttons';
-@import '../modules/controls';
-@import '../modules/loader';
+@import './common/common';
+
+@import './modules/modal';
+@import './modules/notice';
+@import './modules/buttons';
+@import './modules/controls';
+@import './modules/loader';
+
+@import './components/Gallery';
+@import './components/Header';
+@import './components/Footer';
 
 body {
   background: pink;
-  color: #333;
+  padding-left: $sidebarWidth;
+  height: 100%;
 }
 
 .modal {
@@ -22,12 +29,12 @@ body {
 #drop-area {
   position: fixed;
   top: 0;
-  left: 0;
+  left: $sidebarWidth;
   height: 100%;
-  width: 100%;
+  width: calc(100% - #{$sidebarWidth});
   z-index: -1;
   opacity: 0;
-  background: blue;
+  background: rgb(51, 51, 51);
   transition: opacity 0.25s ease-in-out;
   &.active {
     z-index: 999;
@@ -49,4 +56,10 @@ body {
 
 .Image .Image__caption span {
   cursor: text;
+}
+
+main {
+  position: relative;
+  height: 100%;
+  padding-left: 20px;
 }
