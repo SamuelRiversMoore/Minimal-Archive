@@ -61,20 +61,17 @@ It's a simple array where the key is the language code.
 If you plan to edit the javascript, you need to compile it to iife. A simple way to do this would be to use `rollup` via `npx`.
 
 ```sh
-npx rollup ./src/js/index.js --file www/assets/js/main.js --format iife
+npx rollup ./src/js/index.js --file www/assets/js/index.js --format iife -w
 
-# Watch the files using -w argument:
-npx rollup ./src/js/index.js --file www/assets/js/main.js --format iife -w
+npx rollup ./src/js/edit.js --file www/assets/js/edit.js --format iife -w
+
+# the -w option is for watching for changes and recompiling
 ```
 
 If you wish to edit the css, you may want to use the scss sources. Compile using sass.
 
 ```sh
-# index page
-sass --watch src/css/pages/index.scss:www/assets/css/index.css
-
-# installation page
-sass --watch src/css/pages/install.scss:www/assets/css/install.css
+sass --watch src/css:www/assets/css
 ```
 
 ## Extra
