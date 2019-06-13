@@ -335,6 +335,162 @@
     }
   }
 
+  const API_URL = baseUrl() + '/api';
+  const API_UPLOAD = 'upload';
+  const API_SAVE = 'save';
+
+  const SELECTOR_TITLE = '.title';
+  const SELECTOR_NOTE = '.note';
+
+  const EVENT_IMAGE_UPDATE = 'image-update';
+  const EVENT_LOADED = 'loaded';
+  const EVENT_LOADING = 'loading';
+  const EVENT_MODAL_UPDATE = 'modal-update';
+  const EVENT_STATUS_CHANGE = 'status-change';
+  const EVENT_RESET = 'reset';
+
+  /* global CustomEvent */
+
+  const mergeSettings$1 = (options) => {
+    const settings = {
+      target: false,
+      content: null,
+      customClass: null,
+      active: false,
+      triggers: null
+    };
+
+    for (const attrName in options) {
+      settings[attrName] = options[attrName];
+    }
+
+    return settings
+  };
+
+  class Modal {
+    constructor (options) {
+      this.config = mergeSettings$1(options);
+      this.keyHandler = this.keyHandler.bind(this);
+      this.init();
+    }
+
+    init () {
+      const {
+        target,
+        content,
+        active,
+        triggers
+      } = this.config;
+
+      this._active = false;
+      this._id = uuidv4();
+      this._triggers = triggers && isDomNode(triggers) ? [triggers] : triggers && typeof triggers === 'string' ? document.querySelectorAll(triggers) : false;
+      this._content = content && isDomNode(content) ? content : content && content !== false ? htmlToElement(content) : null;
+      this._target = target && isDomNode(target) ? target : target && typeof target === 'string' ? document.querySelector(target) : false;
+
+      this._dom = this.setupDom(this._target, this._content, this._id);
+      this._bodyoverflow = document.body.style.overflow;
+      this.setupListeners();
+
+      if (active) {
+        this.activate();
+      } else {
+        this.deactivate();
+      }
+    }
+
+    activate () {
+      this.dispatchStatusUpdate(true);
+    }
+
+    deactivate () {
+      this.dispatchStatusUpdate(false);
+    }
+
+    toggle () {
+      this.dispatchStatusUpdate(!this._active);
+    }
+
+    setupListeners () {
+      if (this._triggers) {
+        let i = -1;
+        while (++i < this._triggers.length) {
+          this._triggers[i].addEventListener('click', this.toggle.bind(this));
+        }
+      }
+
+      document.addEventListener('keyup', this.keyHandler);
+      document.addEventListener(EVENT_MODAL_UPDATE, (e) => {
+        if (e && e.detail && e.detail.id === this._id) {
+          this._active = e.detail.status;
+          this.updateView();
+        }
+      });
+    }
+
+    updateView () {
+      if (this._active) {
+        this._bodyoverflow = document.body.style.overflow;
+        this._dom.style.opacity = 1;
+        this._dom.style.visibility = 'visible';
+        document.body.style.position = 'fixed';
+        document.body.style.overflow = 'hidden';
+      } else {
+        this._dom.style.opacity = 0;
+        this._dom.style.visibility = 'hidden';
+        document.body.style.position = 'relative';
+        document.body.style.overflow = this._bodyoverflow;
+      }
+    }
+
+    dispatchStatusUpdate (status) {
+      document.dispatchEvent(new CustomEvent(EVENT_MODAL_UPDATE, {
+        detail: {
+          id: this._id,
+          status: status
+        }
+      }));
+    }
+
+    keyHandler (e) {
+      switch (e.key) {
+        case 'Escape':
+          if (this._active) {
+            this.deactivate();
+          }
+          break
+      }
+    }
+
+    setupDom (target, content, id) {
+      if (target) {
+        if (content) {
+          target.innerHTML = content;
+        }
+        return target
+      } else {
+        const okContent = content || '';
+        const container = htmlToElement(`
+        <aside>
+          <div class="modal">
+            <label class="modal__bg" for="${id}"></label>
+            <div class="modal__inner">
+                <label class="modal__close" for="${id}"></label>
+                ${okContent}
+            </div>
+          </div>
+        </aside>
+      `);
+        document.body.appendChild(container);
+        return container
+      }
+    }
+
+    get active () {
+      return this._active
+    }
+  }
+
   const runningOnBrowser = typeof window !== 'undefined';
 
   const isBot =
@@ -764,22 +920,9 @@
     autoInitialize(LazyLoad, window.lazyLoadOptions);
   }
 
-  const API_URL = baseUrl() + '/api';
-  const API_UPLOAD = 'upload';
-  const API_SAVE = 'save';
-
-  const SELECTOR_TITLE = '.title';
-  const SELECTOR_NOTE = '.note';
-
-  const EVENT_RESET = 'reset';
-  const EVENT_STATUS_CHANGE = 'status-change';
-  const EVENT_LOADED = 'loaded';
-  const EVENT_LOADING = 'loading';
-  const EVENT_IMAGE_UPDATE = 'image-update';
-
   /* global CustomEvent, Event */
 
-  const mergeSettings$1 = (options) => {
+  const mergeSettings$2 = (options) => {
     const settings = {
       dom: null,
       filename: null,
@@ -800,7 +943,7 @@
 
   class Image {
     constructor (options) {
-      this.config = mergeSettings$1(options);
+      this.config = mergeSettings$2(options);
       this.dispatchStatusUpdate = this.dispatchStatusUpdate.bind(this);
 
       const {
@@ -928,7 +1071,7 @@
 
   /* global Event */
 
-  const mergeSettings$2 = (options) => {
+  const mergeSettings$3 = (options) => {
     const settings = {
       gallerySelector: '.Gallery',
       imageSelector: '.Image',
@@ -945,7 +1088,7 @@
 
   class Gallery {
     constructor (options) {
-      this.config = mergeSettings$2(options);
+      this.config = mergeSettings$3(options);
       this.init();
     }
 
@@ -960,17 +1103,18 @@
 
       this.keyHandler = this.keyHandler.bind(this);
       this.updateImage = this.updateImage.bind(this);
-      this.gallery = document.querySelector(gallerySelector);
+      this._gallery = document.querySelector(gallerySelector);
+      this._active = active;
       this._current = null;
 
-      if (!this.gallery) {
+      if (!this._gallery) {
         console.warn(`\nModule: Gallery.js\nWarning: No Gallery dom node found in document.\nCause: No gallerySelector provided.\nResult: Adding images may fail.`);
       }
 
       let i = -1;
       this._images = [];
       while (++i < images.length) {
-        const image = this.getNewImage(images[i], this.active);
+        const image = this.getNewImage(images[i], this._active);
         if (image) {
           this._images.push(image);
         }
@@ -987,21 +1131,21 @@
     }
 
     activate () {
-      this.active = true;
-      this.gallery.classList.remove('Gallery--inactive');
-      this.gallery.classList.add('Gallery--active');
+      this._active = true;
+      this._gallery.classList.remove('Gallery--inactive');
+      this._gallery.classList.add('Gallery--active');
       this.initListeners();
     }
 
     deactivate () {
-      this.active = false;
-      this.gallery.classList.remove('Gallery--active');
-      this.gallery.classList.add('Gallery--inactive');
+      this._active = false;
+      this._gallery.classList.remove('Gallery--active');
+      this._gallery.classList.add('Gallery--inactive');
       this.removeListeners();
     }
 
     toggleActive () {
-      this.active = !this.active;
+      this._active = !this._active;
     }
 
     initListeners () {
@@ -1083,7 +1227,7 @@
       if (!images || !images.length) {
         return
       }
-      this.gallery.innerHTML = null;
+      this._gallery.innerHTML = null;
       this.images = [];
       let i = -1;
       while (++i < images.length) {
@@ -1094,7 +1238,7 @@
     }
 
     addImage (dom) {
-      const image = this.getNewImage(dom, this.active);
+      const image = this.getNewImage(dom, this._active);
       if (dom && document.body.contains(dom)) {
         this._images.push(image);
       } else if (dom && !document.body.contains(dom)) {
@@ -1102,7 +1246,7 @@
         if (images.length) {
           images[images.length - 1].parentNode.insertBefore(dom, images[images.length - 1].nextSibling);
         } else {
-          this.gallery.appendChild(dom);
+          this._gallery.appendChild(dom);
         }
         this._images.push(image);
       }
@@ -1217,7 +1361,7 @@
 
   /* global Event, FormData, FileReader */
 
-  const mergeSettings$3 = (options) => {
+  const mergeSettings$4 = (options) => {
     const settings = {
       dropAreaSelector: '#drop-area',
       fileInputSelector: '#file-input',
@@ -1242,7 +1386,7 @@
 
   class Editor {
     constructor (options) {
-      this.config = mergeSettings$3(options);
+      this.config = mergeSettings$4(options);
       this.uploadFile = this.uploadFile.bind(this);
       this.previewFile = this.previewFile.bind(this);
       this.files = [];
@@ -1306,7 +1450,13 @@
       this.menu.addButton({
         domNode: this.buttonCancel,
         callback: this.editCancel.bind(this)
-      });
+      })
+
+      ;(() => new Modal({
+        target: '.modal',
+        active: true,
+        triggers: '.modal__bg, .modal__close'
+      }))();
 
       this.backup = this.getState();
       this.initListeners();
@@ -1555,7 +1705,7 @@
     }
   }
 
-  const mergeSettings$4 = (options) => {
+  const mergeSettings$5 = (options) => {
     const settings = {
       selector: 'Loader'
     };
@@ -1569,7 +1719,7 @@
 
   class Loader {
     constructor (options) {
-      this.config = mergeSettings$4(options);
+      this.config = mergeSettings$5(options);
       this.init();
     }
 

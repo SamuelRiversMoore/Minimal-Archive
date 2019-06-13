@@ -124,8 +124,7 @@ try {
                 <input type="hidden" name="csrf_token" value="<?= get_token('upload') ?>" />
             </form>
         </div>
-        
-        <input class="modal-state" id="modal-1" type="checkbox" checked />
+
         <aside class="modal">
             <label class="modal__bg" for="modal-1"></label>
             <div class="modal__inner">
@@ -133,9 +132,17 @@ try {
                 <h1><?= translate('edit_mode_welcome') ?></h1>
                 <p>
                     <ul>
-                        <li>📝 All the text is editable, just click on the text to change it.</li>
-                        <li>🖼 To add an image, just drag and drop it on the screen.</li>
-                        <li>🔁 Reorder the images by renaming them.</li>
+                        <li>
+                            <div class="icon">📝</div>
+                            <div>All the text is editable, just click on the text to change it.<div></li>
+                        <li>
+                            <div class="icon">🖼</div>
+                            <div>To add an image, just drag and drop it on the screen.<div>
+                        </li>
+                        <li>
+                            <div class="icon">🔁</div>
+                            <div>Reorder the images by renaming them.<div>
+                        </li>
                     </ul>
 
                     <br/>

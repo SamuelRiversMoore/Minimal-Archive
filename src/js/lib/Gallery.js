@@ -46,17 +46,18 @@ class Gallery {
 
     this.keyHandler = this.keyHandler.bind(this)
     this.updateImage = this.updateImage.bind(this)
-    this.gallery = document.querySelector(gallerySelector)
+    this._gallery = document.querySelector(gallerySelector)
+    this._active = active
     this._current = null
 
-    if (!this.gallery) {
+    if (!this._gallery) {
       console.warn(`\nModule: Gallery.js\nWarning: No Gallery dom node found in document.\nCause: No gallerySelector provided.\nResult: Adding images may fail.`)
     }
 
     let i = -1
     this._images = []
     while (++i < images.length) {
-      const image = this.getNewImage(images[i], this.active)
+      const image = this.getNewImage(images[i], this._active)
       if (image) {
         this._images.push(image)
       }
@@ -73,21 +74,21 @@ class Gallery {
   }
 
   activate () {
-    this.active = true
-    this.gallery.classList.remove('Gallery--inactive')
-    this.gallery.classList.add('Gallery--active')
+    this._active = true
+    this._gallery.classList.remove('Gallery--inactive')
+    this._gallery.classList.add('Gallery--active')
     this.initListeners()
   }
 
   deactivate () {
-    this.active = false
-    this.gallery.classList.remove('Gallery--active')
-    this.gallery.classList.add('Gallery--inactive')
+    this._active = false
+    this._gallery.classList.remove('Gallery--active')
+    this._gallery.classList.add('Gallery--inactive')
     this.removeListeners()
   }
 
   toggleActive () {
-    this.active = !this.active
+    this._active = !this._active
   }
 
   initListeners () {
@@ -169,7 +170,7 @@ class Gallery {
     if (!images || !images.length) {
       return
     }
-    this.gallery.innerHTML = null
+    this._gallery.innerHTML = null
     this.images = []
     let i = -1
     while (++i < images.length) {
@@ -180,7 +181,7 @@ class Gallery {
   }
 
   addImage (dom) {
-    const image = this.getNewImage(dom, this.active)
+    const image = this.getNewImage(dom, this._active)
     if (dom && document.body.contains(dom)) {
       this._images.push(image)
     } else if (dom && !document.body.contains(dom)) {
@@ -188,7 +189,7 @@ class Gallery {
       if (images.length) {
         images[images.length - 1].parentNode.insertBefore(dom, images[images.length - 1].nextSibling)
       } else {
-        this.gallery.appendChild(dom)
+        this._gallery.appendChild(dom)
       }
       this._images.push(image)
     }

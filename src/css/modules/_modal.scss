@@ -22,33 +22,19 @@
   cursor: pointer;
 }
 
-.modal-state {
-  display: none;
-}
-
-.modal-state:checked + .modal {
-  opacity: 1;
-  visibility: visible;
-}
-
-.modal-state:checked + .modal .modal__inner {
-  top: 0;
-}
-
 .modal__inner {
   transition: top .25s ease;
   position: absolute;
-  top: -20%;
-  right: 0;
-  bottom: 0;
-  left: 0;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   width: 50%;
   margin: auto;
   overflow: auto;
   background: #fff;
   border-radius: 5px;
   padding: 1em 2em;
-  height: 50%;
+  height: auto;
 }
 
 .modal__close {
@@ -86,8 +72,8 @@
 @media screen and (max-width: 768px) {
 
   .modal__inner {
-    width: 90%;
-    height: 90%;
+    width: 80%;
+    height: 80%;
     box-sizing: border-box;
   }
 }

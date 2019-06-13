@@ -430,10 +430,10 @@
     autoInitialize(LazyLoad, window.lazyLoadOptions);
   }
 
-  const uuidv4 = () => {
-    return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c =>
-      (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
-    )
+  /* global crypto, fetch, performance, requestAnimationFrame, window, Element, HTMLDocument */
+
+  const basename = (url) => {
+    return url.split(/[\\/]/).pop()
   };
 
   const baseUrl = (segment) => {
@@ -445,14 +445,57 @@
     return window.location.origin + pathArray.slice(0, indexOfSegment).join('/') + '/'
   };
 
-  const isDomNode = (element) => {
-    return element instanceof Element || element instanceof HTMLDocument
+  /**
+   * Converts html string to dom node
+   * @param  {string} html HTML string to be processed
+   * @return {DOMNode}      valid DOMNode
+   */
+  const htmlToElement = (html) => {
+    const template = document.createElement('template');
+
+    // removing extra white spaces
+    html = html.trim();
+    template.innerHTML = html;
+    return template.content.firstChild
   };
 
+  /**
+   * Tests if input is a DOMNode
+   * @param  {any} input input
+   * @return {Boolean}
+   */
+  const isDomNode = (input) => {
+    return input instanceof Element || input instanceof HTMLDocument
+  };
+
+  /**
+   * Removes HTML content from string
+   * @param  {String} str input
+   * @return {String}     output
+   */
+  const removeHtml = (str) => {
+    const tmp = document.createElement('div');
+    tmp.innerHTML = str;
+    return tmp.textContent || tmp.innerText
+  };
+
+  /**
+   * Removes extension from filename
+   * @param  {String} str input
+   * @return {String}     output
+   */
   const stripExtension = str => {
     return str.replace(/\.[^/.]+$/, '')
   };
 
+  /**
+   * Scrolls to location
+   * @param  {Number | DOMNode}   destination Number or domnode
+   * @param  {Number}   duration
+   * @param  {String}   easing      linear only
+   * @param  {Function} callback    callback function to call after scroll
+   * @return {null}               no return
+   */
   const scrollTo = (destination, duration = 200, easing = 'linear', callback) => {
     const easings = {
       linear (t) {
@@ -495,18 +538,23 @@
     scroll();
   };
 
-  const htmlToElement = (html) => {
-    const template = document.createElement('template');
-    html = html.trim(); // Never return a text node of whitespace as the result
-    template.innerHTML = html;
-    return template.content.firstChild
+  /**
+   * Returns a UUIDv4 string
+   * @return {String}
+   */
+  const uuidv4 = () => {
+    return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c =>
+      (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+    )
   };
 
   const API_URL = baseUrl() + '/api';
 
-  const EVENT_RESET = 'reset';
-  const EVENT_STATUS_CHANGE = 'status-change';
   const EVENT_IMAGE_UPDATE = 'image-update';
+  const EVENT_STATUS_CHANGE = 'status-change';
+  const EVENT_RESET = 'reset';
+
+  /* global CustomEvent, Event */
 
   const mergeSettings = (options) => {
     const settings = {
@@ -516,7 +564,8 @@
       url: null,
       caption: null,
       imageSelector: '.Image',
-      lazyloadSelector: '.lazy'
+      lazyloadSelector: '.lazy',
+      editable: false
     };
 
     for (const attrName in options) {
@@ -536,7 +585,8 @@
         filename,
         caption,
         dom,
-        active
+        active,
+        editable
       } = this.config;
 
       this._id = uuidv4();
@@ -545,11 +595,12 @@
         console.warn('%o is not a dom element. Can\'t get image dom.', dom);
       }
       this._src = url;
-      this._caption = caption;
+      this._caption = removeHtml(caption);
       this._filename = filename;
       this._captionSelector = this._dom && this._dom.querySelector('[contenteditable]');
       this._active = active;
       this._status = false;
+      this._editable = editable;
 
       this.applyStyle();
       this.initListeners();
@@ -565,11 +616,9 @@
         this.dispatchStatusUpdate();
       });
 
-      if (this._captionSelector) {
-        // 1. Listen for changes of the contenteditable element
+      if (this._editable && this._captionSelector) {
         this._captionSelector.addEventListener('input', (e) => {
-          // 2. Retrive the text from inside the element
-          this._caption = this._captionSelector.innerHTML;
+          this._caption = removeHtml(this._captionSelector.innerHTML);
         });
       }
     }
@@ -606,12 +655,10 @@
       if (src) {
         return htmlToElement(`<div class="Image">
         <div class="Image__container">
-          <img class="lazy miniarch" src="/assets/css/loading.gif" data-src="${src}" data-filename="${filename}" title="${filename} preview" />
+          <img class="lazy miniarch" src="/assets/css/loading.gif" data-src="${removeHtml(src)}" data-filename="${removeHtml(filename)}" title="${filename} preview" />
         </div>
-        <div class="Image__caption"><span contenteditable="true">${caption}</span></div>
+        <div class="Image__caption"><span contenteditable="true">${removeHtml(caption)}</span></div>
         </div>`)
-      } else {
-        return null
       }
     }
 
@@ -642,19 +689,21 @@
     }
 
     set filename (filename) {
-      this._filename = filename;
+      this._filename = removeHtml(filename);
     }
     get filename () {
       return this._filename
     }
 
     set src (src) {
-      this._src = src;
+      this._src = removeHtml(src);
     }
     get src () {
       return this._src
     }
   }
+
+  /* global Event */
 
   const mergeSettings$1 = (options) => {
     const settings = {
@@ -688,21 +737,23 @@
 
       this.keyHandler = this.keyHandler.bind(this);
       this.updateImage = this.updateImage.bind(this);
-      this.gallery = document.querySelector(gallerySelector);
+      this._gallery = document.querySelector(gallerySelector);
+      this._active = active;
       this._current = null;
 
-      if (!this.gallery) {
+      if (!this._gallery) {
         console.warn(`\nModule: Gallery.js\nWarning: No Gallery dom node found in document.\nCause: No gallerySelector provided.\nResult: Adding images may fail.`);
       }
 
       let i = -1;
       this._images = [];
       while (++i < images.length) {
-        const image = this.getNewImage(images[i], this.active);
+        const image = this.getNewImage(images[i], this._active);
         if (image) {
           this._images.push(image);
         }
       }
+      this._imagesBackup = this._images;
 
       this.lazyload = new LazyLoad({
         elements_selector: lazyloadSelector
@@ -713,41 +764,22 @@
       }
     }
 
-    getNewImage (dom, active) {
-      if (!dom || !isDomNode(dom)) {
-        return null
-      }
-      const url = dom.querySelector('img') ? dom.querySelector('img').src : null;
-      const datafilename = dom.querySelector('img') && dom.querySelector('img').getAttribute('data-filename') ? dom.querySelector('img').getAttribute('data-filename') : null;
-      const filename = datafilename ? datafilename.substring(datafilename.lastIndexOf('/') + 1) : dom.querySelector('img') ? dom.querySelector('img').src.substring(dom.querySelector('img').src.lastIndexOf('/') + 1) : null;
-      const caption = dom.querySelector('.Image__caption span') ? dom.querySelector('.Image__caption span').innerHTML : null;
-
-      return new Image(
-        {
-          url: url,
-          filename: filename,
-          caption: caption,
-          dom: dom,
-          active: active
-        })
-    }
-
     activate () {
-      this.active = true;
-      this.gallery.classList.remove('Gallery--inactive');
-      this.gallery.classList.add('Gallery--active');
+      this._active = true;
+      this._gallery.classList.remove('Gallery--inactive');
+      this._gallery.classList.add('Gallery--active');
       this.initListeners();
     }
 
     deactivate () {
-      this.active = false;
-      this.gallery.classList.remove('Gallery--active');
-      this.gallery.classList.add('Gallery--inactive');
+      this._active = false;
+      this._gallery.classList.remove('Gallery--active');
+      this._gallery.classList.add('Gallery--inactive');
       this.removeListeners();
     }
 
     toggleActive () {
-      this.active = !this.active;
+      this._active = !this._active;
     }
 
     initListeners () {
@@ -766,6 +798,30 @@
       } else {
         this.updateCurrentImage(null);
       }
+    }
+
+    removeImageById (id) {
+      let target = null;
+      this._images = this._images.filter(image => {
+        if (image.getId() === id) {
+          target = image;
+          return false
+        }
+        return true
+      });
+      if (target) {
+        target.dom.classList.add('Image--markedfordeletion');
+      }
+      return this._images
+    }
+
+    revertRemoveImageById (id) {
+      const match = this._imagesBackup.find(image => image.getId() === id);
+      if (match) {
+        match.dom.classList.remove('Image--markedfordeletion');
+        this._images.push(match);
+      }
+      return this._images
     }
 
     updateCurrentImage (image) {
@@ -801,46 +857,56 @@
       }
     }
 
+    setImages (images) {
+      if (!images || !images.length) {
+        return
+      }
+      this._gallery.innerHTML = null;
+      this.images = [];
+      let i = -1;
+      while (++i < images.length) {
+        if ('src' in images[i] && 'filename' in images[i]) {
+          this.addImage(this.getImageDom(images[i].src, images[i].filename));
+        }
+      }
+    }
+
     addImage (dom) {
+      const image = this.getNewImage(dom, this._active);
       if (dom && document.body.contains(dom)) {
-        this._images.push(this.getNewImage(dom, this.active));
+        this._images.push(image);
       } else if (dom && !document.body.contains(dom)) {
         const images = document.querySelectorAll(this.config.imageSelector);
         if (images.length) {
           images[images.length - 1].parentNode.insertBefore(dom, images[images.length - 1].nextSibling);
         } else {
-          this.gallery.appendChild(dom);
+          this._gallery.appendChild(dom);
         }
-        this._images.push(this.getNewImage(dom, this.active));
+        this._images.push(image);
       }
+      this._imagesBackup = this._images;
       this.lazyload.update();
+      return image
     }
 
-    set current (image) {
-      this.updateCurrentImage(image);
-    }
-    get current () {
-      return this._current
-    }
-
-    get images () {
-      return this._images
-    }
-
-    set images (images) {
-      this._images = images;
-    }
-
-    setImages (images) {
-      if (!images || !images.length) {
-        return
+    getNewImage (dom, active) {
+      if (!dom || !isDomNode(dom)) {
+        return null
       }
-      this.gallery.innerHTML = null;
-      this.images = [];
-      let i = -1;
-      while (++i < images.length) {
-        this.addImage(this.getImageDom(images[i].src, images[i].filename));
-      }
+      const url = dom.querySelector('img') && dom.querySelector('img').src;
+      const datafilename = dom.querySelector('img') && dom.querySelector('img').getAttribute('data-filename');
+      const filename = datafilename ? basename(datafilename) : dom.querySelector('img') ? basename(dom.querySelector('img').src) : null;
+      const caption = dom.querySelector('.Image__caption span') && dom.querySelector('.Image__caption span').innerHTML;
+
+      return new Image(
+        {
+          url: url,
+          filename: filename,
+          caption: caption,
+          dom: dom,
+          active: active,
+          editable: !active
+        })
     }
 
     getImageDom (src, filename) {
@@ -874,6 +940,21 @@
 
     reset () {
       document.dispatchEvent(new Event(EVENT_RESET));
+    }
+
+    set current (image) {
+      this.updateCurrentImage(image);
+    }
+    get current () {
+      return this._current
+    }
+
+    get images () {
+      return this._images
+    }
+
+    set images (images) {
+      this._images = images;
     }
   }
 

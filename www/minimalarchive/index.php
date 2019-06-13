@@ -69,6 +69,6 @@
         <?php
         }
         ?>
-        <script src="<?= url('assets/js/main.js')?>"></script>
+        <script src="<?= url('assets/js/index.js')?>"></script>
     </body>
 </html>

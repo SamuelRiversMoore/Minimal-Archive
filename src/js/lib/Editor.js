@@ -1,6 +1,7 @@
 /* global Event, FormData, FileReader */
 
 import Menu from './Menu.js'
+import Modal from './Modal.js'
 import Gallery from './Gallery.js'
 import ProgressBar from './ProgressBar.js'
 import {
@@ -113,6 +114,12 @@ class Editor {
       domNode: this.buttonCancel,
       callback: this.editCancel.bind(this)
     })
+
+    ;(() => new Modal({
+      target: '.modal',
+      active: true,
+      triggers: '.modal__bg, .modal__close'
+    }))()
 
     this.backup = this.getState()
     this.initListeners()
