@@ -6,7 +6,7 @@ export const API_URL = baseUrl() + '/api'
 export const API_UPLOAD = 'upload'
 export const API_SAVE = 'save'
 
-export const SELECTOR_TITLE = '.title'
+export const SELECTOR_TITLE = 'main header .title'
 export const SELECTOR_NOTE = '.note'
 export const SELECTOR_IMAGE = '.Image__container img'
 

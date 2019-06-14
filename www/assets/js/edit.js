@@ -361,7 +361,7 @@
   const API_UPLOAD = 'upload';
   const API_SAVE = 'save';
 
-  const SELECTOR_TITLE = '.title';
+  const SELECTOR_TITLE = 'main header .title';
   const SELECTOR_NOTE = '.note';
 
   const EVENT_IMAGE_UPDATE = 'image-update';
@@ -1078,7 +1078,7 @@
       if (src) {
         return htmlToElement(`<div class="Image">
         <div class="Image__container">
-          <img class="lazy miniarch" src="/assets/css/loading.gif" data-src="${removeHtml(src)}" data-filename="${removeHtml(filename)}" title="${filename} preview" />
+          <img class="lazy miniarch" src="./assets/css/loading.gif" data-src="${removeHtml(src)}" data-filename="${removeHtml(filename)}" title="${filename} preview" />
         </div>
         <div class="Image__caption"><span contenteditable="true">${removeHtml(caption)}</span></div>
         </div>`)
@@ -1357,7 +1357,7 @@
       if (src) {
         return htmlToElement(`<div class="Image">
         <div class="Image__container">
-          <img class="lazy miniarch" src="/assets/css/loading.gif" data-src="${src}" data-filename="${filename}" title="${filename} preview" />
+          <img class="lazy miniarch" src="./assets/css/loading.gif" data-src="${src}" data-filename="${filename}" title="${filename} preview" />
         </div>
         <div class="Image__caption"><span contenteditable="true">${stripExtension(filename)}</span></div>
         </div>`)
@@ -1781,7 +1781,7 @@
       if (src) {
         return htmlToElement(`<div class="Image">
         <div class="Image__container">
-          <img class="lazy miniarch" src="/assets/css/loading.gif" data-src="${src}" data-filename="${filename}" title="${filename} preview" />
+          <img class="lazy miniarch" src="./assets/css/loading.gif" data-src="${src}" data-filename="${filename}" title="${filename} preview" />
         </div>
         <div class="Image__caption"><span contenteditable="true">${stripExtension(filename)}</span></div>
         </div>`)

@@ -369,7 +369,7 @@ class Editor {
     if (src) {
       return htmlToElement(`<div class="Image">
         <div class="Image__container">
-          <img class="lazy miniarch" src="/assets/css/loading.gif" data-src="${src}" data-filename="${filename}" title="${filename} preview" />
+          <img class="lazy miniarch" src="./assets/css/loading.gif" data-src="${src}" data-filename="${filename}" title="${filename} preview" />
         </div>
         <div class="Image__caption"><span contenteditable="true">${stripExtension(filename)}</span></div>
         </div>`)

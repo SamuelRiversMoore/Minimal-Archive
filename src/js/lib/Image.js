@@ -147,7 +147,7 @@ class Image {
     if (src) {
       return htmlToElement(`<div class="Image">
         <div class="Image__container">
-          <img class="lazy miniarch" src="/assets/css/loading.gif" data-src="${removeHtml(src)}" data-filename="${removeHtml(filename)}" title="${filename} preview" />
+          <img class="lazy miniarch" src="./assets/css/loading.gif" data-src="${removeHtml(src)}" data-filename="${removeHtml(filename)}" title="${filename} preview" />
         </div>
         <div class="Image__caption"><span contenteditable="true">${removeHtml(caption)}</span></div>
         </div>`)
