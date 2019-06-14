@@ -6,7 +6,6 @@
   padding: 2em 1em 1em 1em;
   overflow: hidden;
   transition: all 0.20s;
-  cursor: pointer;
   cursor: zoom-in;
   cursor: -moz-zoom-in;
   cursor: -webkit-zoom-in;
@@ -30,7 +29,9 @@
     border-radius: 1px;
   }
   &.Image--inactive {
-    cursor: default;
+    cursor: zoom-in;
+    cursor: -moz-zoom-in;
+    cursor: -webkit-zoom-in;
   }
   &:hover {
     background-color: rgba(200, 200, 200, 0.9);
@@ -73,7 +74,6 @@
 }
 
 .Image--active {
-  cursor: pointer;
   cursor: zoom-out;
   cursor: -moz-zoom-out;
   cursor: -webkit-zoom-out;

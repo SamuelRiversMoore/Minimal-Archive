@@ -7,6 +7,10 @@
   width: 100%;
 }
 
+.Gallery--inactive .Image {
+  cursor: default !important;
+}
+
 .breaker {
   width: 0px;
   height: 0px;

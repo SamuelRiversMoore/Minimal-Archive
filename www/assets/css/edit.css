@@ -350,7 +350,6 @@ https://github.com/yahoo/pure/blob/master/LICENSE.md
   padding: 2em 1em 1em 1em;
   overflow: hidden;
   transition: all 0.2s;
-  cursor: pointer;
   cursor: zoom-in;
   cursor: -moz-zoom-in;
   cursor: -webkit-zoom-in;
@@ -377,7 +376,9 @@ https://github.com/yahoo/pure/blob/master/LICENSE.md
   border-radius: 1px;
 }
 .Image.Image--inactive {
-  cursor: default;
+  cursor: zoom-in;
+  cursor: -moz-zoom-in;
+  cursor: -webkit-zoom-in;
 }
 .Image:hover {
   background-color: rgba(200, 200, 200, 0.9);
@@ -417,7 +418,6 @@ https://github.com/yahoo/pure/blob/master/LICENSE.md
 }
 
 .Image--active {
-  cursor: pointer;
   cursor: zoom-out;
   cursor: -moz-zoom-out;
   cursor: -webkit-zoom-out;
@@ -459,6 +459,10 @@ https://github.com/yahoo/pure/blob/master/LICENSE.md
   flex-direction: row;
   flex-wrap: wrap;
   width: 100%;
+}
+
+.Gallery--inactive .Image {
+  cursor: default !important;
 }
 
 .breaker {

@@ -35,7 +35,8 @@ const mergeSettings = (options) => {
     gallery: new Gallery({
       gallerySelector: '.Gallery',
       imageSelector: '.Image',
-      lazyloadSelector: '.lazy'
+      lazyloadSelector: '.lazy',
+      active: false
     }),
     fullscreenDropZone: true
   }
@@ -79,9 +80,6 @@ class Editor {
     if (!this.gallery) {
       console.warn(`\nModule: Editor.js\nError: Can't create editor.\nCause: No Gallery provided.\nResult: Editor can't initialize.`)
       return
-    } else {
-      this.gallery.deactivate()
-      this.gallery.reset()
     }
     if (!this.dropArea) {
       console.warn(`\nModule: Editor.js\nError: Can't create editor.\nCause: No drop area with selector [${dropAreaSelector}] found in document.\nResult: Editor can't initialize.`)

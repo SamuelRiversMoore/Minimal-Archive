@@ -39,7 +39,6 @@ p {
   padding: 2em 1em 1em 1em;
   overflow: hidden;
   transition: all 0.2s;
-  cursor: pointer;
   cursor: zoom-in;
   cursor: -moz-zoom-in;
   cursor: -webkit-zoom-in;
@@ -66,7 +65,9 @@ p {
   border-radius: 1px;
 }
 .Image.Image--inactive {
-  cursor: default;
+  cursor: zoom-in;
+  cursor: -moz-zoom-in;
+  cursor: -webkit-zoom-in;
 }
 .Image:hover {
   background-color: rgba(200, 200, 200, 0.9);
@@ -106,7 +107,6 @@ p {
 }
 
 .Image--active {
-  cursor: pointer;
   cursor: zoom-out;
   cursor: -moz-zoom-out;
   cursor: -webkit-zoom-out;
@@ -148,6 +148,10 @@ p {
   flex-direction: row;
   flex-wrap: wrap;
   width: 100%;
+}
+
+.Gallery--inactive .Image {
+  cursor: default !important;
 }
 
 .breaker {

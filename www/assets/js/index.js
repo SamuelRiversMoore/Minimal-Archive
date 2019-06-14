@@ -577,9 +577,6 @@
 
   class Image {
     constructor (options) {
-      this.config = mergeSettings(options);
-      this.dispatchStatusUpdate = this.dispatchStatusUpdate.bind(this);
-
       const {
         url,
         filename,
@@ -587,8 +584,16 @@
         dom,
         active,
         editable
-      } = this.config;
+      } = mergeSettings(options);
 
+      // Binding functions to this
+      this.dispatchStatusUpdate = this.dispatchStatusUpdate.bind(this);
+      this.toggleStatus = this.toggleStatus.bind(this);
+      this.applyStyle = this.applyStyle.bind(this);
+      this.resetStatus = this.resetStatus.bind(this);
+      this.updateCaption = this.updateCaption.bind(this);
+
+      // Setting state
       this._id = uuidv4();
       this._dom = isDomNode(dom) ? dom : this.generateDom(url, filename, caption);
       if (!this._dom) {
@@ -602,30 +607,60 @@
       this._status = false;
       this._editable = editable;
 
+      // Initializing style and initial listeners
       this.applyStyle();
-      this.initListeners();
+      if (this._active) {
+        this.activate(true);
+      }
+      if (this._editable && this._captionSelector) {
+        this._captionSelector.addEventListener('input', this.updateCaption);
+      }
+    }
+
+    activate (force) {
+      if (force || !this._active) {
+        this._active = true;
+        this.initListeners();
+      }
+    }
+
+    deactivate (force) {
+      if (force || this._active) {
+        this._active = false;
+        this.removeListeners();
+      }
     }
 
     initListeners () {
-      if (this._active && this._dom) {
-        this._dom.addEventListener('click', this.toggleStatus.bind(this));
-        this._dom.addEventListener(EVENT_STATUS_CHANGE, this.applyStyle.bind(this));
+      if (this._dom) {
+        this._dom.addEventListener('click', this.toggleStatus);
+        this._dom.addEventListener(EVENT_STATUS_CHANGE, this.applyStyle);
       }
-      document.addEventListener(EVENT_RESET, (e) => {
-        this._status = false;
-        this.dispatchStatusUpdate();
-      });
-
-      if (this._editable && this._captionSelector) {
-        this._captionSelector.addEventListener('input', (e) => {
-          this._caption = removeHtml(this._captionSelector.innerHTML);
-        });
-      }
+      document.addEventListener(EVENT_RESET, this.resetStatus);
     }
 
-    toggleStatus (event) {
+    removeListeners () {
+      if (this._dom) {
+        this._dom.removeEventListener('click', this.toggleStatus);
+        this._dom.removeEventListener(EVENT_STATUS_CHANGE, this.applyStyle);
+      }
+      document.removeEventListener(EVENT_RESET, this.resetStatus);
+    }
+
+    resetStatus () {
+      this._status = false;
+      this.dispatchStatusUpdate();
+    }
+
+    toggleStatus () {
       this._status = !this._status;
       this.dispatchStatusUpdate();
+    }
+
+    updateCaption () {
+      if (this._captionSelector) {
+        this._caption = removeHtml(this._captionSelector.innerHTML);
+      }
     }
 
     dispatchStatusUpdate (event) {
@@ -722,74 +757,95 @@
 
   class Gallery {
     constructor (options) {
-      this.config = mergeSettings$1(options);
-      this.init();
-    }
-
-    init () {
       const {
         gallerySelector,
         imageSelector,
         lazyloadSelector,
         active
-      } = this.config;
-      const images = document.querySelectorAll(imageSelector);
+      } = mergeSettings$1(options);
 
       this.keyHandler = this.keyHandler.bind(this);
       this.updateImage = this.updateImage.bind(this);
-      this._gallery = document.querySelector(gallerySelector);
+      this.getInitializedImages = this.getInitializedImages.bind(this);
+
       this._active = active;
       this._current = null;
-
+      this._gallery = document.querySelector(gallerySelector);
       if (!this._gallery) {
         console.warn(`\nModule: Gallery.js\nWarning: No Gallery dom node found in document.\nCause: No gallerySelector provided.\nResult: Adding images may fail.`);
       }
-
-      let i = -1;
-      this._images = [];
-      while (++i < images.length) {
-        const image = this.getNewImage(images[i], this._active);
-        if (image) {
-          this._images.push(image);
-        }
-      }
+      this._imageSelector = imageSelector;
+      this._images = this.getInitializedImages(imageSelector, active);
       this._imagesBackup = this._images;
-
-      this.lazyload = new LazyLoad({
+      this._lazyload = new LazyLoad({
         elements_selector: lazyloadSelector
       });
 
       if (active) {
-        this.activate();
+        this.activate(true);
+      } else {
+        this.deactivate(true);
       }
     }
 
-    activate () {
-      this._active = true;
-      this._gallery.classList.remove('Gallery--inactive');
-      this._gallery.classList.add('Gallery--active');
-      this.initListeners();
+    activate (force) {
+      if (force || !this._active) {
+        this._active = true;
+        this._gallery.classList.remove('Gallery--inactive');
+        this._gallery.classList.add('Gallery--active');
+        this.initListeners();
+      }
     }
 
-    deactivate () {
-      this._active = false;
-      this._gallery.classList.remove('Gallery--active');
-      this._gallery.classList.add('Gallery--inactive');
-      this.removeListeners();
+    deactivate (force) {
+      if (force || this._active) {
+        this._active = false;
+        this._gallery.classList.remove('Gallery--active');
+        this._gallery.classList.add('Gallery--inactive');
+        this.removeListeners();
+        this.deactivateImages();
+      }
     }
 
     toggleActive () {
       this._active = !this._active;
     }
 
+    getInitializedImages (selector, active) {
+      const images = document.querySelectorAll(selector);
+      const result = [];
+      let i = -1;
+      while (++i < images.length) {
+        const image = this.getNewImage(images[i], active);
+        if (image) {
+          result.push(image);
+        }
+      }
+      return result
+    }
+
     initListeners () {
       document.addEventListener(EVENT_IMAGE_UPDATE, this.updateImage);
       document.addEventListener('keyup', this.keyHandler);
+      this.activateImages();
     }
 
     removeListeners () {
       document.removeEventListener(EVENT_IMAGE_UPDATE, this.updateImage);
       document.removeEventListener('keyup', this.keyHandler);
+      this.deactivateImages();
+    }
+
+    activateImages () {
+      this._images.map(image => {
+        image.activate();
+      });
+    }
+
+    deactivateImages () {
+      this._images.map(image => {
+        image.deactivate();
+      });
     }
 
     updateImage (e) {
@@ -876,7 +932,7 @@
       if (dom && document.body.contains(dom)) {
         this._images.push(image);
       } else if (dom && !document.body.contains(dom)) {
-        const images = document.querySelectorAll(this.config.imageSelector);
+        const images = document.querySelectorAll(this._imageSelector);
         if (images.length) {
           images[images.length - 1].parentNode.insertBefore(dom, images[images.length - 1].nextSibling);
         } else {
@@ -885,7 +941,7 @@
         this._images.push(image);
       }
       this._imagesBackup = this._images;
-      this.lazyload.update();
+      this._lazyload.update();
       return image
     }
 
