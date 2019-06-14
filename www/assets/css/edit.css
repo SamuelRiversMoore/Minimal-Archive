@@ -105,7 +105,6 @@ p {
 @media screen and (max-width: 768px) {
   .modal__inner {
     width: 80%;
-    height: 80%;
     box-sizing: border-box;
   }
 }
@@ -259,7 +258,7 @@ https://github.com/yahoo/pure/blob/master/LICENSE.md
 }
 
 .controls {
-  width: 180px;
+  width: 200px;
   height: 100%;
   position: fixed;
   overflow-y: auto;
@@ -271,6 +270,7 @@ https://github.com/yahoo/pure/blob/master/LICENSE.md
   line-height: 1.6em;
   z-index: 1;
   background: #545454;
+  cursor: default;
 }
 .controls .title {
   font-size: 16px;
@@ -292,25 +292,41 @@ https://github.com/yahoo/pure/blob/master/LICENSE.md
 .controls .editbutton {
   margin: 0;
   overflow: hidden;
-  cursor: pointer;
   color: silver;
   background: none;
   padding: 20px;
   border-radius: 3px;
   text-align: left;
   border-bottom: 1px solid #666;
-  display: flex;
-  flex-direction: row;
+}
+.controls .editbutton.clickable {
+  cursor: pointer;
 }
 .controls .editbutton:hover {
   background: #747178;
   color: whitesmoke;
 }
-.controls .editbutton span {
+.controls .editbutton__label {
+  display: flex;
+  flex-direction: row;
+}
+.controls .editbutton__label span {
   flex: 1;
 }
-.controls .editbutton .icon {
+.controls .editbutton__label .icon {
   flex: 0.45;
+}
+.controls .editbutton__submenu {
+  padding: 1.5em 1em 0em 1em;
+  border-radius: 3px;
+  font-size: 0.7em;
+}
+.controls .editbutton__submenu input[type=color] {
+  cursor: pointer;
+  margin-right: 1.5em;
+}
+.controls .editbutton__submenu label {
+  cursor: pointer;
 }
 
 .Loader {
@@ -379,9 +395,6 @@ https://github.com/yahoo/pure/blob/master/LICENSE.md
   cursor: zoom-in;
   cursor: -moz-zoom-in;
   cursor: -webkit-zoom-in;
-}
-.Image:hover {
-  background-color: rgba(200, 200, 200, 0.9);
 }
 
 .Image__container {
@@ -483,7 +496,7 @@ https://github.com/yahoo/pure/blob/master/LICENSE.md
 
 body {
   background: pink;
-  padding-left: 180px;
+  padding-left: 200px;
   height: 100%;
 }
 
@@ -523,9 +536,9 @@ body {
 #drop-area {
   position: fixed;
   top: 0;
-  left: 180px;
+  left: 200px;
   height: 100%;
-  width: calc(100% - 180px);
+  width: calc(100% - 200px);
   z-index: -1;
   opacity: 0;
   background: #333333;

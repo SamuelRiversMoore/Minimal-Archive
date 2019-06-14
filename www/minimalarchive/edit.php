@@ -58,19 +58,19 @@ if (isset($_SESSION['id'])) {
             <section class="Form">
                 <form class="pure-form pure-form-stacked" action="<?= url('/edit')?>" method="post" accept-charset="utf-8">
                     <fieldset>
-                        <legend>Edit</legend>
+                        <legend><?= translate('edit') ?></legend>
                         <div class="pure-control-group">
-                            <label for="email">Email Address *</label>
+                            <label for="email"><?= translate('email_address') ?> *</label>
                             <input id="email" type="email" placeholder="Email Address" required="true" name="email" autofocus="true" autocomplete="on">
                         </div>
 
                         <div class="pure-control-group">
-                            <label for="password">Password *</label>
+                            <label for="password"><?= translate('password') ?> *</label>
                             <input id="password" type="password" placeholder="Password" required="true" name="password">
                         </div>
 
                         <input type="hidden" name="csrf_token" value="<?= get_token('edit') ?>" />
-                        <button type="submit" class="pure-button pure-button-primary">Submit</button>
+                        <button type="submit" class="pure-button pure-button-primary"><?= translate('confirm') ?></button>
                     </fieldset>
                 </form>
             </section>
@@ -94,6 +94,8 @@ $description = array_key_exists('description', $meta) ? $meta['description'] : '
 $socialimage = array_key_exists('socialimage', $meta) && $meta['socialimage'] ? 'assets/images/' . $meta['socialimage'] : '';
 $favicon = array_key_exists('favicon', $meta)  && $meta['favicon'] ? 'assets/images/' . $meta['favicon'] : '';
 $note = array_key_exists('note', $meta) ? $meta['note'] : '';
+$bgcolor = array_key_exists('bgcolor', $meta) && $meta['bgcolor'] ? $meta['bgcolor'] : '#c0c0c0';
+$textcolor = array_key_exists('textcolor', $meta) && $meta['textcolor'] ? $meta['textcolor'] : '#333';
 
 $error = null;
 try {
@@ -111,7 +113,7 @@ try {
         <link rel="icon" type="image/png" href="<?= url($favicon) ?>"/>
         <link rel="stylesheet" href="<?= url('assets/css/edit.css') ?>" type="text/css" media="screen"/>
     </head>
-    <body>
+    <body style="background-color: <?= $bgcolor ?>; color: <?= $textcolor ?>">
         <?php
         if ($error && strlen($error)) {
             put_error($error);
@@ -152,17 +154,50 @@ try {
 
         <aside class="controls">
             <div class="title"><?= translate('editor_title') ?></div>
-            <div class="editbutton preview">
-                <span class="icon">🏃 </span><span><?= translate('exit') ?></span>
+
+            <!-- Buttons -->
+            <div class="editbutton background">
+                <div class="editbutton__label">
+                    <span class="icon">🌄</span><span><?= translate('background_color') ?></span>
+                </div>
+                <div class="editbutton__submenu">
+                    <input type="color" id="bg_color" name="bg_color" value="<?= $bgcolor ?>"><label for="bg_color"><?= $bgcolor ?></label>
+                </div>
             </div>
+
+            <div class="editbutton text">
+                <div class="editbutton__label">
+                    <span class="icon">🅰</span><span><?= translate('text_color') ?></span>
+                </div>
+                <div class="editbutton__submenu">
+                    <input type="color" id="text_color" name="text_color" value="<?= $textcolor ?>"><label for="text_color"><?= $textcolor ?></label>
+                </div>
+            </div>
+
             <div class="editbutton save">
                 <input type="hidden" name="csrf_token" value="<?= get_token('save') ?>" />
-                <span class="icon">✍️ </span><span><?= translate('save') ?></span>
+                <div class="editbutton__label">
+                    <span class="icon">✍️</span><span><?= translate('save') ?></span>
+                </div>
             </div>
+
             <div class="editbutton cancel">
-                <span class="icon">🙅</span><span><?= translate('cancel') ?></span>
+                <div class="editbutton__label">
+                    <span class="icon">🙅</span><span><?= translate('cancel') ?></span>
+                </div>
             </div>
-            <div class="footer"><?= translate('instructions_add_pic') ?></div>
+
+            <div class="editbutton preview">
+                <div class="editbutton__label">
+                    <span class="icon">🏃</span><span><?= translate('exit') ?></span>
+                </div>
+            </div>
+
+            <!-- /Buttons -->
+
+            <div class="footer">
+                <span><?= translate('tip') ?>: </span><?= translate('instructions_add_pic') ?>
+            </div>
         </aside>
         <main>
 

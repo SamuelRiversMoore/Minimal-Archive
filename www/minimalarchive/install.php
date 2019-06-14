@@ -79,8 +79,8 @@ if (!has_meta()) {
                         <legend><?= translate('configuration')?></legend>
 
                         <div class="pure-control-group">
-                            <label for="foo"><?= translate('title') ?> *</label>
-                            <input id="foo" type="text" class="pure-input-1-2" placeholder="Enter something here..." required="true" name="title">
+                            <label for="title"><?= translate('title') ?> *</label>
+                            <input id="title" type="text" class="pure-input-1-2" placeholder="Enter something here..." required="true" name="title">
                         </div>
 
                         <div class="pure-control-group">

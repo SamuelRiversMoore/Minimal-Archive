@@ -149,6 +149,11 @@
     return input instanceof Function
   };
 
+  const isHexColor = (input) => {
+    const regex = new RegExp(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/);
+    return regex.test(input)
+  };
+
   /**
    * Provides shorthand
    * @param  {event} event
@@ -263,7 +268,23 @@
       this._callback = null;
     }
 
+    getButtonOptions (options) {
+      const result = {
+        domNode: undefined,
+        callback: undefined,
+        type: 'simple',
+        domNode2: undefined,
+        callback2: undefined
+      };
+
+      for (const attrName in options) {
+        result[attrName] = options[attrName];
+      }
+      return result
+    }
+
     addButton (options) {
+      const id = uuidv4();
       const {
         domNode,
         callback,
@@ -271,26 +292,42 @@
         domNode2,
         callback2
       } = this.getButtonOptions(options);
-      const id = uuidv4();
 
       if (isDomNode(domNode)) {
         this._buttons[id] = {};
         this._buttons[id].dom = domNode;
 
-        if (isFunction(callback)) {
-          this._buttons[id].callback = callback;
-          domNode.addEventListener('click', callback);
+        if (type === 'simple') {
+          if (isFunction(callback)) {
+            this._buttons[id].callback = callback;
+            this._buttons[id].dom.classList.add('clickable');
+            domNode.addEventListener('click', callback);
+          }
         }
 
         if (type === 'toggle') {
-          this._buttons[id].dom = domNode;
-          this._buttons[id].dom2 = domNode2;
           this._buttons[id].state = false;
+          this._buttons[id].dom.classList.add('clickable');
           domNode.addEventListener('click', () => this.toggleButtonById(id));
-          domNode2.addEventListener('click', () => this.toggleButtonById(id));
-          if (isFunction(callback2)) {
-            this._buttons[id].callback2 = callback2;
-            domNode2.addEventListener('click', callback2);
+          if (isFunction(callback)) {
+            this._buttons[id].callback = callback;
+            domNode.addEventListener('click', callback);
+          }
+          if (isDomNode(domNode2)) {
+            this._buttons[id].dom2 = domNode2;
+            this._buttons[id].dom2.classList.add('clickable');
+            domNode2.addEventListener('click', () => this.toggleButtonById(id));
+            if (isFunction(callback2)) {
+              this._buttons[id].callback2 = callback2;
+              domNode2.addEventListener('click', callback2);
+            }
+          }
+        }
+
+        if (type === 'input') {
+          if (isFunction(callback)) {
+            this._buttons[id].callback = callback;
+            domNode.addEventListener('change', callback);
           }
         }
         return id
@@ -308,21 +345,6 @@
         this._buttons[id].dom2.classList.add(off);
         this._buttons[id].dom2.classList.remove(on);
       }
-    }
-
-    getButtonOptions (options) {
-      const result = {
-        domNode: undefined,
-        callback: undefined,
-        type: 'regular',
-        domNode2: undefined,
-        callback2: undefined
-      };
-
-      for (const attrName in options) {
-        result[attrName] = options[attrName];
-      }
-      return result
     }
 
     removeButton (id) {
@@ -1462,49 +1484,40 @@
         buttonSaveSelector
       } = this.config;
 
-      this.gallery = gallery;
-      this.dropArea = document.querySelector(dropAreaSelector);
-      this.fileInput = document.querySelector(fileInputSelector);
-      this.fullscreenDropZone = Boolean(fullscreenDropZone);
-      this.buttonCancel = document.querySelector(buttonCancelSelector);
-      this.buttonPreview = document.querySelector(buttonPreviewSelector);
-      this.buttonSave = document.querySelector(buttonSaveSelector);
+      this._gallery = gallery;
+      this._dropArea = document.querySelector(dropAreaSelector);
+      this._fileInput = document.querySelector(fileInputSelector);
+      this._fullscreenDropZone = Boolean(fullscreenDropZone);
+      this._buttonCancel = document.querySelector(buttonCancelSelector);
+      this._buttonPreview = document.querySelector(buttonPreviewSelector);
+      this._buttonSave = document.querySelector(buttonSaveSelector);
+      this._bgColorInput = document.querySelector('.editbutton input[name="bg_color"]');
+      this._textColorInput = document.querySelector('.editbutton input[name="text_color"]');
 
-      if (!this.gallery) {
+      if (!this._gallery) {
         console.warn(`\nModule: Editor.js\nError: Can't create editor.\nCause: No Gallery provided.\nResult: Editor can't initialize.`);
         return
       }
-      if (!this.dropArea) {
+      if (!this._dropArea) {
         console.warn(`\nModule: Editor.js\nError: Can't create editor.\nCause: No drop area with selector [${dropAreaSelector}] found in document.\nResult: Editor can't initialize.`);
         return
       }
-      if (!this.fileInput) {
+      if (!this._fileInput) {
         console.warn(`\nModule: Editor.js\nWarning: Can't create file input listener.\nCause: No file input with selector [${fileInputSelector}] found in document.\nResult: Upload by file input button is disabled.`);
       }
-      if (!this.buttonPreview) {
+      if (!this._buttonPreview) {
         console.warn(`Module: Editor.js\nWarning: Can't add preview functionality.\nCause: No preview button with selector [${buttonPreviewSelector}] found in document.\nResult: Previewing is disabled.`);
       }
-      if (!this.buttonSave) {
+      if (!this._buttonSave) {
         console.warn(`Module: Editor.js\nWarning: Can't add save functionality.\nCause: No save button with selector [${buttonSaveSelector}] found in document.\nResult: Saving is disabled.`);
       }
-      if (!this.buttonCancel) {
+      if (!this._buttonCancel) {
         console.warn(`Module: Editor.js\nWarning: Can't add cancel functionality.\nCause: No cancel button with selector [${buttonCancelSelector}] found in document.\nResult: Undoing changes is disabled.`);
       }
       this.progressbar = new ProgressBar(progressBarSelector);
 
       this.menu = new Menu();
-      this.menu.addButton({
-        domNode: this.buttonSave,
-        callback: this.editSave.bind(this)
-      });
-      this.menu.addButton({
-        domNode: this.buttonPreview,
-        callback: this.editPreview.bind(this)
-      });
-      this.menu.addButton({
-        domNode: this.buttonCancel,
-        callback: this.editCancel.bind(this)
-      })
+      this.setupMenu()
 
       ;(() => new Modal({
         target: '.modal',
@@ -1516,50 +1529,85 @@
       this.initListeners();
     }
 
+    setupMenu () {
+      // Save
+      this.menu.addButton({
+        domNode: this._buttonSave,
+        callback: this.editSave.bind(this)
+      });
+
+      // Cancel
+      this.menu.addButton({
+        domNode: this._buttonCancel,
+        callback: this.editCancel.bind(this)
+      });
+
+      // Preview
+      this.menu.addButton({
+        domNode: this._buttonPreview,
+        callback: this.editPreview.bind(this)
+      });
+
+      // Background color
+      this.menu.addButton({
+        domNode: this._bgColorInput,
+        type: 'input',
+        callback: this.editBgColor.bind(this)
+      });
+
+      // Text color
+      this.menu.addButton({
+        domNode: this._textColorInput,
+        type: 'input',
+        callback: this.editTextColor.bind(this)
+      });
+    }
+
     initListeners () {
   ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-        this.dropArea.addEventListener(eventName, preventDefaults, false);
+        this._dropArea.addEventListener(eventName, preventDefaults, false);
         document.body.addEventListener(eventName, preventDefaults, false);
       });
 
-      if (this.fullscreenDropZone) {
+      if (this._fullscreenDropZone) {
   ['dragenter'].forEach(eventName => {
           document.addEventListener(eventName, (e) => {
-            this.dropArea.classList.add('active');
+            this._dropArea.classList.add('active');
           }, true);
         })
         ;['dragleave', 'drop'].forEach(eventName => {
-          this.dropArea.addEventListener(eventName, (e) => {
-            this.dropArea.classList.remove('active');
+          this._dropArea.addEventListener(eventName, (e) => {
+            this._dropArea.classList.remove('active');
           }, true);
         });
       }
   ['dragenter', 'dragover'].forEach(eventName => {
-        this.dropArea.addEventListener(eventName, () => {
+        this._dropArea.addEventListener(eventName, () => {
           this.highlight();
         }, false);
       })
 
       ;['dragleave', 'drop'].forEach(eventName => {
-        this.dropArea.addEventListener(eventName, () => {
+        this._dropArea.addEventListener(eventName, () => {
           this.unhighlight();
         }, false);
       });
 
       // Handle dropped files
-      this.dropArea.addEventListener('drop', (e) => {
+      this._dropArea.addEventListener('drop', (e) => {
         this.handleDrop(e);
       }, false);
 
-      if (this.fileInput) {
-        this.fileInput.addEventListener('change', (e) => {
+      if (this._fileInput) {
+        this._fileInput.addEventListener('change', (e) => {
           if (e.target && e.target.files) {
             this.handleFiles(e.target.files);
           }
         });
       }
 
-      this.gallery.images.map(image => {
+      // Adding controls to images
+      this._gallery.images.map(image => {
         const deleteButton = this.getButton('Delete', 'button--delete', image.getId());
         const revertButton = this.getButton('Revert', 'button--revert', image.getId());
         const imageControls = htmlToElement('<div class="Image__controls"></div>');
@@ -1580,6 +1628,20 @@
     getButton (content, buttonClass, id) {
       const dom = htmlToElement(`<div class="pure-button ${buttonClass}" data-id="${id}"><span>${content}</span></div>`);
       return dom
+    }
+
+    editBgColor () {
+      if (isHexColor(this._bgColorInput.value)) {
+        document.body.style.backgroundColor = this._bgColorInput.value;
+        this._bgColorInput.nextSibling.innerHTML = this._bgColorInput.value;
+      }
+    }
+
+    editTextColor () {
+      if (isHexColor(this._textColorInput.value)) {
+        document.body.style.color = this._textColorInput.value;
+        this._textColorInput.nextSibling.innerHTML = this._textColorInput.value;
+      }
     }
 
     editCancel () {
@@ -1603,7 +1665,7 @@
       if (e) {
         const id = e.target.getAttribute('data-id') || e.target.parentNode.getAttribute('data-id');
         if (id) {
-          this.gallery.removeImageById(id);
+          this._gallery.removeImageById(id);
         }
       }
     }
@@ -1612,17 +1674,17 @@
       if (e) {
         const id = e.target.getAttribute('data-id') || e.target.parentNode.getAttribute('data-id');
         if (id) {
-          this.gallery.revertRemoveImageById(id);
+          this._gallery.revertRemoveImageById(id);
         }
       }
     }
 
     save (data) {
       document.dispatchEvent(new Event(EVENT_LOADING));
-      this.uploadData(data, this.getCsrfToken(this.buttonSave))
+      this.uploadData(data, this.getCsrfToken(this._buttonSave))
         .then((res) => {
           if (res.data.images) {
-            this.gallery.setImages(res.data.images);
+            this._gallery.setImages(res.data.images);
           }
           this.backup = this.getState();
         })
@@ -1638,13 +1700,21 @@
       };
       const title = document.querySelector(SELECTOR_TITLE);
       const note = document.querySelector(SELECTOR_NOTE);
-      const images = this.gallery.images;
+      const bgColor = this._bgColorInput;
+      const textColor = this._textColorInput;
+      const images = this._gallery.images;
 
       if (title) {
         result.title = removeHtml(title.innerHTML);
       }
       if (note) {
         result.note = removeHtml(note.innerHTML);
+      }
+      if (bgColor && isHexColor(bgColor.value)) {
+        result.bgcolor = bgColor.value;
+      }
+      if (textColor && isHexColor(textColor.value)) {
+        result.textcolor = textColor.value;
       }
       if (images && images.length) {
         result.images = [...images].map((image) => {
@@ -1695,7 +1765,7 @@
       reader.readAsDataURL(file);
 
       reader.onloadend = () => {
-        const image = this.gallery.addImage(this.getPreviewDom(reader.result, filename));
+        const image = this._gallery.addImage(this.getPreviewDom(reader.result, filename));
         image && image.dom.appendChild(this.getDeleteButton(image.getId()));
       };
     }
@@ -1737,7 +1807,7 @@
       files = [...files];
       this.progressbar.initializeProgress(files.length);
       files.forEach(file => {
-        this.uploadFile(file, this.getCsrfToken(this.dropArea))
+        this.uploadFile(file, this.getCsrfToken(this._dropArea))
           .then((result) => {
             if (result && result.data && result.data.length && result.data[0]) {
               this.previewFile(file, result.data[0].name);
@@ -1751,11 +1821,11 @@
     }
 
     highlight (e) {
-      this.dropArea.classList.add('highlight');
+      this._dropArea.classList.add('highlight');
     }
 
     unhighlight (e) {
-      this.dropArea.classList.remove('highlight');
+      this._dropArea.classList.remove('highlight');
     }
   }
 

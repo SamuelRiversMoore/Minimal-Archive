@@ -51,12 +51,16 @@ function save(array $data = null)
         $meta = textFileToArray(DEFAULT_METAFILE);
         $result = array();
         foreach ($data as $key => $value) {
-            if (array_key_exists($key, $meta)) {
-                $meta[$key] = trim($value);
-                $result[$key] = $meta[$key];
+            if ($key !== 'images' && !is_array($value)) {
+                if (array_key_exists($key, $meta)) {
+                    $meta[$key] = trim($value);
+                    $result[$key] = $meta[$key];
+                } else { // adding new entries
+                    $meta[$key] = trim($value);
+                    $result[$key] = $meta[$key];
+                }
             }
         }
-
         array_to_file($meta);
         if (array_key_exists('images', $data)) {
             $result['images'] = delete_all_files_except($data['images']);

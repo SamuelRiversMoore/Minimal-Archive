@@ -13,6 +13,8 @@
     $socialimage = array_key_exists('socialimage', $meta) && $meta['socialimage'] ? 'assets/images/' . $meta['socialimage'] : '';
     $favicon = array_key_exists('favicon', $meta)  && $meta['favicon'] ? 'assets/images/' . $meta['favicon'] : '';
     $note = array_key_exists('note', $meta) ? $meta['note'] : '';
+    $bgcolor = array_key_exists('bgcolor', $meta) && $meta['bgcolor']? $meta['bgcolor'] : '#c0c0c0';
+    $textcolor = array_key_exists('textcolor', $meta) && $meta['textcolor'] ? $meta['textcolor'] : '#333';
 
     $error = null;
     try {
@@ -37,7 +39,7 @@
         <link rel="stylesheet" href="<?= url('assets/css/index.css') ?>" type="text/css" media="screen"/>
 
     </head>
-    <body>
+    <body style="background-color: <?= $bgcolor ?>; color: <?= $textcolor ?>"">
         <?php
         if ($error && strlen($error)) {
             put_error($error);

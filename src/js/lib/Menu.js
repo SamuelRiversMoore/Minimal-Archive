@@ -26,7 +26,23 @@ class Menu {
     this._callback = null
   }
 
+  getButtonOptions (options) {
+    const result = {
+      domNode: undefined,
+      callback: undefined,
+      type: 'simple',
+      domNode2: undefined,
+      callback2: undefined
+    }
+
+    for (const attrName in options) {
+      result[attrName] = options[attrName]
+    }
+    return result
+  }
+
   addButton (options) {
+    const id = uuidv4()
     const {
       domNode,
       callback,
@@ -34,26 +50,42 @@ class Menu {
       domNode2,
       callback2
     } = this.getButtonOptions(options)
-    const id = uuidv4()
 
     if (isDomNode(domNode)) {
       this._buttons[id] = {}
       this._buttons[id].dom = domNode
 
-      if (isFunction(callback)) {
-        this._buttons[id].callback = callback
-        domNode.addEventListener('click', callback)
+      if (type === 'simple') {
+        if (isFunction(callback)) {
+          this._buttons[id].callback = callback
+          this._buttons[id].dom.classList.add('clickable')
+          domNode.addEventListener('click', callback)
+        }
       }
 
       if (type === 'toggle') {
-        this._buttons[id].dom = domNode
-        this._buttons[id].dom2 = domNode2
         this._buttons[id].state = false
+        this._buttons[id].dom.classList.add('clickable')
         domNode.addEventListener('click', () => this.toggleButtonById(id))
-        domNode2.addEventListener('click', () => this.toggleButtonById(id))
-        if (isFunction(callback2)) {
-          this._buttons[id].callback2 = callback2
-          domNode2.addEventListener('click', callback2)
+        if (isFunction(callback)) {
+          this._buttons[id].callback = callback
+          domNode.addEventListener('click', callback)
+        }
+        if (isDomNode(domNode2)) {
+          this._buttons[id].dom2 = domNode2
+          this._buttons[id].dom2.classList.add('clickable')
+          domNode2.addEventListener('click', () => this.toggleButtonById(id))
+          if (isFunction(callback2)) {
+            this._buttons[id].callback2 = callback2
+            domNode2.addEventListener('click', callback2)
+          }
+        }
+      }
+
+      if (type === 'input') {
+        if (isFunction(callback)) {
+          this._buttons[id].callback = callback
+          domNode.addEventListener('change', callback)
         }
       }
       return id
@@ -71,21 +103,6 @@ class Menu {
       this._buttons[id].dom2.classList.add(off)
       this._buttons[id].dom2.classList.remove(on)
     }
-  }
-
-  getButtonOptions (options) {
-    const result = {
-      domNode: undefined,
-      callback: undefined,
-      type: 'regular',
-      domNode2: undefined,
-      callback2: undefined
-    }
-
-    for (const attrName in options) {
-      result[attrName] = options[attrName]
-    }
-    return result
   }
 
   removeButton (id) {

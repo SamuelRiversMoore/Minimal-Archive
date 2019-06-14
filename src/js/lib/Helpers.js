@@ -146,6 +146,11 @@ export const isFunction = (input) => {
   return input instanceof Function
 }
 
+export const isHexColor = (input) => {
+  const regex = new RegExp(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/)
+  return regex.test(input)
+}
+
 /**
  * Provides shorthand
  * @param  {event} event
