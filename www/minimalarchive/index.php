@@ -34,6 +34,7 @@
         <meta property="og:description" content="<?= $description ?>">
         <meta property="og:image" content="<?= url($socialimage) ?>">
         <meta property="og:url" content="<?= url() ?>">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
 
         <link rel="icon" type="image/png" href="<?= url($favicon) ?>"/>
         <link rel="stylesheet" href="<?= url('assets/css/index.css') ?>" type="text/css" media="screen"/>

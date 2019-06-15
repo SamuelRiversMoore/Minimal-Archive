@@ -52,6 +52,7 @@ if (!has_meta()) {
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         <meta name="robots" content="noindex, nofollow">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
         <title><?= translate('setup')?></title>
         <link rel="stylesheet" href="<?= url('assets/css/install.css') ?>">
     </head>

@@ -272,7 +272,7 @@ https://github.com/yahoo/pure/blob/master/LICENSE.md
   background: #545454;
   cursor: default;
 }
-.controls .title {
+.controls .controls__title {
   font-size: 16px;
   color: whitesmoke;
   font-weight: bold;
@@ -280,13 +280,21 @@ https://github.com/yahoo/pure/blob/master/LICENSE.md
   padding: 30px 0 30px;
   display: block;
   border-bottom: 1px solid #666;
+  position: -webkit-sticky;
+  position: sticky;
+  top: 0;
+  background-color: #545454;
+}
+.controls .controls__buttons {
+  flex: 1;
 }
 .controls .footer {
   color: #9b9b9b;
-  position: absolute;
-  bottom: 0;
   font-size: 12px;
   line-height: 1.2em;
+  background-color: #545454;
+}
+.controls .controls__note {
   padding: 20px 10px;
 }
 .controls .editbutton {

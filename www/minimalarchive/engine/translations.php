@@ -5,6 +5,7 @@ if (!defined("minimalarchive")) {
 
 return [
     "en" => [
+        "404"                   => "☹️ Bad url",
         "account"               => "Account",
         "account_created"       => "😀 Account has been created",
         "account_exists"        => "There is already an account, you must delete it to create a new one.",
@@ -46,6 +47,7 @@ return [
         "view_page"             => "View page"
     ],
     "fr" => [
+        "404"                   => "☹️ Mauvaise adresse",
         "account"               => "Compte",
         "account_created"       => "😀 Le compte a été crée",
         "account_exists"        => "Un compte a déjà été crée. Pour en créer un nouveau, veuillez supprimer l'ancien.",
