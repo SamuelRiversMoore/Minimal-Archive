@@ -54,6 +54,7 @@ class Editor {
     this.config = mergeSettings(options)
     this.uploadFile = this.uploadFile.bind(this)
     this.previewFile = this.previewFile.bind(this)
+    this.refreshView = this.refreshView.bind(this)
     this.files = []
     this.init()
   }
@@ -103,7 +104,7 @@ class Editor {
     this.progressbar = new ProgressBar(progressBarSelector)
 
     this.menu = new Menu()
-    this.setupMenu()
+    this.setupMenuButtons()
 
     ;(() => new Modal({
       target: '.modal',
@@ -115,7 +116,7 @@ class Editor {
     this.initListeners()
   }
 
-  setupMenu () {
+  setupMenuButtons () {
     // Save
     this.menu.addButton({
       domNode: this._buttonSave,
@@ -195,27 +196,24 @@ class Editor {
     }
 
     // Adding controls to images
-    this._gallery.images.map(image => {
-      const deleteButton = this.getButton('Delete', 'button--delete', image.getId())
-      const revertButton = this.getButton('Revert', 'button--revert', image.getId())
-      const imageControls = htmlToElement('<div class="Image__controls"></div>')
-
-      imageControls.appendChild(deleteButton)
-      imageControls.appendChild(revertButton)
-      image.dom.appendChild(imageControls)
-      this.menu.addButton({
-        type: 'toggle',
-        domNode: deleteButton,
-        domNode2: revertButton,
-        callback: this.editDelete.bind(this),
-        callback2: this.editRevert.bind(this)
-      })
-    })
+    this._gallery.images.map(image => this.addControlsToImage(image))
   }
 
-  getButton (content, buttonClass, id) {
-    const dom = htmlToElement(`<div class="pure-button ${buttonClass}" data-id="${id}"><span>${content}</span></div>`)
-    return dom
+  addControlsToImage (image) {
+    const deleteButton = this.getButton('Delete', 'button--delete', image.getId())
+    const revertButton = this.getButton('Revert', 'button--revert', image.getId())
+    const imageControls = htmlToElement('<div class="Image__controls"></div>')
+
+    imageControls.appendChild(deleteButton)
+    imageControls.appendChild(revertButton)
+    image.dom.appendChild(imageControls)
+    this.menu.addButton({
+      type: 'toggle',
+      domNode: deleteButton,
+      domNode2: revertButton,
+      callback: this.editDelete.bind(this),
+      callback2: this.editRevert.bind(this)
+    })
   }
 
   editBgColor () {
@@ -271,13 +269,45 @@ class Editor {
     document.dispatchEvent(new Event(EVENT_LOADING))
     this.uploadData(data, this.getCsrfToken(this._buttonSave))
       .then((res) => {
-        if (res.data.images) {
-          this._gallery.setImages(res.data.images)
-        }
+        this.refreshView(res.data)
         this.backup = this.getState()
       })
       .catch(err => console.log(err))
       .finally(() => document.dispatchEvent(new Event(EVENT_LOADED)))
+  }
+
+  refreshView (data) {
+    const {
+      images,
+      title,
+      note,
+      textcolor,
+      bgcolor
+    } = data
+
+    if (images) {
+      this._gallery.setImages(images)
+      this._gallery.images.map(image => this.addControlsToImage(image))
+    }
+    if (title) {
+      document.querySelector(SELECTOR_TITLE).innerHTML = title
+    }
+    if (note) {
+      document.querySelector(SELECTOR_NOTE).innerHTML = note
+    }
+    if (textcolor) {
+      if (isHexColor(textcolor)) {
+        this._textColorInput.value = textcolor
+        this._textColorInput.nextSibling.innerHTML = this._bgColorInput.value
+      }
+    }
+    if (bgcolor) {
+      if (isHexColor(bgcolor)) {
+        document.body.style.backgroundColor = bgcolor
+        this._bgColorInput.value = bgcolor
+        this._bgColorInput.nextSibling.innerHTML = bgcolor
+      }
+    }
   }
 
   getState () {
@@ -354,14 +384,10 @@ class Editor {
 
     reader.onloadend = () => {
       const image = this._gallery.addImage(this.getPreviewDom(reader.result, filename))
-      image && image.dom.appendChild(this.getDeleteButton(image.getId()))
-    }
-  }
 
-  getCsrfToken (domNode) {
-    if (domNode && isDomNode(domNode)) {
-      const inputElement = domNode.querySelector('[name=csrf_token]')
-      return inputElement && inputElement.value
+      if (image) {
+        this.addControlsToImage(image)
+      }
     }
   }
 
@@ -406,6 +432,18 @@ class Editor {
           console.log(err)
         })
     })
+  }
+
+  getButton (content, buttonClass, id) {
+    const dom = htmlToElement(`<div class="pure-button ${buttonClass}" data-id="${id}"><span>${content}</span></div>`)
+    return dom
+  }
+
+  getCsrfToken (domNode) {
+    if (domNode && isDomNode(domNode)) {
+      const inputElement = domNode.querySelector('[name=csrf_token]')
+      return inputElement && inputElement.value
+    }
   }
 
   highlight (e) {
