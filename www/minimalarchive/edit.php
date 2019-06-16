@@ -46,8 +46,8 @@ unset($_POST);
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         <meta name="robots" content="noindex, nofollow">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>Edit</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+        <title><?= translate('editor_title') ?></title>
         <link rel="stylesheet" href="<?= url('assets/css/install.css') ?>">
     </head>
     <body>
@@ -60,7 +60,7 @@ unset($_POST);
             <section class="Form">
                 <form class="pure-form pure-form-stacked" action="<?= url('/edit')?>" method="post" accept-charset="utf-8">
                     <fieldset>
-                        <legend><?= translate('edit') ?></legend>
+                        <legend><?= translate('editor_title') ?></legend>
                         <div class="pure-control-group">
                             <label for="email"><?= translate('email_address') ?> *</label>
                             <input id="email" type="email" placeholder="Email Address" required="true" name="email" autofocus="true" autocomplete="on">
@@ -112,7 +112,7 @@ try {
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         <title>Edit - <?= $title; ?></title>
         <meta name="robots" content="noindex, nofollow">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
         <link rel="icon" type="image/png" href="<?= url($favicon) ?>"/>
         <link rel="stylesheet" href="<?= url('assets/css/edit.css') ?>" type="text/css" media="screen"/>
     </head>

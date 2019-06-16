@@ -9,7 +9,7 @@ if (!defined('minimalarchive'))
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         <meta name="robots" content="noindex, nofollow">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
         <title><?= translate('404')?></title>
         <style type="text/css">
             body {
@@ -27,7 +27,7 @@ if (!defined('minimalarchive'))
     <body>
         <div>
             <h1><?= translate('404') ?></h1>
-            <div>Go to homepage? <a href="<?= url('/') ?>">Yes</a> — <span>No</span>
+            <div><?= translate('gotohomepage') ?>? <a href="<?= url('/') ?>"><?= translate('yes')?></a> — <span><?= translate('no')?></span>
             </div>
         </div>
     </body>

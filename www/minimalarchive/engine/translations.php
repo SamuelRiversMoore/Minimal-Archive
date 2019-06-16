@@ -30,8 +30,10 @@ return [
         "exit"                  => "Exit",
         "favicon"               => "Favicon",
         "font_family"           => "Font",
+        "gotohomepage"          => "Go to homepage",
         "installation_complete" => "✅ Installation is complete!",
         "instructions_add_pic"  => "To add an image, drag it into the main area",
+        "no"                    => "No",
         "no_folder"             => "The folder doesn't exist",
         "note"                  => "Note (visible at the bottom of the page)",
         "preview"               => "Preview",
@@ -47,7 +49,8 @@ return [
         "title"                 => "Title",
         "uninstall"             => "Uninstall",
         "uninstall_complete"    => "✅ Successfully uninstalled the project",
-        "view_page"             => "View page"
+        "view_page"             => "View page",
+        "yes"                   => "Yes"
     ],
     "fr" => [
         "404"                   => "☹️ Mauvaise adresse",
@@ -75,8 +78,10 @@ return [
         "exit"                  => "Quitter",
         "favicon"               => "Favicon",
         "font_family"           => "Typo",
+        "gotohomepage"          => "Aller à la page d'accueil",
         "installation_complete" => "✅ L'installation est terminée!",
         "instructions_add_pic"  => "Pour ajouter une image, faites-la glisser dans l'espace principal",
+        "no"                    => "Non",
         "no_folder"             => "Le dossier n'existe pas...",
         "note"                  => "Texte de bas de page",
         "preview"               => "Aperçu",
@@ -92,6 +97,7 @@ return [
         "title"                 => "Titre",
         "uninstall"             => "Désinstallation",
         "uninstall_complete"    => "✅ Le projet a été désinstallé.",
-        "view_page"             => "Voir la page"
+        "view_page"             => "Voir la page",
+        "yes"                   => "Oui"
     ],
 ];
