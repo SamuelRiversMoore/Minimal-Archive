@@ -1,3 +1,251 @@
+@font-face {
+  font-family: "Aileron-Black";
+  src: url("../fonts/Aileron-Black.otf") format("opentype");
+}
+.aileron_black {
+  font-family: "Aileron-Black";
+}
+
+@font-face {
+  font-family: "Aileron-UltraLight";
+  src: url("../fonts/Aileron-UltraLight.otf") format("opentype");
+}
+.aileron_ultralight {
+  font-family: "Aileron-UltraLight";
+}
+
+@font-face {
+  font-family: "Arcadia Textbook";
+  src: url("../fonts/ArcadiaTextbook.otf") format("opentype");
+}
+.arcadia_textbook {
+  font-family: "Aileron-Black";
+}
+
+@font-face {
+  font-family: "ArchivoBlack";
+  src: url("../fonts/ArchivoBlack.otf") format("opentype");
+}
+.archivo_black {
+  font-family: "ArchivoBlack";
+}
+
+@font-face {
+  font-family: "ArchivoNarrow-Regular";
+  src: url("../fonts/ArchivoNarrow-Regular.otf") format("opentype");
+}
+.archivo_narrow_regular {
+  font-family: "ArchivoNarrow-Regular";
+}
+
+@font-face {
+  font-family: "Bagnard";
+  src: url("../fonts/Bagnard.otf") format("opentype");
+}
+.bagnard_regular {
+  font-family: "Bagnard";
+}
+
+@font-face {
+  font-family: "BagnardSans";
+  src: url("../fonts/BagnardSans.otf") format("opentype");
+}
+.bagnard_sans_regular {
+  font-family: "BagnardSans";
+}
+
+@font-face {
+  font-family: "BluuNext-Bold";
+  src: url("../fonts/BluuNext-Bold.otf") format("opentype");
+}
+.bluu_next_bold {
+  font-family: "BluuNext-Bold";
+}
+
+@font-face {
+  font-family: "CooperHewitt-Heavy";
+  src: url("../fonts/CooperHewitt-Heavy.otf") format("opentype");
+}
+.cooper_hewitt_heavy {
+  font-family: "CooperHewitt-Heavy";
+}
+
+@font-face {
+  font-family: "CothamSans";
+  src: url("../fonts/CothamSans.otf") format("opentype");
+}
+.cotham_regular {
+  font-family: "CothamSans";
+}
+
+@font-face {
+  font-family: "EBGaramond12-Regular";
+  src: url("../fonts/EBGaramond12-Regular.otf") format("opentype");
+}
+.eb_garamond_regular {
+  font-family: "EBGaramond12-Regular";
+}
+
+@font-face {
+  font-family: "GapSansBold";
+  src: url("../fonts/GapSansBold.ttf") format("truetype");
+}
+.gap_sans_bold {
+  font-family: "GapSansBold";
+}
+
+@font-face {
+  font-family: "Junicode-BoldCondensed";
+  src: url("../fonts/Junicode-BoldCondensed.ttf") format("truetype");
+}
+.junicode_bold_condensed {
+  font-family: "Junicode-BoldCondensed";
+}
+
+@font-face {
+  font-family: "LeagueGothic-Italic";
+  src: url("../fonts/LeagueGothic-Italic.otf") format("opentype");
+}
+.league_gothic_italic {
+  font-family: "LeagueGothic-Italic";
+}
+
+@font-face {
+  font-family: "LiberationSans-Bold";
+  src: url("../fonts/LiberationSans-Bold.otf") format("opentype");
+}
+.liberation_sans_bold {
+  font-family: "LiberationSans-Bold";
+}
+
+@font-face {
+  font-family: "LibreBaskerville-Regular";
+  src: url("../fonts/LibreBaskerville-Regular.otf") format("opentype");
+}
+.libre_baskerville_regular {
+  font-family: "LibreBaskerville-Regular";
+}
+
+@font-face {
+  font-family: "mplus-1m-light";
+  src: url("../fonts/mplus-1m-light.otf") format("opentype");
+}
+.mplus_mtype_1_light {
+  font-family: "mplus-1m-light";
+}
+
+@font-face {
+  font-family: "nimbus-sans-l_bold";
+  src: url("../fonts/nimbus-sans-l_bold.otf") format("opentype");
+}
+.nimbus_sans_l_bold {
+  font-family: "nimbus-sans-l_bold";
+}
+
+@font-face {
+  font-family: "OfficeCodePro-Light";
+  src: url("../fonts/OfficeCodePro-Light.otf") format("opentype");
+}
+.office_code_pro_light {
+  font-family: "OfficeCodePro-Light";
+}
+
+@font-face {
+  font-family: "OstrichSans-Heavy";
+  src: url("../fonts/OstrichSans-Heavy.otf") format("opentype");
+}
+.ostrich_sans_heavy {
+  font-family: "OstrichSans-Heavy";
+}
+
+@font-face {
+  font-family: "Oswald-Bold";
+  src: url("../fonts/Oswald-Bold.otf") format("opentype");
+}
+.oswald_bold {
+  font-family: "Oswald-Bold";
+}
+
+@font-face {
+  font-family: "Poppins-Medium";
+  src: url("../fonts/Poppins-Medium.otf") format("opentype");
+}
+.poppins_medium {
+  font-family: "Poppins-Medium";
+}
+
+@font-face {
+  font-family: "Reglo-Bold";
+  src: url("../fonts/Reglo-Bold.otf") format("opentype");
+}
+.reglo_bold {
+  font-family: "Reglo-Bold";
+}
+
+@font-face {
+  font-family: "Roboto-BlackItalic";
+  src: url("../fonts/Roboto-BlackItalic.otf") format("opentype");
+}
+.roboto_black_italic {
+  font-family: "Roboto-BlackItalic";
+}
+
+@font-face {
+  font-family: "Roboto-Thin";
+  src: url("../fonts/Roboto-Thin.otf") format("opentype");
+}
+.roboto_thin {
+  font-family: "Roboto-Thin";
+}
+
+@font-face {
+  font-family: "terminal-grotesque_open";
+  src: url("../fonts/terminal-grotesque_open.otf") format("opentype");
+}
+.terminal_grotesque_open {
+  font-family: "terminal-grotesque_open";
+}
+
+@font-face {
+  font-family: "texgyreheros-bolditalic";
+  src: url("../fonts/texgyreheros-bolditalic.otf") format("opentype");
+}
+.tex_gyre_heros_bold_italic {
+  font-family: "texgyreheros-bolditalic";
+}
+
+@font-face {
+  font-family: "texgyreheroscn-regular";
+  src: url("../fonts/texgyreheroscn-regular.otf") format("opentype");
+}
+.tex_gyre_heros_condensed_regular {
+  font-family: "texgyreheroscn-regular";
+}
+
+@font-face {
+  font-family: "WorkSans-ExtraBold";
+  src: url("../fonts/WorkSans-ExtraBold.otf") format("opentype");
+}
+.work_sans_extra_bold {
+  font-family: "WorkSans-ExtraBold";
+}
+
+@font-face {
+  font-family: "WorkSans-Light";
+  src: url("../fonts/WorkSans-Light.otf") format("opentype");
+}
+.work_sans_light {
+  font-family: "WorkSans-Light";
+}
+
+@font-face {
+  font-family: "YoungSerif-Regular";
+  src: url("../fonts/YoungSerif-Regular.otf") format("opentype");
+}
+.young_serif_regular {
+  font-family: "YoungSerif-Regular";
+}
+
 * {
   box-sizing: border-box;
 }

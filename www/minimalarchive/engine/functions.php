@@ -119,6 +119,46 @@ function getFilenamesInFolder(string $folder = null, array $supported = [])
     return $result;
 }
 
+function getFontsInFolder (string $folder = null)
+{
+    $supported_formats = array(
+        'otf' => 'opentype',
+        'woff' => 'woff',
+        'woff2' => 'woff2',
+        'ttf' => 'truetype'
+    );
+
+    try {
+        $files = getFilenamesInFolder(ROOT_FOLDER . DS . $folder, array_keys($supported_formats));
+        $fonts = array();
+        foreach ($files as $file) {
+            $basename = basename($file);
+            $extension = pathinfo($basename, PATHINFO_EXTENSION);
+            $name = pathinfo($basename, PATHINFO_FILENAME);
+            $fonts[] = array(
+                "name" => $name,
+                "type" => $supported_formats[$extension],
+                "filename" => $basename,
+                "path" => url($folder . DS . $file)
+            );
+        }
+        return $fonts;
+    } catch (Exception $e) {
+        throw $e;
+    }
+}
+
+function getFontsStylesheet (array $fonts)
+{
+    $i = -1;
+    $style = "";
+    while (++$i < count($fonts)) {
+        $style .= "@font-face { font-family: '" . $fonts[$i]['name'] . "'; src: url('" . $fonts[$i]['path'] . "') format('" . $fonts[$i]['type'] . "')\n";
+        $style .= "." . strtolower($fonts[$i]['name']) . "{font-family: '" . $fonts[$i]['name'] . "'\n";
+    }
+    return $style;
+}
+
 /**
  * Returns an array of images in folder
  * @param  string|null $folder

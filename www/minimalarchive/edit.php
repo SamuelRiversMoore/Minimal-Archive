@@ -98,6 +98,7 @@ $favicon = array_key_exists('favicon', $meta)  && $meta['favicon'] ? 'assets/ima
 $note = array_key_exists('note', $meta) ? $meta['note'] : '';
 $bgcolor = array_key_exists('bgcolor', $meta) && $meta['bgcolor'] ? $meta['bgcolor'] : '#c0c0c0';
 $textcolor = array_key_exists('textcolor', $meta) && $meta['textcolor'] ? $meta['textcolor'] : '#333';
+$fonts = getFontsInFolder('assets/fonts');
 
 $error = null;
 try {
@@ -115,6 +116,11 @@ try {
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
         <link rel="icon" type="image/png" href="<?= url($favicon) ?>"/>
         <link rel="stylesheet" href="<?= url('assets/css/edit.css') ?>" type="text/css" media="screen"/>
+        <?php
+        if ($fonts && count($fonts)) {
+            echo "<style>" . getFontsStylesheet($fonts) . "</style>";
+        }
+        ?>
     </head>
     <body style="background-color: <?= $bgcolor ?>; color: <?= $textcolor ?>">
         <?php
@@ -195,14 +201,22 @@ try {
 
                 <div class="editbutton text">
                     <div class="editbutton__icon">
-                        <span class="icon">🅰</span>
+                        <span class="icon">🔤</span>
                     </div>
                     <div class="editbutton__content">
                         <div class="editbutton__label">
-                            <span><?= translate('text_color') ?></span>
+                            <span><?= translate('font_family') ?></span>
                         </div>
                         <div class="editbutton__submenu">
                             <input type="color" id="text_color" name="text_color" value="<?= $textcolor ?>"><label for="text_color"><?= $textcolor ?></label>
+                            <select name="font_family">
+                            <?php
+                            $i = -1;
+                            while (++$i < count($fonts)) {
+                                echo "<option value='" . $fonts[$i]['name']. "'>" . $fonts[$i]['name']. "</option>";
+                            }
+                            ?>
+                            </select>
                         </div>
                     </div>
                 </div>
