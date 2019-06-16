@@ -11,7 +11,7 @@
   cursor: -webkit-zoom-in;
   border-radius: 3px;
   position: relative;
-  @media screen and (max-width: 550px) {
+  @media screen and (max-width: $mobileBreakPoint) {
     flex: 100%;
     width: auto;
     height: auto;

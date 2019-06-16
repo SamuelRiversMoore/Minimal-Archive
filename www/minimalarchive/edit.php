@@ -38,6 +38,7 @@ if (isset($_SESSION['id'])) {
         }
     }
 }
+unset($_POST);
 ?>
 
 <?php if (false === $access_granted): ?>
@@ -111,6 +112,7 @@ try {
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         <title>Edit - <?= $title; ?></title>
         <meta name="robots" content="noindex, nofollow">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="icon" type="image/png" href="<?= url($favicon) ?>"/>
         <link rel="stylesheet" href="<?= url('assets/css/edit.css') ?>" type="text/css" media="screen"/>
     </head>
@@ -153,55 +155,100 @@ try {
             </div>
         </aside>
 
+        <input type="checkbox" class="controls__toggle" id="toggle" />
+        <label for="toggle">
+            <div class="controls__mobile-toggle">
+                <div class="pure-button controls__mobile-toggle--open">⚙️ <?= translate('controls_open') ?></div>
+                <div class="pure-button controls__mobile-toggle--close">⚙️ <?= translate('controls_close') ?></div>
+            </div>
+        </label>
         <aside class="controls">
             <div class="controls__title"><?= translate('editor_title') ?></div>
-
             <!-- Buttons -->
             <div class="controls__buttons">
-                <div class="editbutton background">
-                    <div class="editbutton__label">
-                        <span class="icon">🌄</span><span><?= translate('background_color') ?></span>
+                <div class="editbutton upload">
+                    <div class="editbutton__icon">
+                        <span class="icon">⏫</span>
                     </div>
-                    <div class="editbutton__submenu">
-                        <input type="color" id="bg_color" name="bg_color" value="<?= $bgcolor ?>"><label for="bg_color"><?= $bgcolor ?></label>
+                    <div class="editbutton__content">
+                        <input type="hidden" name="csrf_token" value="<?= get_token('upload') ?>" />
+                        <div class="editbutton__label">
+                            <span><?= translate('add_images') ?></span>
+                        </div>
+                        <input id="file-input" type="file" name="image_upload" multiple accept='image/*'/>
+                    </div>
+                </div>
+
+                <div class="editbutton background">
+                    <div class="editbutton__icon">
+                        <span class="icon">🌄</span>
+                    </div>
+                    <div class="editbutton__content">
+                        <div class="editbutton__label">
+                            <span><?= translate('background_color') ?></span>
+                        </div>
+                        <div class="editbutton__submenu">
+                            <input type="color" id="bg_color" name="bg_color" value="<?= $bgcolor ?>"><label for="bg_color"><?= $bgcolor ?></label>
+                        </div>
                     </div>
                 </div>
 
                 <div class="editbutton text">
-                    <div class="editbutton__label">
-                        <span class="icon">🅰</span><span><?= translate('text_color') ?></span>
+                    <div class="editbutton__icon">
+                        <span class="icon">🅰</span>
                     </div>
-                    <div class="editbutton__submenu">
-                        <input type="color" id="text_color" name="text_color" value="<?= $textcolor ?>"><label for="text_color"><?= $textcolor ?></label>
+                    <div class="editbutton__content">
+                        <div class="editbutton__label">
+                            <span><?= translate('text_color') ?></span>
+                        </div>
+                        <div class="editbutton__submenu">
+                            <input type="color" id="text_color" name="text_color" value="<?= $textcolor ?>"><label for="text_color"><?= $textcolor ?></label>
+                        </div>
                     </div>
                 </div>
             </div>
             <!-- /Buttons -->
 
-            <div class="footer">
-                <div class="controls__note">
+            <div class="controls__footer">
+                <div class="controls__footer__note">
                     <span><?= translate('tip') ?>: </span><?= translate('instructions_add_pic') ?>
                 </div>
+                <div class="controls__footer__buttons">
+                    <div class="editbutton save">
+                        <div class="editbutton__icon">
+                            <span class="icon">✍️</span>
+                        </div>
+                        <div class="editbutton__content">
+                            <input type="hidden" name="csrf_token" value="<?= get_token('save') ?>" />
+                            <div class="editbutton__label">
+                                <span><?= translate('save') ?></span>
+                            </div>
+                        </div>
 
-                <div class="editbutton save">
-                    <input type="hidden" name="csrf_token" value="<?= get_token('save') ?>" />
-                    <div class="editbutton__label">
-                        <span class="icon">✍️</span><span><?= translate('save') ?></span>
+                    </div>
+
+                    <div class="editbutton cancel">
+                        <div class="editbutton__icon">
+                            <span class="icon">🙅</span>
+                        </div>
+                        <div class="editbutton__content">
+                            <div class="editbutton__label">
+                                <span><?= translate('cancel') ?></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="editbutton preview">
+                        <div class="editbutton__icon">
+                            <span class="icon">🏃</span>
+                        </div>
+                        <div class="editbutton__content">
+                            <div class="editbutton__label">
+                                <span><?= translate('exit') ?></span>
+                            </div>
+                        </div>
                     </div>
                 </div>
-
-                <div class="editbutton cancel">
-                    <div class="editbutton__label">
-                        <span class="icon">🙅</span><span><?= translate('cancel') ?></span>
-                    </div>
-                </div>
-
-                <div class="editbutton preview">
-                    <div class="editbutton__label">
-                        <span class="icon">🏃</span><span><?= translate('exit') ?></span>
-                    </div>
-                </div>
-
             </div>
         </aside>
         <main>

@@ -7,7 +7,7 @@
   box-sizing: border-box;
 }
 
-html, body {
+html {
   min-height: 100%;
 }
 
@@ -20,9 +20,11 @@ body {
   overflow-x: hidden;
   color: #333;
   min-height: 100%;
+  min-width: 320px;
 }
 
 main {
+  min-width: 320px;
   padding: 0;
   box-sizing: border-box;
 }
@@ -164,7 +166,6 @@ p {
 
 .note {
   padding: 40px 20px;
-  color: #787878;
 }
 
 body {
