@@ -38,11 +38,18 @@
         <link rel="icon" type="image/png" href="<?= url($favicon) ?>"/>
         <link rel="stylesheet" href="<?= url('assets/css/index.css') ?>" type="text/css" media="screen"/>
         <?php
-            echo "<style>";
-            echo "background-color: ${bgcolor};";
-            echo "color: ${textcolor};";
-            echo "font-family: ${fontfamily};";
-            echo "</style>"
+            if ($font = getFontByName($fontfamily)) {
+                echo "<style>" . getFontStyle($font) . "</style>";
+            }
+        ?>
+        <?php
+            echo "<style>
+                body {
+                    background-color: ${bgcolor};
+                    color: ${textcolor};
+                    font-family: ${fontfamily};
+                }
+                </style>";
         ?>
     </head>
     <body>

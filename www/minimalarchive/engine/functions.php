@@ -119,6 +119,33 @@ function getFilenamesInFolder(string $folder = null, array $supported = [])
     return $result;
 }
 
+/**
+ * Returns a font array object
+ * @param  string $name   filename without extension
+ * @param  string $folder folder to look fonts for
+ * @return array | null
+ */
+function getFontByName($name, $folder = 'assets/fonts')
+{
+    try {
+        $fonts = getFontsInFolder($folder);
+        $i = -1;
+        while (++$i < count($fonts)) {
+            if ($fonts[$i]['name'] === $name) {
+                return $fonts[$i];
+            }
+        }
+        return null;
+    } catch (Exception $e) {
+        throw $e;
+    }
+}
+
+/**
+ * Returns all fonts in folder
+ * @param  string|null $folder folder to look fonts for
+ * @return array
+ */
 function getFontsInFolder(string $folder = null)
 {
     $supported_formats = array(
@@ -127,7 +154,6 @@ function getFontsInFolder(string $folder = null)
         'woff2' => 'woff2',
         'ttf' => 'truetype'
     );
-
     try {
         $files = getFilenamesInFolder(ROOT_FOLDER . DS . $folder, array_keys($supported_formats));
         $fonts = array();
@@ -148,15 +174,29 @@ function getFontsInFolder(string $folder = null)
     }
 }
 
+/**
+ * Return font stylesheet without style tags
+ * @param  array  $fonts formatted font array, provided by getFontsInFolder
+ * @return string
+ */
 function getFontsStylesheet(array $fonts)
 {
     $i = -1;
     $style = "";
     while (++$i < count($fonts)) {
-        $style .= "@font-face { font-family: '" . $fonts[$i]['name'] . "'; src: url('" . $fonts[$i]['path'] . "') format('" . $fonts[$i]['type'] . "')\n";
-        $style .= "." . strtolower($fonts[$i]['name']) . "{font-family: '" . $fonts[$i]['name'] . "'\n";
+        $style .= getFontStyle($fonts[$i]);
     }
     return $style;
+}
+
+/**
+ * Return font face string
+ * @param  array $font
+ * @return string
+ */
+function getFontStyle(array $font)
+{
+    return "@font-face { font-family: '" . $font['name'] . "'; src: url('" . $font['path'] . "') format('" . $font['type'] . "')\n" . strtolower($font['name']) . "{font-family: '" . $font['name'] . "'\n";
 }
 
 /**
