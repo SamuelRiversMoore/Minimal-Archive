@@ -1,14 +1,14 @@
 <?php
 if (!defined('minimalarchive')) {
-  redirect('/');
+    redirect('/');
 }
 
 // Grabs the URI and breaks it apart in case we have querystring stuff
 $request_uri = explode('?', trim($_SERVER['REQUEST_URI'], '/'), 2);
 $base = $request_uri[0];
 if (ROOT_URL) {
-  $tmp = strstr($request_uri[0], ROOT_URL);
-  $base = substr($tmp, strlen(ROOT_URL) + 1);
+    $tmp = strstr($request_uri[0], ROOT_URL);
+    $base = substr($tmp, strlen(ROOT_URL) + 1);
 }
 
 // Route it up!

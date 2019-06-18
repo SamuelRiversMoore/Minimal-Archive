@@ -1,6 +1,5 @@
 <?php
-if (!defined('minimalarchive'))
-{
+if (!defined('minimalarchive')) {
     redirect('/');
 }
 ?>

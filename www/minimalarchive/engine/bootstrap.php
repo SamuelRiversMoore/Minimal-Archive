@@ -1,5 +1,5 @@
 <?php
-define('minimalarchive', TRUE);
+define('minimalarchive', true);
 
 define('DS', DIRECTORY_SEPARATOR);
 define('ROOT_FOLDER', __DIR__ . DS . '../..');

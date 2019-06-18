@@ -98,6 +98,7 @@ $favicon = array_key_exists('favicon', $meta)  && $meta['favicon'] ? 'assets/ima
 $note = array_key_exists('note', $meta) ? $meta['note'] : '';
 $bgcolor = array_key_exists('bgcolor', $meta) && $meta['bgcolor'] ? $meta['bgcolor'] : '#c0c0c0';
 $textcolor = array_key_exists('textcolor', $meta) && $meta['textcolor'] ? $meta['textcolor'] : '#333';
+$fontfamily = array_key_exists('fontfamily', $meta) && $meta['fontfamily'] ? $meta['fontfamily'] : '"Arcadia Textbook", "SF Mono", "Arcadia", "Zwizz", "Fira Code", "IBM Plex Mono", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;';
 $fonts = getFontsInFolder('assets/fonts');
 
 $error = null;
@@ -121,13 +122,22 @@ try {
             echo "<style>" . getFontsStylesheet($fonts) . "</style>";
         }
         ?>
+        <?php
+            echo "<style>
+                body {
+                    background-color: ${bgcolor};
+                    color: ${textcolor};
+                    font-family: ${fontfamily};
+                }
+                </style>";
+        ?>
     </head>
-    <body style="background-color: <?= $bgcolor ?>; color: <?= $textcolor ?>">
+    <body>
         <?php
         if ($error && strlen($error)) {
             put_error($error);
         } else {
-        ?>
+            ?>
 
         <div id="drop-area">
             <span class="drop-message"><?= translate('edit_dragzone') ?></span>
@@ -185,7 +195,7 @@ try {
                     </div>
                 </div>
 
-                <div class="editbutton background">
+                <div class="editbutton bgcolor">
                     <div class="editbutton__icon">
                         <span class="icon">🌄</span>
                     </div>
@@ -208,15 +218,19 @@ try {
                             <span><?= translate('font_family') ?></span>
                         </div>
                         <div class="editbutton__submenu">
-                            <input type="color" id="text_color" name="text_color" value="<?= $textcolor ?>"><label for="text_color"><?= $textcolor ?></label>
-                            <select name="font_family">
-                            <?php
-                            $i = -1;
-                            while (++$i < count($fonts)) {
-                                echo "<option value='" . $fonts[$i]['name']. "'>" . $fonts[$i]['name']. "</option>";
-                            }
-                            ?>
-                            </select>
+                            <div>
+                                <input type="color" id="text_color" name="text_color" value="<?= $textcolor ?>"><label for="text_color"><?= $textcolor ?></label>
+                            </div>
+                            <div>
+                                <select name="font_family" id="font_family">
+            <?php
+            $i = -1;
+            while (++$i < count($fonts)) {
+                $selected = $fontfamily == $fonts[$i]['name'];
+                echo "<option value='" . $fonts[$i]['name']. "' " . ($selected ? "selected='selected'" : '') . ">" . $fonts[$i]['name']. "</option>";
+            } ?>
+                                </select>
+                            </div>
                         </div>
                     </div>
                 </div>

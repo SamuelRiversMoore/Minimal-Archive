@@ -119,7 +119,7 @@ function getFilenamesInFolder(string $folder = null, array $supported = [])
     return $result;
 }
 
-function getFontsInFolder (string $folder = null)
+function getFontsInFolder(string $folder = null)
 {
     $supported_formats = array(
         'otf' => 'opentype',
@@ -148,7 +148,7 @@ function getFontsInFolder (string $folder = null)
     }
 }
 
-function getFontsStylesheet (array $fonts)
+function getFontsStylesheet(array $fonts)
 {
     $i = -1;
     $style = "";

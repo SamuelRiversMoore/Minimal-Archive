@@ -59,7 +59,7 @@ class Menu {
         if (isFunction(callback)) {
           this._buttons[id].callback = callback
           this._buttons[id].dom.classList.add('clickable')
-          domNode.addEventListener('click', callback)
+          domNode.addEventListener('click', this._buttons[id].callback)
         }
       }
 
@@ -69,7 +69,7 @@ class Menu {
         domNode.addEventListener('click', () => this.toggleButtonById(id))
         if (isFunction(callback)) {
           this._buttons[id].callback = callback
-          domNode.addEventListener('click', callback)
+          domNode.addEventListener('click', this._buttons[id].callback)
         }
         if (isDomNode(domNode2)) {
           this._buttons[id].dom2 = domNode2
@@ -77,7 +77,7 @@ class Menu {
           domNode2.addEventListener('click', () => this.toggleButtonById(id))
           if (isFunction(callback2)) {
             this._buttons[id].callback2 = callback2
-            domNode2.addEventListener('click', callback2)
+            domNode2.addEventListener('click', this._buttons[id].callback2)
           }
         }
       }
@@ -85,7 +85,7 @@ class Menu {
       if (type === 'input') {
         if (isFunction(callback)) {
           this._buttons[id].callback = callback
-          domNode.addEventListener('change', callback)
+          domNode.addEventListener('change', this._buttons[id].callback)
         }
       }
       return id
@@ -107,7 +107,12 @@ class Menu {
 
   removeButton (id) {
     if (this._buttons[id]) {
-      this._buttons[id].removeEventListener('click', this._callback)
+      if (this._buttons[id].dom) {
+        this._buttons[id].dom.removeEventListener('click', this._buttons[id].callback)
+      }
+      if (this._buttons[id].dom2) {
+        this._buttons[id].dom2.removeEventListener('click', this._buttons[id].callback2)
+      }
       this._buttons.remove(id)
       return true
     }

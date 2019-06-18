@@ -301,7 +301,7 @@
           if (isFunction(callback)) {
             this._buttons[id].callback = callback;
             this._buttons[id].dom.classList.add('clickable');
-            domNode.addEventListener('click', callback);
+            domNode.addEventListener('click', this._buttons[id].callback);
           }
         }
 
@@ -311,7 +311,7 @@
           domNode.addEventListener('click', () => this.toggleButtonById(id));
           if (isFunction(callback)) {
             this._buttons[id].callback = callback;
-            domNode.addEventListener('click', callback);
+            domNode.addEventListener('click', this._buttons[id].callback);
           }
           if (isDomNode(domNode2)) {
             this._buttons[id].dom2 = domNode2;
@@ -319,7 +319,7 @@
             domNode2.addEventListener('click', () => this.toggleButtonById(id));
             if (isFunction(callback2)) {
               this._buttons[id].callback2 = callback2;
-              domNode2.addEventListener('click', callback2);
+              domNode2.addEventListener('click', this._buttons[id].callback2);
             }
           }
         }
@@ -327,7 +327,7 @@
         if (type === 'input') {
           if (isFunction(callback)) {
             this._buttons[id].callback = callback;
-            domNode.addEventListener('change', callback);
+            domNode.addEventListener('change', this._buttons[id].callback);
           }
         }
         return id
@@ -349,7 +349,12 @@
 
     removeButton (id) {
       if (this._buttons[id]) {
-        this._buttons[id].removeEventListener('click', this._callback);
+        if (this._buttons[id].dom) {
+          this._buttons[id].dom.removeEventListener('click', this._buttons[id].callback);
+        }
+        if (this._buttons[id].dom2) {
+          this._buttons[id].dom2.removeEventListener('click', this._buttons[id].callback2);
+        }
         this._buttons.remove(id);
         return true
       }
@@ -1445,15 +1450,17 @@
       fileInputSelector: '#file-input',
       progressBarSelector: '.progress-bar',
       buttonPreviewSelector: '.editbutton.preview',
-      buttonCancelSelector: '.editbutton.cancel',
-      buttonSaveSelector: '.editbutton.save',
       gallery: new Gallery({
         gallerySelector: '.Gallery',
         imageSelector: '.Image',
         lazyloadSelector: '.lazy',
         active: false
       }),
-      fullscreenDropZone: true
+      fullscreenDropZone: true,
+      bgColor: '#bbb',
+      textColor: '#333',
+      fontFamily: document.body.style.fontFamily,
+      onUpdate: (newData, oldData) => {}
     };
 
     for (const attrName in options) {
@@ -1465,35 +1472,33 @@
 
   class Editor {
     constructor (options) {
-      this.config = mergeSettings$4(options);
-      this.uploadFile = this.uploadFile.bind(this);
-      this.previewFile = this.previewFile.bind(this);
-      this.refreshView = this.refreshView.bind(this);
+      this.options = mergeSettings$4(options);
+      this.actionSave = this.actionSave.bind(this);
+      this.actionCancel = this.actionCancel.bind(this);
+      this.actionPreview = this.actionPreview.bind(this);
+      this.actionUpdate = this.actionUpdate.bind(this);
       this.files = [];
-      this.init();
+      this.init(this.options);
     }
 
-    init () {
+    init (options) {
       const {
+        bgColor,
+        textColor,
+        fontFamily,
         gallery,
         dropAreaSelector,
         fullscreenDropZone,
         fileInputSelector,
         progressBarSelector,
-        buttonPreviewSelector,
-        buttonCancelSelector,
-        buttonSaveSelector
-      } = this.config;
+        onUpdate
+      } = options;
 
       this._gallery = gallery;
+      this._buttons = [];
       this._dropArea = document.querySelector(dropAreaSelector);
       this._fileInput = document.querySelector(fileInputSelector);
       this._fullscreenDropZone = Boolean(fullscreenDropZone);
-      this._buttonCancel = document.querySelector(buttonCancelSelector);
-      this._buttonPreview = document.querySelector(buttonPreviewSelector);
-      this._buttonSave = document.querySelector(buttonSaveSelector);
-      this._bgColorInput = document.querySelector('.editbutton input[name="bg_color"]');
-      this._textColorInput = document.querySelector('.editbutton input[name="text_color"]');
 
       if (!this._gallery) {
         console.warn(`\nModule: Editor.js\nError: Can't create editor.\nCause: No Gallery provided.\nResult: Editor can't initialize.`);
@@ -1506,19 +1511,9 @@
       if (!this._fileInput) {
         console.warn(`\nModule: Editor.js\nWarning: Can't create file input listener.\nCause: No file input with selector [${fileInputSelector}] found in document.\nResult: Upload by file input button is disabled.`);
       }
-      if (!this._buttonPreview) {
-        console.warn(`Module: Editor.js\nWarning: Can't add preview functionality.\nCause: No preview button with selector [${buttonPreviewSelector}] found in document.\nResult: Previewing is disabled.`);
-      }
-      if (!this._buttonSave) {
-        console.warn(`Module: Editor.js\nWarning: Can't add save functionality.\nCause: No save button with selector [${buttonSaveSelector}] found in document.\nResult: Saving is disabled.`);
-      }
-      if (!this._buttonCancel) {
-        console.warn(`Module: Editor.js\nWarning: Can't add cancel functionality.\nCause: No cancel button with selector [${buttonCancelSelector}] found in document.\nResult: Undoing changes is disabled.`);
-      }
-      this.progressbar = new ProgressBar(progressBarSelector);
+      this._progressbar = new ProgressBar(progressBarSelector);
 
-      this.menu = new Menu();
-      this.setupMenuButtons()
+      this._menu = new Menu()
 
       ;(() => new Modal({
         target: '.modal',
@@ -1526,42 +1521,19 @@
         triggers: '.modal__bg, .modal__close'
       }))();
 
-      this.backup = this.getState();
+      this.onUpdate = onUpdate;
+      this.bgColor = bgColor;
+      this.textColor = textColor;
+      this.fontFamily = fontFamily;
+      this._backup = this.getState();
       this.initListeners();
     }
 
-    setupMenuButtons () {
-      // Save
-      this.menu.addButton({
-        domNode: this._buttonSave,
-        callback: this.editSave.bind(this)
-      });
-
-      // Cancel
-      this.menu.addButton({
-        domNode: this._buttonCancel,
-        callback: this.editCancel.bind(this)
-      });
-
-      // Preview
-      this.menu.addButton({
-        domNode: this._buttonPreview,
-        callback: this.editPreview.bind(this)
-      });
-
-      // Background color
-      this.menu.addButton({
-        domNode: this._bgColorInput,
-        type: 'input',
-        callback: this.editBgColor.bind(this)
-      });
-
-      // Text color
-      this.menu.addButton({
-        domNode: this._textColorInput,
-        type: 'input',
-        callback: this.editTextColor.bind(this)
-      });
+    addButton (options) {
+      const button = this.menu.addButton(options);
+      if (button) {
+        this._buttons.push(button);
+      }
     }
 
     initListeners () {
@@ -1612,8 +1584,8 @@
     }
 
     addControlsToImage (image) {
-      const deleteButton = this.getButton('Delete', 'button--delete', image.getId());
-      const revertButton = this.getButton('Revert', 'button--revert', image.getId());
+      const deleteButton = this.getImageButton('Delete', 'button--delete', image.getId());
+      const revertButton = this.getImageButton('Revert', 'button--revert', image.getId());
       const imageControls = htmlToElement('<div class="Image__controls"></div>');
 
       imageControls.appendChild(deleteButton);
@@ -1623,43 +1595,72 @@
         type: 'toggle',
         domNode: deleteButton,
         domNode2: revertButton,
-        callback: this.editDelete.bind(this),
-        callback2: this.editRevert.bind(this)
+        callback: this.editDeleteImage.bind(this),
+        callback2: this.editRevertImage.bind(this)
       });
     }
 
-    editBgColor () {
-      if (isHexColor(this._bgColorInput.value)) {
-        document.body.style.backgroundColor = this._bgColorInput.value;
-        this._bgColorInput.nextSibling.innerHTML = this._bgColorInput.value;
+    set bgColor (color) {
+      if (isHexColor(color)) {
+        this._bgColor = color;
+        document.body.style.backgroundColor = color;
       }
     }
 
-    editTextColor () {
-      if (isHexColor(this._textColorInput.value)) {
-        document.body.style.color = this._textColorInput.value;
-        this._textColorInput.nextSibling.innerHTML = this._textColorInput.value;
+    get bgColor () {
+      return this._bgColor
+    }
+
+    set textColor (color) {
+      if (isHexColor(color)) {
+        this._textColor = color;
+        document.body.style.color = color;
       }
     }
 
-    editCancel () {
-      if (!areObjectsEqual(this.getState(), this.backup)) {
-        this.save(this.backup);
+    get textColor () {
+      return this._textColor
+    }
+
+    set fontFamily (fontfamily) {
+      this._fontFamily = fontfamily;
+      document.body.style.fontFamily = fontfamily;
+    }
+
+    get fontFamily () {
+      return this._fontFamily
+    }
+
+    get buttons () {
+      return this._buttons
+    }
+
+    get gallery () {
+      return this._gallery
+    }
+
+    get menu () {
+      return this._menu
+    }
+
+    actionSave (csrfToken) {
+      const state = this.getState();
+      if (!areObjectsEqual(state, this._backup)) {
+        this.saveData(state, csrfToken);
       }
     }
 
-    editPreview () {
+    actionCancel (csrfToken) {
+      if (!areObjectsEqual(this.getState(), this._backup)) {
+        this.saveData(this._backup, csrfToken);
+      }
+    }
+
+    actionPreview () {
       window.location = baseUrl();
     }
 
-    editSave () {
-      const state = this.getState();
-      if (!areObjectsEqual(state, this.backup)) {
-        this.save(state);
-      }
-    }
-
-    editDelete (e) {
+    editDeleteImage (e) {
       if (e) {
         const id = e.target.getAttribute('data-id') || e.target.parentNode.getAttribute('data-id');
         if (id) {
@@ -1668,7 +1669,7 @@
       }
     }
 
-    editRevert (e) {
+    editRevertImage (e) {
       if (e) {
         const id = e.target.getAttribute('data-id') || e.target.parentNode.getAttribute('data-id');
         if (id) {
@@ -1677,24 +1678,26 @@
       }
     }
 
-    save (data) {
+    saveData (data, csrfToken) {
       document.dispatchEvent(new Event(EVENT_LOADING));
-      this.uploadData(data, this.getCsrfToken(this._buttonSave))
+      this.uploadData(data, csrfToken)
         .then((res) => {
-          this.refreshView(res.data);
-          this.backup = this.getState();
+          this.actionUpdate(res.data);
+          this.onUpdate(res.data, this._backup);
+          this._backup = this.getState();
         })
         .catch(err => console.log(err))
         .finally(() => document.dispatchEvent(new Event(EVENT_LOADED)));
     }
 
-    refreshView (data) {
+    actionUpdate (data) {
       const {
         images,
         title,
         note,
+        bgcolor,
         textcolor,
-        bgcolor
+        fontfamily
       } = data;
 
       if (images) {
@@ -1707,18 +1710,17 @@
       if (note) {
         document.querySelector(SELECTOR_NOTE).innerHTML = note;
       }
-      if (textcolor) {
-        if (isHexColor(textcolor)) {
-          this._textColorInput.value = textcolor;
-          this._textColorInput.nextSibling.innerHTML = this._bgColorInput.value;
-        }
+      if (bgcolor && isHexColor(bgcolor)) {
+        this.bgColor = bgcolor;
+        document.body.style.backgroundColor = this.bgColor;
       }
-      if (bgcolor) {
-        if (isHexColor(bgcolor)) {
-          document.body.style.backgroundColor = bgcolor;
-          this._bgColorInput.value = bgcolor;
-          this._bgColorInput.nextSibling.innerHTML = bgcolor;
-        }
+      if (textcolor && isHexColor(textcolor)) {
+        this.textColor = textcolor;
+        document.body.style.color = this.textColor;
+      }
+      if (fontfamily) {
+        this.fontFamily = fontfamily;
+        document.body.style.fontFamily = this.fontFamily;
       }
     }
 
@@ -1730,8 +1732,9 @@
       };
       const title = document.querySelector(SELECTOR_TITLE);
       const note = document.querySelector(SELECTOR_NOTE);
-      const bgColor = this._bgColorInput;
-      const textColor = this._textColorInput;
+      const bgColor = this.bgColor;
+      const textColor = this.textColor;
+      const fontFamily = this.fontFamily;
       const images = this._gallery.images;
 
       if (title) {
@@ -1740,11 +1743,14 @@
       if (note) {
         result.note = removeHtml(note.innerHTML);
       }
-      if (bgColor && isHexColor(bgColor.value)) {
-        result.bgcolor = bgColor.value;
+      if (bgColor && isHexColor(bgColor)) {
+        result.bgcolor = bgColor;
       }
-      if (textColor && isHexColor(textColor.value)) {
-        result.textcolor = textColor.value;
+      if (textColor && isHexColor(textColor)) {
+        result.textcolor = textColor;
+      }
+      if (fontFamily) {
+        result.fontfamily = fontFamily;
       }
       if (images && images.length) {
         result.images = [...images].map((image) => {
@@ -1831,7 +1837,7 @@
 
     handleFiles (files) {
       files = [...files];
-      this.progressbar.initializeProgress(files.length);
+      this._progressbar.initializeProgress(files.length);
       files.forEach(file => {
         this.uploadFile(file, this.getCsrfToken(this._dropArea))
           .then((result) => {
@@ -1846,7 +1852,7 @@
       });
     }
 
-    getButton (content, buttonClass, id) {
+    getImageButton (content, buttonClass, id) {
       const dom = htmlToElement(`<div class="pure-button ${buttonClass}" data-id="${id}"><span>${content}</span></div>`);
       return dom
     }
@@ -1932,9 +1938,86 @@
     }
   }
 
+  const getCsrfToken = (domNode) => {
+    if (domNode && isDomNode(domNode)) {
+      const inputElement = domNode.querySelector('[name=csrf_token]');
+      return inputElement && inputElement.value
+    }
+  };
+
   document.addEventListener('DOMContentLoaded', () => {
-    (() => new Loader())()
-    ;(() => new Editor())();
+    const bgColorBtnSelector = document.querySelector('#bg_color');
+    const textColorBtnSelector = document.querySelector('#text_color');
+    const fontfamilyBtnSelector = document.querySelector('#font_family');
+    const saveBtnSelector = document.querySelector('.editbutton.save');
+    const cancelBtnSelector = document.querySelector('.editbutton.cancel');
+    const previewBtnSelector = document.querySelector('.editbutton.preview')
+
+    ;(() => new Loader())();
+    const editor = new Editor({
+      bgColor: bgColorBtnSelector.value,
+      textColor: textColorBtnSelector.value,
+      onUpdate: (newState, oldState) => {
+        bgColorBtnSelector.value = newState.bgcolor;
+        bgColorBtnSelector.nextSibling.innerHTML = newState.bgcolor;
+        textColorBtnSelector.value = newState.textcolor;
+        textColorBtnSelector.nextSibling.innerHTML = newState.textcolor;
+      }
+    });
+
+    // Save button
+    editor.addButton({
+      domNode: saveBtnSelector,
+      callback: () => {
+        editor.actionSave(getCsrfToken(saveBtnSelector));
+      },
+      csrf_token: getCsrfToken(saveBtnSelector)
+    });
+
+    // Cancel button
+    editor.addButton({
+      domNode: cancelBtnSelector,
+      callback: () => {
+        editor.actionCancel(getCsrfToken(cancelBtnSelector));
+      },
+      csrf_token: getCsrfToken(cancelBtnSelector)
+    });
+
+    // Preview button
+    editor.addButton({
+      domNode: previewBtnSelector,
+      callback: editor.actionPreview,
+      csrf_token: getCsrfToken(previewBtnSelector)
+    });
+
+    // Background color selector
+    editor.addButton({
+      domNode: bgColorBtnSelector,
+      type: 'input',
+      callback: (e) => {
+        editor.bgColor = e.target.value;
+        e.target.nextSibling.innerHTML = editor.bgColor;
+      }
+    });
+
+    // Text color selector
+    editor.addButton({
+      domNode: textColorBtnSelector,
+      type: 'input',
+      callback: (e) => {
+        editor.textColor = e.target.value;
+        e.target.nextSibling.innerHTML = editor.textColor;
+      }
+    });
+
+    // Font family selector
+    editor.addButton({
+      domNode: fontfamilyBtnSelector,
+      type: 'input',
+      callback: (e) => {
+        editor.fontFamily = e.target.value;
+      }
+    });
   });
 
 }());
