@@ -194,9 +194,12 @@ function getFontsStylesheet(array $fonts)
  * @param  array $font
  * @return string
  */
-function getFontStyle(array $font)
+function getFontStyle(array $font = null)
 {
-    return "@font-face { font-family: '" . $font['name'] . "'; src: url('" . $font['path'] . "') format('" . $font['type'] . "')\n" . strtolower($font['name']) . "{font-family: '" . $font['name'] . "'\n";
+    if ($font && is_array($font)) {
+        return "@font-face { font-family: '" . $font['name'] . "'; src: url('" . $font['path'] . "') format('" . $font['type'] . "')\n" . strtolower($font['name']) . "{font-family: '" . $font['name'] . "'\n";
+    }
+    return '';
 }
 
 /**

@@ -10,6 +10,11 @@ if (!defined('minimalarchive')) {
         <meta name="robots" content="noindex, nofollow">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
         <title><?= translate('404')?></title>
+        <?php
+        if ($font = getFontByName("Arcadia Textbook")) {
+            echo "<style>" . getFontStyle($font) . "</style>";
+        }
+        ?>
         <style type="text/css">
             body {
                 margin: 0;

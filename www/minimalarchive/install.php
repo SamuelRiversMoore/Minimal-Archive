@@ -54,6 +54,11 @@ if (!has_meta()) {
         <meta name="robots" content="noindex, nofollow">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
         <title><?= translate('setup')?></title>
+        <?php
+        if ($font = getFontByName("Arcadia Textbook")) {
+            echo "<style>" . getFontStyle($font) . "</style>";
+        }
+        ?>
         <link rel="stylesheet" href="<?= url('assets/css/install.css') ?>">
     </head>
     <body>
