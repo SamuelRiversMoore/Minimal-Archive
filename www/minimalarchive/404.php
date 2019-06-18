@@ -16,6 +16,10 @@ if (!defined('minimalarchive')) {
         }
         ?>
         <style type="text/css">
+            html {
+                height: 100%;
+                width: 100%;
+            }
             body {
                 margin: 0;
                 padding: 0;
@@ -25,11 +29,23 @@ if (!defined('minimalarchive')) {
                 overflow-x: hidden;
                 color: #333;
                 min-height: 100%;
+                height: 100%;
+                width: 100%;
+                position: relative;
+            }
+            .content {
+                display: inline-block;
+                text-align: center;
+                top: 50%;
+                left: 50%;
+                -webkit-transform: translate(-50%, -50%);
+                transform: translate(-50%, -50%);
+                position: absolute;
             }
         </style>
     </head>
     <body>
-        <div>
+        <div class="content">
             <h1><?= translate('404') ?></h1>
             <div><?= translate('gotohomepage') ?>? <a href="<?= url('/') ?>"><?= translate('yes')?></a> — <span><?= translate('no')?></span>
             </div>
