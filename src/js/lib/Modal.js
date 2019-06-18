@@ -7,28 +7,20 @@ import {
 import {
   htmlToElement,
   isDomNode,
+  mergeSettings,
   uuidv4
 } from './Helpers.js'
 
-const mergeSettings = (options) => {
-  const settings = {
-    target: false,
-    content: null,
-    customClass: null,
-    active: false,
-    triggers: null
-  }
-
-  for (const attrName in options) {
-    settings[attrName] = options[attrName]
-  }
-
-  return settings
-}
-
 class Modal {
   constructor (options) {
-    this.config = mergeSettings(options)
+    const defaults = {
+      target: false,
+      content: null,
+      customClass: null,
+      active: false,
+      triggers: null
+    }
+    this.config = mergeSettings(options, defaults)
     this.keyHandler = this.keyHandler.bind(this)
     this.init()
   }

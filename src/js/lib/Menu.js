@@ -1,23 +1,13 @@
 import {
   isDomNode,
   isFunction,
+  mergeSettings,
   uuidv4
 } from './Helpers.js'
 
-const mergeSettings = (options) => {
-  const settings = {
-  }
-
-  for (const attrName in options) {
-    settings[attrName] = options[attrName]
-  }
-
-  return settings
-}
-
 class Menu {
   constructor (options) {
-    this.config = mergeSettings(options)
+    this.config = mergeSettings(options, {})
     this.init()
   }
 

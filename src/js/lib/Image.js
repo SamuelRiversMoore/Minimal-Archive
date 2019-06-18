@@ -10,30 +10,22 @@ import {
   isDomNode,
   uuidv4,
   htmlToElement,
+  mergeSettings,
   removeHtml
 } from './Helpers.js'
 
-const mergeSettings = (options) => {
-  const settings = {
-    dom: null,
-    filename: null,
-    active: true,
-    url: null,
-    caption: null,
-    imageSelector: '.Image',
-    lazyloadSelector: '.lazy',
-    editable: false
-  }
-
-  for (const attrName in options) {
-    settings[attrName] = options[attrName]
-  }
-
-  return settings
-}
-
 class Image {
   constructor (options) {
+    const defaults = {
+      dom: null,
+      filename: null,
+      active: true,
+      url: null,
+      caption: null,
+      imageSelector: '.Image',
+      lazyloadSelector: '.lazy',
+      editable: false
+    }
     const {
       url,
       filename,
@@ -41,7 +33,7 @@ class Image {
       dom,
       active,
       editable
-    } = mergeSettings(options)
+    } = mergeSettings(options, defaults)
 
     // Binding functions to this
     this.dispatchStatusUpdate = this.dispatchStatusUpdate.bind(this)

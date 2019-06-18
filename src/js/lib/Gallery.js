@@ -10,33 +10,25 @@ import {
   basename,
   htmlToElement,
   isDomNode,
+  mergeSettings,
   scrollTo,
   stripExtension
 } from './Helpers.js'
 
-const mergeSettings = (options) => {
-  const settings = {
-    gallerySelector: '.Gallery',
-    imageSelector: '.Image',
-    lazyloadSelector: '.lazy',
-    active: true
-  }
-
-  for (const attrName in options) {
-    settings[attrName] = options[attrName]
-  }
-
-  return settings
-}
-
 class Gallery {
   constructor (options) {
+    const defaults = {
+      gallerySelector: '.Gallery',
+      imageSelector: '.Image',
+      lazyloadSelector: '.lazy',
+      active: true
+    }
     const {
       gallerySelector,
       imageSelector,
       lazyloadSelector,
       active
-    } = mergeSettings(options)
+    } = mergeSettings(options, defaults)
 
     this.keyHandler = this.keyHandler.bind(this)
     this.updateImage = this.updateImage.bind(this)

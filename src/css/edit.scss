@@ -20,7 +20,17 @@ body {
   }
 }
 
+main {
+  position: relative;
+  height: 100%;
+  padding-left: 20px;
+  @media screen and (max-width: $mobileBreakPoint) {
+    padding-left: 0;
+  }
+}
+
 .modal {
+  z-index: 99;
   font-size: 12px;
   p {
     line-height: 1.3em;
@@ -77,20 +87,11 @@ body {
   }
 }
 
-.modal {
-  z-index: 99;
-}
-
 .Image .Image__caption span {
   cursor: text;
 }
 
-main {
-  position: relative;
-  height: 100%;
-  padding-left: 20px;
-  @media screen and (max-width: $mobileBreakPoint) {
-    padding-left: 0;
-  }
+.pure-button {
+  font-family: $defaultFont;
 }
 

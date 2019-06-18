@@ -1,6 +1,7 @@
 import Editor from './lib/Editor.js'
 import Loader from './lib/Loader.js'
 import {
+  baseUrl,
   isDomNode
 } from './lib/Helpers.js'
 
@@ -52,7 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Preview button
   editor.addButton({
     domNode: previewBtnSelector,
-    callback: editor.actionPreview,
+    callback: () => { window.location = baseUrl() },
     csrf_token: getCsrfToken(previewBtnSelector)
   })
 

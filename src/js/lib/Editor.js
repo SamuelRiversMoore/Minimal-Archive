@@ -15,53 +15,65 @@ import {
 } from './Constants.js'
 import {
   areObjectsEqual,
-  baseUrl,
   htmlToElement,
   isDomNode,
   isHexColor,
+  mergeSettings,
   preventDefaults,
   stripExtension,
   removeHtml,
   Fetch
 } from './Helpers.js'
 
-const mergeSettings = (options) => {
-  const settings = {
-    dropAreaSelector: '#drop-area',
-    fileInputSelector: '#file-input',
-    progressBarSelector: '.progress-bar',
-    buttonPreviewSelector: '.editbutton.preview',
-    gallery: new Gallery({
-      gallerySelector: '.Gallery',
-      imageSelector: '.Image',
-      lazyloadSelector: '.lazy',
-      active: false
-    }),
-    fullscreenDropZone: true,
-    bgColor: '#bbb',
-    textColor: '#333',
-    fontFamily: document.body.style.fontFamily,
-    onUpdate: (newData, oldData) => {}
-  }
-
-  for (const attrName in options) {
-    settings[attrName] = options[attrName]
-  }
-
-  return settings
-}
-
+/**
+ * Provides editing capabilities
+ * Acts as interface between UI and API
+ */
 class Editor {
+  /**
+   * Binds functions to Editor, initializes options
+   * @param  {Object}   options
+   * @param  {string}   options.dropAreaSelector
+   * @param  {string}   options.fileInputSelector
+   * @param  {string}   options.progressBarSelector
+   * @param  {string}   options.buttonPreviewSelector
+   * @param  {string}   options.fullscreenDropZone
+   * @param  {string}   options.bgColor
+   * @param  {string}   options.textColor
+   * @param  {string}   options.fontFamily
+   * @param  {Gallery}  options.gallery
+   * @param  {function} options.onUpdate
+   */
   constructor (options) {
-    this.options = mergeSettings(options)
+    const defaults = {
+      dropAreaSelector: '#drop-area',
+      fileInputSelector: '#file-input',
+      progressBarSelector: '.progress-bar',
+      buttonPreviewSelector: '.editbutton.preview',
+      gallery: new Gallery({
+        gallerySelector: '.Gallery',
+        imageSelector: '.Image',
+        lazyloadSelector: '.lazy',
+        active: false
+      }),
+      fullscreenDropZone: true,
+      bgColor: '#bbb',
+      textColor: '#333',
+      fontFamily: document.body.style.fontFamily,
+      onUpdate: (newData, oldData) => {}
+    }
+    this.options = mergeSettings(options, defaults)
     this.actionSave = this.actionSave.bind(this)
     this.actionCancel = this.actionCancel.bind(this)
-    this.actionPreview = this.actionPreview.bind(this)
     this.actionUpdate = this.actionUpdate.bind(this)
     this.files = []
     this.init(this.options)
   }
 
+  /**
+   * Initializer
+   * @param  {Object} options
+   */
   init (options) {
     const {
       bgColor,
@@ -110,6 +122,10 @@ class Editor {
     this.initListeners()
   }
 
+  /**
+   * Ties a button to the Editor's menu object
+   * @param {Object} options refer to Menu class
+   */
   addButton (options) {
     const button = this.menu.addButton(options)
     if (button) {
@@ -166,6 +182,10 @@ class Editor {
     this._gallery.images.map(image => this.addControlsToImage(image))
   }
 
+  /**
+   * Given an image object, attaches menu buttons
+   * @param {Image} image
+   */
   addControlsToImage (image) {
     const deleteButton = this.getImageButton('Delete', 'button--delete', image.getId())
     const revertButton = this.getImageButton('Revert', 'button--revert', image.getId())
@@ -226,6 +246,10 @@ class Editor {
     return this._menu
   }
 
+  /**
+   * Saves the current state if different than the previous state
+   * @param  {string} csrfToken required token for api
+   */
   actionSave (csrfToken) {
     const state = this.getState()
     if (!areObjectsEqual(state, this._backup)) {
@@ -233,16 +257,20 @@ class Editor {
     }
   }
 
+  /**
+   * Saves the previous state if different than the current state
+   * @param  {string} csrfToken required token for api
+   */
   actionCancel (csrfToken) {
     if (!areObjectsEqual(this.getState(), this._backup)) {
       this.saveData(this._backup, csrfToken)
     }
   }
 
-  actionPreview () {
-    window.location = baseUrl()
-  }
-
+  /**
+   * Marks an image for deletion
+   * @param  {event} e click event
+   */
   editDeleteImage (e) {
     if (e) {
       const id = e.target.getAttribute('data-id') || e.target.parentNode.getAttribute('data-id')
@@ -252,6 +280,10 @@ class Editor {
     }
   }
 
+  /**
+   * Recovers an image
+   * @param  {event} e click event
+   */
   editRevertImage (e) {
     if (e) {
       const id = e.target.getAttribute('data-id') || e.target.parentNode.getAttribute('data-id')
@@ -261,6 +293,11 @@ class Editor {
     }
   }
 
+  /**
+   * Saves data, dispatching a loading event, setting the new state
+   * @param  {object} data      [description]
+   * @param  {string} csrfToken required csrfToken
+   */
   saveData (data, csrfToken) {
     document.dispatchEvent(new Event(EVENT_LOADING))
     this.uploadData(data, csrfToken)
@@ -273,6 +310,10 @@ class Editor {
       .finally(() => document.dispatchEvent(new Event(EVENT_LOADED)))
   }
 
+  /**
+   * Updates the view
+   * @param  {object} data
+   */
   actionUpdate (data) {
     const {
       images,
@@ -307,6 +348,10 @@ class Editor {
     }
   }
 
+  /**
+   * Returns the current state
+   * @return {object}
+   */
   getState () {
     const result = {
       title: '',
@@ -347,6 +392,12 @@ class Editor {
     return result
   }
 
+  /**
+   * Calls the api with the new data to be saved
+   * @param  {object} data      [description]
+   * @param  {string} csrfToken [description]
+   * @return {Promise}           [description]
+   */
   uploadData (data, csrfToken) {
     const api = new Fetch()
     const formData = new FormData()
@@ -363,7 +414,13 @@ class Editor {
     })
   }
 
-  uploadFile (file, csrfToken, i) {
+  /**
+   * Calls the api with a file data to be uploaded
+   * @param  {File} file        [description]
+   * @param  {string} csrfToken [description]
+   * @return {Promise}          [description]
+   */
+  uploadFile (file, csrfToken) {
     const api = new Fetch()
     const url = API_URL
     const formData = new FormData()
@@ -379,6 +436,11 @@ class Editor {
     })
   }
 
+  /**
+   * Adds a new image to Editor's gallery, and adds controls
+   * @param  {File} file     [description]
+   * @param  {string} filename [description]
+   */
   previewFile (file, filename) {
     const reader = new FileReader()
     reader.readAsDataURL(file)
@@ -392,6 +454,12 @@ class Editor {
     }
   }
 
+  /**
+   * Returns an image domNode
+   * @param  {string} src      [description]
+   * @param  {string} filename [description]
+   * @return {domNode}          [description]
+   */
   getPreviewDom (src, filename) {
     if (src) {
       return htmlToElement(`<div class="Image">
@@ -403,6 +471,10 @@ class Editor {
     }
   }
 
+  /**
+   * Handles drop zone event, calling the file handler
+   * @param  {event} e drop event
+   */
   handleDrop (e) {
     const files = e.dataTransfer.files
     const imageFiles = []
@@ -418,6 +490,10 @@ class Editor {
     }
   }
 
+  /**
+   * Uploads a series of files
+   * @param  {array} files [description]
+   */
   handleFiles (files) {
     files = [...files]
     this._progressbar.initializeProgress(files.length)
@@ -435,23 +511,42 @@ class Editor {
     })
   }
 
+  /**
+   * Returns a preformatted button domNode
+   * @param  {domNode|string} content     [description]
+   * @param  {string} buttonClass [description]
+   * @param  {string|number} id          [description]
+   * @return {domNode}             [description]
+   */
   getImageButton (content, buttonClass, id) {
     const dom = htmlToElement(`<div class="pure-button ${buttonClass}" data-id="${id}"><span>${content}</span></div>`)
     return dom
   }
 
+  /**
+   * Gets a csrf_token in dom
+   * @param  {domNode} domNode target to where to look for the token
+   * @return {string}         [description]
+   */
   getCsrfToken (domNode) {
     if (domNode && isDomNode(domNode)) {
       const inputElement = domNode.querySelector('[name=csrf_token]')
       return inputElement && inputElement.value
     }
+    return ''
   }
 
-  highlight (e) {
+  /**
+   * Adds the highlight class to drop area
+   */
+  highlight () {
     this._dropArea.classList.add('highlight')
   }
 
-  unhighlight (e) {
+  /**
+   * Removes the highlight class to drop area
+   */
+  unhighlight () {
     this._dropArea.classList.remove('highlight')
   }
 }
