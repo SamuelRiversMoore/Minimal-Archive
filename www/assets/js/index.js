@@ -432,10 +432,20 @@
 
   /* global crypto, fetch, performance, requestAnimationFrame, window, Element, HTMLDocument */
 
+  /**
+   * Returns url basename
+   * @param  {string} url
+   * @return {string}
+   */
   const basename = (url) => {
     return url.split(/[\\/]/).pop()
   };
 
+  /**
+   * Returns the base url for a specified url part
+   * @param  {string} segment
+   * @return {string}
+   */
   const baseUrl = (segment) => {
     // get the segments
     const pathArray = window.location.pathname.split('/');
@@ -539,6 +549,22 @@
   };
 
   /**
+   * Merges an option object values with a default one if key exists in default
+   * @param  {Object} options
+   * @return {Object}
+   */
+  const mergeSettings = (options, defaults = {}) => {
+    if (!options) {
+      return defaults
+    }
+    for (const attrName in options) {
+      defaults[attrName] = options[attrName];
+    }
+
+    return defaults
+  };
+
+  /**
    * Returns a UUIDv4 string
    * @return {String}
    */
@@ -556,27 +582,18 @@
 
   /* global CustomEvent, Event */
 
-  const mergeSettings = (options) => {
-    const settings = {
-      dom: null,
-      filename: null,
-      active: true,
-      url: null,
-      caption: null,
-      imageSelector: '.Image',
-      lazyloadSelector: '.lazy',
-      editable: false
-    };
-
-    for (const attrName in options) {
-      settings[attrName] = options[attrName];
-    }
-
-    return settings
-  };
-
   class Image {
     constructor (options) {
+      const defaults = {
+        dom: null,
+        filename: null,
+        active: true,
+        url: null,
+        caption: null,
+        imageSelector: '.Image',
+        lazyloadSelector: '.lazy',
+        editable: false
+      };
       const {
         url,
         filename,
@@ -584,7 +601,7 @@
         dom,
         active,
         editable
-      } = mergeSettings(options);
+      } = mergeSettings(options, defaults);
 
       // Binding functions to this
       this.dispatchStatusUpdate = this.dispatchStatusUpdate.bind(this);
@@ -690,7 +707,7 @@
       if (src) {
         return htmlToElement(`<div class="Image">
         <div class="Image__container">
-          <img class="lazy miniarch" src="/assets/css/loading.gif" data-src="${removeHtml(src)}" data-filename="${removeHtml(filename)}" title="${filename} preview" />
+          <img class="lazy miniarch" src="./assets/css/loading.gif" data-src="${removeHtml(src)}" data-filename="${removeHtml(filename)}" title="${filename} preview" />
         </div>
         <div class="Image__caption"><span contenteditable="true">${removeHtml(caption)}</span></div>
         </div>`)
@@ -740,29 +757,20 @@
 
   /* global Event */
 
-  const mergeSettings$1 = (options) => {
-    const settings = {
-      gallerySelector: '.Gallery',
-      imageSelector: '.Image',
-      lazyloadSelector: '.lazy',
-      active: true
-    };
-
-    for (const attrName in options) {
-      settings[attrName] = options[attrName];
-    }
-
-    return settings
-  };
-
   class Gallery {
     constructor (options) {
+      const defaults = {
+        gallerySelector: '.Gallery',
+        imageSelector: '.Image',
+        lazyloadSelector: '.lazy',
+        active: true
+      };
       const {
         gallerySelector,
         imageSelector,
         lazyloadSelector,
         active
-      } = mergeSettings$1(options);
+      } = mergeSettings(options, defaults);
 
       this.keyHandler = this.keyHandler.bind(this);
       this.updateImage = this.updateImage.bind(this);
@@ -969,7 +977,7 @@
       if (src) {
         return htmlToElement(`<div class="Image">
         <div class="Image__container">
-          <img class="lazy miniarch" src="/assets/css/loading.gif" data-src="${src}" data-filename="${filename}" title="${filename} preview" />
+          <img class="lazy miniarch" src="./assets/css/loading.gif" data-src="${src}" data-filename="${filename}" title="${filename} preview" />
         </div>
         <div class="Image__caption"><span contenteditable="true">${stripExtension(filename)}</span></div>
         </div>`)

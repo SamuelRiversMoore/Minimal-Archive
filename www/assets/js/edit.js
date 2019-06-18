@@ -10,23 +10,23 @@
    * @return {Boolean}
    */
   const areObjectsEqual = (a, b) => {
-    // Get the a type
     const type = Object.prototype.toString.call(a);
 
-    // If the two objects are not the same type, return false
-    if (type !== Object.prototype.toString.call(b)) return false
+    if (type !== Object.prototype.toString.call(b)) {
+      return false
+    }
 
-    // If items are not an object or array, return false
-    if (['[object Array]', '[object Object]'].indexOf(type) < 0) return false
+    if (['[object Array]', '[object Object]'].indexOf(type) < 0) {
+      return false
+    }
 
-    // Compare the length of the length of the two items
     const aLen = type === '[object Array]' ? a.length : Object.keys(a).length;
     const bLen = type === '[object Array]' ? b.length : Object.keys(b).length;
-    if (aLen !== bLen) return false
+    if (aLen !== bLen) {
+      return false
+    }
 
-    // Compare two items
     const compare = function (item1, item2) {
-      // Get the object type
       const itemType = Object.prototype.toString.call(item1);
 
       // If an object or array, compare recursively
@@ -35,13 +35,13 @@
           return false
         }
       } else {
-        // If the two items are not the same type, return false
-        if (itemType !== Object.prototype.toString.call(item2)) return false
-
-        // Else if it's a function, convert to a string and compare
-        // Otherwise, just compare
+        if (itemType !== Object.prototype.toString.call(item2)) {
+          return false
+        }
         if (itemType === '[object Function]') {
-          if (item1.toString() !== item2.toString()) return false
+          if (item1.toString() !== item2.toString()) {
+            return false
+          }
         } else {
           if (item1 !== item2) {
             return false
@@ -53,24 +53,37 @@
     // Compare properties
     if (type === '[object Array]') {
       for (var i = 0; i < aLen; i++) {
-        if (compare(a[i], b[i]) === false) return false
+        if (compare(a[i], b[i]) === false) {
+          return false
+        }
       }
     } else {
       for (var key in a) {
         if (a.hasOwnProperty(key)) {
-          if (compare(a[key], b[key]) === false) return false
+          if (compare(a[key], b[key]) === false) {
+            return false
+          }
         }
       }
     }
 
-    // If nothing failed, return true
     return true
   };
 
+  /**
+   * Returns url basename
+   * @param  {string} url
+   * @return {string}
+   */
   const basename = (url) => {
     return url.split(/[\\/]/).pop()
   };
 
+  /**
+   * Returns the base url for a specified url part
+   * @param  {string} segment
+   * @return {string}
+   */
   const baseUrl = (segment) => {
     // get the segments
     const pathArray = window.location.pathname.split('/');
@@ -80,6 +93,11 @@
     return window.location.origin + pathArray.slice(0, indexOfSegment).join('/') + '/'
   };
 
+  /**
+   * Interface to fetch api
+   * methods:
+   *   newRequest -> takes a url with data, credentials and headers and executes request
+   */
   class Fetch {
     newRequest (url, request, credentials = 'same-origin', headers = { 'Content-Type': 'application/x-www-form-urlencoded' }) {
       function processResponse (response) {
@@ -155,7 +173,7 @@
   };
 
   /**
-   * Provides shorthand
+   * Provides preventDefault shorthand
    * @param  {event} event
    * @return {[type]}       [description]
    */
@@ -237,6 +255,22 @@
   };
 
   /**
+   * Merges an option object values with a default one if key exists in default
+   * @param  {Object} options
+   * @return {Object}
+   */
+  const mergeSettings = (options, defaults = {}) => {
+    if (!options) {
+      return defaults
+    }
+    for (const attrName in options) {
+      defaults[attrName] = options[attrName];
+    }
+
+    return defaults
+  };
+
+  /**
    * Returns a UUIDv4 string
    * @return {String}
    */
@@ -246,20 +280,9 @@
     )
   };
 
-  const mergeSettings = (options) => {
-    const settings = {
-    };
-
-    for (const attrName in options) {
-      settings[attrName] = options[attrName];
-    }
-
-    return settings
-  };
-
   class Menu {
     constructor (options) {
-      this.config = mergeSettings(options);
+      this.config = mergeSettings(options, {});
       this.init();
     }
 
@@ -378,25 +401,16 @@
 
   /* global CustomEvent */
 
-  const mergeSettings$1 = (options) => {
-    const settings = {
-      target: false,
-      content: null,
-      customClass: null,
-      active: false,
-      triggers: null
-    };
-
-    for (const attrName in options) {
-      settings[attrName] = options[attrName];
-    }
-
-    return settings
-  };
-
   class Modal {
     constructor (options) {
-      this.config = mergeSettings$1(options);
+      const defaults = {
+        target: false,
+        content: null,
+        customClass: null,
+        active: false,
+        triggers: null
+      };
+      this.config = mergeSettings(options, defaults);
       this.keyHandler = this.keyHandler.bind(this);
       this.init();
     }
@@ -949,27 +963,18 @@
 
   /* global CustomEvent, Event */
 
-  const mergeSettings$2 = (options) => {
-    const settings = {
-      dom: null,
-      filename: null,
-      active: true,
-      url: null,
-      caption: null,
-      imageSelector: '.Image',
-      lazyloadSelector: '.lazy',
-      editable: false
-    };
-
-    for (const attrName in options) {
-      settings[attrName] = options[attrName];
-    }
-
-    return settings
-  };
-
   class Image {
     constructor (options) {
+      const defaults = {
+        dom: null,
+        filename: null,
+        active: true,
+        url: null,
+        caption: null,
+        imageSelector: '.Image',
+        lazyloadSelector: '.lazy',
+        editable: false
+      };
       const {
         url,
         filename,
@@ -977,7 +982,7 @@
         dom,
         active,
         editable
-      } = mergeSettings$2(options);
+      } = mergeSettings(options, defaults);
 
       // Binding functions to this
       this.dispatchStatusUpdate = this.dispatchStatusUpdate.bind(this);
@@ -1133,29 +1138,20 @@
 
   /* global Event */
 
-  const mergeSettings$3 = (options) => {
-    const settings = {
-      gallerySelector: '.Gallery',
-      imageSelector: '.Image',
-      lazyloadSelector: '.lazy',
-      active: true
-    };
-
-    for (const attrName in options) {
-      settings[attrName] = options[attrName];
-    }
-
-    return settings
-  };
-
   class Gallery {
     constructor (options) {
+      const defaults = {
+        gallerySelector: '.Gallery',
+        imageSelector: '.Image',
+        lazyloadSelector: '.lazy',
+        active: true
+      };
       const {
         gallerySelector,
         imageSelector,
         lazyloadSelector,
         active
-      } = mergeSettings$3(options);
+      } = mergeSettings(options, defaults);
 
       this.keyHandler = this.keyHandler.bind(this);
       this.updateImage = this.updateImage.bind(this);
@@ -1444,43 +1440,55 @@
 
   /* global Event, FormData, FileReader */
 
-  const mergeSettings$4 = (options) => {
-    const settings = {
-      dropAreaSelector: '#drop-area',
-      fileInputSelector: '#file-input',
-      progressBarSelector: '.progress-bar',
-      buttonPreviewSelector: '.editbutton.preview',
-      gallery: new Gallery({
-        gallerySelector: '.Gallery',
-        imageSelector: '.Image',
-        lazyloadSelector: '.lazy',
-        active: false
-      }),
-      fullscreenDropZone: true,
-      bgColor: '#bbb',
-      textColor: '#333',
-      fontFamily: document.body.style.fontFamily,
-      onUpdate: (newData, oldData) => {}
-    };
-
-    for (const attrName in options) {
-      settings[attrName] = options[attrName];
-    }
-
-    return settings
-  };
-
+  /**
+   * Provides editing capabilities
+   * Acts as interface between UI and API
+   */
   class Editor {
+    /**
+     * Binds functions to Editor, initializes options
+     * @param  {Object}   options
+     * @param  {string}   options.dropAreaSelector
+     * @param  {string}   options.fileInputSelector
+     * @param  {string}   options.progressBarSelector
+     * @param  {string}   options.buttonPreviewSelector
+     * @param  {string}   options.fullscreenDropZone
+     * @param  {string}   options.bgColor
+     * @param  {string}   options.textColor
+     * @param  {string}   options.fontFamily
+     * @param  {Gallery}  options.gallery
+     * @param  {function} options.onUpdate
+     */
     constructor (options) {
-      this.options = mergeSettings$4(options);
+      const defaults = {
+        dropAreaSelector: '#drop-area',
+        fileInputSelector: '#file-input',
+        progressBarSelector: '.progress-bar',
+        buttonPreviewSelector: '.editbutton.preview',
+        gallery: new Gallery({
+          gallerySelector: '.Gallery',
+          imageSelector: '.Image',
+          lazyloadSelector: '.lazy',
+          active: false
+        }),
+        fullscreenDropZone: true,
+        bgColor: '#bbb',
+        textColor: '#333',
+        fontFamily: document.body.style.fontFamily,
+        onUpdate: (newData, oldData) => {}
+      };
+      this.options = mergeSettings(options, defaults);
       this.actionSave = this.actionSave.bind(this);
       this.actionCancel = this.actionCancel.bind(this);
-      this.actionPreview = this.actionPreview.bind(this);
       this.actionUpdate = this.actionUpdate.bind(this);
       this.files = [];
       this.init(this.options);
     }
 
+    /**
+     * Initializer
+     * @param  {Object} options
+     */
     init (options) {
       const {
         bgColor,
@@ -1529,6 +1537,10 @@
       this.initListeners();
     }
 
+    /**
+     * Ties a button to the Editor's menu object
+     * @param {Object} options refer to Menu class
+     */
     addButton (options) {
       const button = this.menu.addButton(options);
       if (button) {
@@ -1583,6 +1595,10 @@
       this._gallery.images.map(image => this.addControlsToImage(image));
     }
 
+    /**
+     * Given an image object, attaches menu buttons
+     * @param {Image} image
+     */
     addControlsToImage (image) {
       const deleteButton = this.getImageButton('Delete', 'button--delete', image.getId());
       const revertButton = this.getImageButton('Revert', 'button--revert', image.getId());
@@ -1643,6 +1659,10 @@
       return this._menu
     }
 
+    /**
+     * Saves the current state if different than the previous state
+     * @param  {string} csrfToken required token for api
+     */
     actionSave (csrfToken) {
       const state = this.getState();
       if (!areObjectsEqual(state, this._backup)) {
@@ -1650,16 +1670,20 @@
       }
     }
 
+    /**
+     * Saves the previous state if different than the current state
+     * @param  {string} csrfToken required token for api
+     */
     actionCancel (csrfToken) {
       if (!areObjectsEqual(this.getState(), this._backup)) {
         this.saveData(this._backup, csrfToken);
       }
     }
 
-    actionPreview () {
-      window.location = baseUrl();
-    }
-
+    /**
+     * Marks an image for deletion
+     * @param  {event} e click event
+     */
     editDeleteImage (e) {
       if (e) {
         const id = e.target.getAttribute('data-id') || e.target.parentNode.getAttribute('data-id');
@@ -1669,6 +1693,10 @@
       }
     }
 
+    /**
+     * Recovers an image
+     * @param  {event} e click event
+     */
     editRevertImage (e) {
       if (e) {
         const id = e.target.getAttribute('data-id') || e.target.parentNode.getAttribute('data-id');
@@ -1678,6 +1706,11 @@
       }
     }
 
+    /**
+     * Saves data, dispatching a loading event, setting the new state
+     * @param  {object} data      [description]
+     * @param  {string} csrfToken required csrfToken
+     */
     saveData (data, csrfToken) {
       document.dispatchEvent(new Event(EVENT_LOADING));
       this.uploadData(data, csrfToken)
@@ -1690,6 +1723,10 @@
         .finally(() => document.dispatchEvent(new Event(EVENT_LOADED)));
     }
 
+    /**
+     * Updates the view
+     * @param  {object} data
+     */
     actionUpdate (data) {
       const {
         images,
@@ -1724,6 +1761,10 @@
       }
     }
 
+    /**
+     * Returns the current state
+     * @return {object}
+     */
     getState () {
       const result = {
         title: '',
@@ -1764,6 +1805,12 @@
       return result
     }
 
+    /**
+     * Calls the api with the new data to be saved
+     * @param  {object} data      [description]
+     * @param  {string} csrfToken [description]
+     * @return {Promise}           [description]
+     */
     uploadData (data, csrfToken) {
       const api = new Fetch();
       const formData = new FormData();
@@ -1780,7 +1827,13 @@
       })
     }
 
-    uploadFile (file, csrfToken, i) {
+    /**
+     * Calls the api with a file data to be uploaded
+     * @param  {File} file        [description]
+     * @param  {string} csrfToken [description]
+     * @return {Promise}          [description]
+     */
+    uploadFile (file, csrfToken) {
       const api = new Fetch();
       const url = API_URL;
       const formData = new FormData();
@@ -1796,6 +1849,11 @@
       })
     }
 
+    /**
+     * Adds a new image to Editor's gallery, and adds controls
+     * @param  {File} file     [description]
+     * @param  {string} filename [description]
+     */
     previewFile (file, filename) {
       const reader = new FileReader();
       reader.readAsDataURL(file);
@@ -1809,6 +1867,12 @@
       };
     }
 
+    /**
+     * Returns an image domNode
+     * @param  {string} src      [description]
+     * @param  {string} filename [description]
+     * @return {domNode}          [description]
+     */
     getPreviewDom (src, filename) {
       if (src) {
         return htmlToElement(`<div class="Image">
@@ -1820,6 +1884,10 @@
       }
     }
 
+    /**
+     * Handles drop zone event, calling the file handler
+     * @param  {event} e drop event
+     */
     handleDrop (e) {
       const files = e.dataTransfer.files;
       const imageFiles = [];
@@ -1835,6 +1903,10 @@
       }
     }
 
+    /**
+     * Uploads a series of files
+     * @param  {array} files [description]
+     */
     handleFiles (files) {
       files = [...files];
       this._progressbar.initializeProgress(files.length);
@@ -1852,48 +1924,55 @@
       });
     }
 
+    /**
+     * Returns a preformatted button domNode
+     * @param  {domNode|string} content     [description]
+     * @param  {string} buttonClass [description]
+     * @param  {string|number} id          [description]
+     * @return {domNode}             [description]
+     */
     getImageButton (content, buttonClass, id) {
       const dom = htmlToElement(`<div class="pure-button ${buttonClass}" data-id="${id}"><span>${content}</span></div>`);
       return dom
     }
 
+    /**
+     * Gets a csrf_token in dom
+     * @param  {domNode} domNode target to where to look for the token
+     * @return {string}         [description]
+     */
     getCsrfToken (domNode) {
       if (domNode && isDomNode(domNode)) {
         const inputElement = domNode.querySelector('[name=csrf_token]');
         return inputElement && inputElement.value
       }
+      return ''
     }
 
-    highlight (e) {
+    /**
+     * Adds the highlight class to drop area
+     */
+    highlight () {
       this._dropArea.classList.add('highlight');
     }
 
-    unhighlight (e) {
+    /**
+     * Removes the highlight class to drop area
+     */
+    unhighlight () {
       this._dropArea.classList.remove('highlight');
     }
   }
 
-  const mergeSettings$5 = (options) => {
-    const settings = {
-      selector: 'Loader'
-    };
-
-    for (const attrName in options) {
-      settings[attrName] = options[attrName];
-    }
-
-    return settings
-  };
-
   class Loader {
     constructor (options) {
-      this.config = mergeSettings$5(options);
+      this.config = mergeSettings(options, { loaderClass: 'Loader' });
       this.init();
     }
 
     init () {
       const {
-        selector
+        loaderClass
       } = this.config;
       const content = document.createElement('div');
 
@@ -1901,7 +1980,7 @@
       content.innerHTML = 'Loading...';
 
       this.dom = document.createElement('aside');
-      this.dom.classList.add(selector);
+      this.dom.classList.add(loaderClass);
       this.dom.appendChild(content);
 
       document.body.appendChild(this.dom);
@@ -1986,7 +2065,7 @@
     // Preview button
     editor.addButton({
       domNode: previewBtnSelector,
-      callback: editor.actionPreview,
+      callback: () => { window.location = baseUrl(); },
       csrf_token: getCsrfToken(previewBtnSelector)
     });
 
