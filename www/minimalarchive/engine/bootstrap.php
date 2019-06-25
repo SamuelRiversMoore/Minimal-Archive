@@ -1,5 +1,5 @@
 <?php
-define('minimalarchive', TRUE);
+define('minimalarchive', true);
 
 define('DS', DIRECTORY_SEPARATOR);
 define('ROOT_FOLDER', __DIR__ . DS . '../..');
@@ -20,5 +20,32 @@ define('SESSION_MAXDURATION', 2);
 session_start();
 
 include_once 'functions.php';
-include_once 'loader.php';
-include_once 'router.php';
+include_once 'class_loader.php';
+
+// order matters
+new Router(array(
+    array(
+        "match" => "/(^$|^\b$|\bindex|\bhome|\bhomepage|\bindex\.php|\bindex\.html)\/?$/",
+        "script" => BASE_FOLDER . DS . 'index.php'
+    ),
+    array(
+        "match" => "/(\binstall)\/?$/",
+        "script" => BASE_FOLDER . DS . 'install.php'
+    ),
+    array(
+        "match" => "/(\buninstall)\/?$/",
+        "script" => BASE_FOLDER . DS . 'uninstall.php'
+    ),
+    array(
+        "match" => "/(\bedit)\/?$/",
+        "script" => BASE_FOLDER . DS . 'edit.php'
+    ),
+    array(
+        "match" => "/(\bapi)\/?$/",
+        "script" => BASE_FOLDER . DS . 'api.php'
+    ),
+    array(
+        "match" => "/./",
+        "script" => BASE_FOLDER . DS . '404.php'
+    ),
+));

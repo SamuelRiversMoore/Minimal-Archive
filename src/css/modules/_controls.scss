@@ -1,15 +1,198 @@
 .controls {
+  font-family: $defaultFont;
+  -webkit-user-select: none;
+  user-select: none;
+  width: $sidebarWidth;
+  height: 100%;
   position: fixed;
+  overflow-y: auto;
   top: 0;
-  right: 0.6em;
+  left: 0;
   display: flex;
   flex-direction: column;
   font-size: 16px;
   line-height: 1.6em;
   z-index: 1;
+  background: $sidebarBackground;
+  cursor: default;
+  transition: left 0.2s ease-in-out, opacity 0.2s ease-in-out;
+
+  @media screen and (max-width: $mobileBreakPoint) {
+    left: -100%;
+    width: 100%;
+  }
+
+  .controls__title {
+    font-size: 16px;
+    color: whitesmoke;
+    font-weight: bold;
+    text-align: center;
+    padding: 30px 0 30px;
+    display: block;
+    border-bottom: 1px solid #666;
+    position: -webkit-sticky;
+    position: sticky;
+    top: 0;
+    background-color: $sidebarBackground;
+    z-index: 1;
+    @media screen and (max-width: $mobileBreakPoint) {
+      color: $sidebarBackground;
+    }
+  }
+
+  .controls__buttons {
+    flex: 1
+  }
+
+  .controls__footer {
+    color: #9b9b9b;
+    font-size: 12px;
+    line-height: 1.2em;
+    background-color: $sidebarBackground;
+
+    .controls__footer__note {
+      padding: 20px 10px;
+      text-align: center;
+    }
+    .controls__footer__buttons {
+      display: flex;
+      border-top: 1px solid #666;
+      .editbutton {
+        border-radius: 0;
+        flex: 1;
+        border-bottom: 0;
+        border-right: 1px solid #666;
+        &:last-child {
+          border-right: none;
+        }
+      }
+      .editbutton__icon {
+        flex: 1;
+      }
+      .editbutton__content {
+        flex: 1;
+      }
+    }
+  }
+
   .editbutton {
-    margin: 0.5em;
+    margin: 0;
     overflow: hidden;
+    color: silver;
+    background: none;
+    padding: 20px;
+    border-radius: 3px;
+    text-align: left;
+    border-bottom: 1px solid #666;
+    display: flex;
+    .editbutton__icon {
+      flex: 1;
+      font-size: 20px;
+      text-align: center;
+    }
+    .editbutton__content {
+      flex: 3;
+    }
+    &.upload {
+      cursor: pointer;
+      position: relative;
+      input[type='file'] {
+        opacity: 0;
+        position: absolute;
+        overflow: hidden;
+        top: 0;
+        height: 100%;
+        width: 100%;
+        cursor: pointer;
+      }
+    }
+    &.clickable {
+      cursor: pointer;
+    }
+    &:hover {
+      background: rgb(116, 113, 120);
+      color: whitesmoke;
+    }
+  }
+
+  .editbutton__label {
+    display: flex;
+    flex-direction: row;
+    span {
+      flex: 1;
+    }
+    .icon {
+      flex: 0.45;
+    }
+  }
+
+  .editbutton__submenu {
+    padding: 1.5em 1em 0 0;
+    border-radius: 3px;
+    font-size: 0.7em;
+    input[type="color"] {
+      cursor: pointer;
+      margin-right: 1.5em;
+    }
+    label {
+      cursor: pointer;
+    }
+  }
+}
+
+
+.controls__mobile-toggle {
+  z-index: 90;
+  transition: all 0.2s ease-in-out;
+  opacity: 0;
+  visibility: hidden;
+  @media screen and (max-width: $mobileBreakPoint) {
+    top: 15px;
+    opacity: 1;
+    visibility: visible;
+  }
+  div {
+    border-radius: 3px;
+    padding: 15px 20px;
+    font-size: 14px;
+    display: inline-block;
     cursor: pointer;
+    box-shadow: 0 0 10px #787878;
+    position: fixed;
+    top: 20px;
+    text-align: center;
+    left: 50%;
+    z-index: 90;
+    transform: translate(-50%, 0);
+  }
+}
+
+.controls__toggle {
+  position: absolute;
+  top: -7px;
+  left: -5px;
+  opacity: 0; /* hide this */
+  z-index: 2; /* and place it over the hamburger */
+  cursor: pointer;
+  -webkit-touch-callout: none;
+}
+
+.controls__toggle:checked ~.controls {
+  left: 0;
+}
+
+.controls__mobile-toggle--open {
+  display: inline-block !important;
+}
+.controls__mobile-toggle--close {
+  display: none !important;
+}
+
+.controls__toggle:checked ~label {
+  .controls__mobile-toggle--open {
+    display: none !important;
+  }
+  .controls__mobile-toggle--close {
+    display: inline-block !important;
   }
 }

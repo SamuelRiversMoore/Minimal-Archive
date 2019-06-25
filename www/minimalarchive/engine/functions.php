@@ -120,6 +120,89 @@ function getFilenamesInFolder(string $folder = null, array $supported = [])
 }
 
 /**
+ * Returns a font array object
+ * @param  string $name   filename without extension
+ * @param  string $folder folder to look fonts for
+ * @return array | null
+ */
+function getFontByName($name, $folder = 'assets/fonts')
+{
+    try {
+        $fonts = getFontsInFolder($folder);
+        $i = -1;
+        while (++$i < count($fonts)) {
+            if ($fonts[$i]['name'] === $name) {
+                return $fonts[$i];
+            }
+        }
+        return null;
+    } catch (Exception $e) {
+        throw $e;
+    }
+}
+
+/**
+ * Returns all fonts in folder
+ * @param  string|null $folder folder to look fonts for
+ * @return array
+ */
+function getFontsInFolder(string $folder = null)
+{
+    $supported_formats = array(
+        'otf' => 'opentype',
+        'woff' => 'woff',
+        'woff2' => 'woff2',
+        'ttf' => 'truetype'
+    );
+    try {
+        $files = getFilenamesInFolder(ROOT_FOLDER . DS . $folder, array_keys($supported_formats));
+        $fonts = array();
+        foreach ($files as $file) {
+            $basename = basename($file);
+            $extension = pathinfo($basename, PATHINFO_EXTENSION);
+            $name = pathinfo($basename, PATHINFO_FILENAME);
+            $fonts[] = array(
+                "name" => $name,
+                "type" => $supported_formats[$extension],
+                "filename" => $basename,
+                "path" => url($folder . DS . $file)
+            );
+        }
+        return $fonts;
+    } catch (Exception $e) {
+        throw $e;
+    }
+}
+
+/**
+ * Return font stylesheet without style tags
+ * @param  array  $fonts formatted font array, provided by getFontsInFolder
+ * @return string
+ */
+function getFontsStylesheet(array $fonts)
+{
+    $i = -1;
+    $style = "";
+    while (++$i < count($fonts)) {
+        $style .= getFontStyle($fonts[$i]);
+    }
+    return $style;
+}
+
+/**
+ * Return font face string
+ * @param  array $font
+ * @return string
+ */
+function getFontStyle(array $font = null)
+{
+    if ($font && is_array($font)) {
+        return "@font-face { font-family: '" . $font['name'] . "'; src: url('" . $font['path'] . "') format('" . $font['type'] . "')\n" . strtolower($font['name']) . "{font-family: '" . $font['name'] . "'\n";
+    }
+    return '';
+}
+
+/**
  * Returns an array of images in folder
  * @param  string|null $folder
  * @return array

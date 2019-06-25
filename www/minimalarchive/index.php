@@ -13,7 +13,9 @@
     $socialimage = array_key_exists('socialimage', $meta) && $meta['socialimage'] ? 'assets/images/' . $meta['socialimage'] : '';
     $favicon = array_key_exists('favicon', $meta)  && $meta['favicon'] ? 'assets/images/' . $meta['favicon'] : '';
     $note = array_key_exists('note', $meta) ? $meta['note'] : '';
-
+    $bgcolor = array_key_exists('bgcolor', $meta) && $meta['bgcolor']? $meta['bgcolor'] : '#c0c0c0';
+    $textcolor = array_key_exists('textcolor', $meta) && $meta['textcolor'] ? $meta['textcolor'] : '#333';
+    $fontfamily = array_key_exists('fontfamily', $meta) && $meta['fontfamily'] ? $meta['fontfamily'] : '"Arcadia Textbook", "SF Mono", "Arcadia", "Zwizz", "Fira Code", "IBM Plex Mono", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;';
     $error = null;
     try {
         $images = getImagesInFolder($imagesdir);
@@ -32,10 +34,23 @@
         <meta property="og:description" content="<?= $description ?>">
         <meta property="og:image" content="<?= url($socialimage) ?>">
         <meta property="og:url" content="<?= url() ?>">
-
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
         <link rel="icon" type="image/png" href="<?= url($favicon) ?>"/>
         <link rel="stylesheet" href="<?= url('assets/css/index.css') ?>" type="text/css" media="screen"/>
-
+        <?php
+            if ($font = getFontByName($fontfamily)) {
+                echo "<style>" . getFontStyle($font) . "</style>";
+            }
+        ?>
+        <?php
+            echo "<style>
+                body {
+                    background-color: ${bgcolor};
+                    color: ${textcolor};
+                    font-family: ${fontfamily};
+                }
+                </style>";
+        ?>
     </head>
     <body>
         <?php
@@ -69,6 +84,6 @@
         <?php
         }
         ?>
-        <script src="<?= url('assets/js/main.js')?>"></script>
+        <script src="<?= url('assets/js/index.js')?>"></script>
     </body>
 </html>

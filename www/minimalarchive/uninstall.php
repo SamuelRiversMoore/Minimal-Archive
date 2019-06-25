@@ -36,7 +36,13 @@ if (isset($_POST['email']) && isset($_POST['password']) && check_token($_POST['c
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         <meta name="robots" content="noindex, nofollow">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
         <title><?= translate('uninstall') ?></title>
+        <?php
+        if ($font = getFontByName("Arcadia Textbook")) {
+            echo "<style>" . getFontStyle($font) . "</style>";
+        }
+        ?>
         <link rel="stylesheet" href="<?= url('assets/css/install.css') ?>">
     </head>
     <body>

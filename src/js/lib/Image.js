@@ -10,33 +10,22 @@ import {
   isDomNode,
   uuidv4,
   htmlToElement,
+  mergeSettings,
   removeHtml
 } from './Helpers.js'
 
-const mergeSettings = (options) => {
-  const settings = {
-    dom: null,
-    filename: null,
-    active: true,
-    url: null,
-    caption: null,
-    imageSelector: '.Image',
-    lazyloadSelector: '.lazy',
-    editable: false
-  }
-
-  for (const attrName in options) {
-    settings[attrName] = options[attrName]
-  }
-
-  return settings
-}
-
 class Image {
   constructor (options) {
-    this.config = mergeSettings(options)
-    this.dispatchStatusUpdate = this.dispatchStatusUpdate.bind(this)
-
+    const defaults = {
+      dom: null,
+      filename: null,
+      active: true,
+      url: null,
+      caption: null,
+      imageSelector: '.Image',
+      lazyloadSelector: '.lazy',
+      editable: false
+    }
     const {
       url,
       filename,
@@ -44,8 +33,16 @@ class Image {
       dom,
       active,
       editable
-    } = this.config
+    } = mergeSettings(options, defaults)
 
+    // Binding functions to this
+    this.dispatchStatusUpdate = this.dispatchStatusUpdate.bind(this)
+    this.toggleStatus = this.toggleStatus.bind(this)
+    this.applyStyle = this.applyStyle.bind(this)
+    this.resetStatus = this.resetStatus.bind(this)
+    this.updateCaption = this.updateCaption.bind(this)
+
+    // Setting state
     this._id = uuidv4()
     this._dom = isDomNode(dom) ? dom : this.generateDom(url, filename, caption)
     if (!this._dom) {
@@ -59,30 +56,60 @@ class Image {
     this._status = false
     this._editable = editable
 
+    // Initializing style and initial listeners
     this.applyStyle()
-    this.initListeners()
+    if (this._active) {
+      this.activate(true)
+    }
+    if (this._editable && this._captionSelector) {
+      this._captionSelector.addEventListener('input', this.updateCaption)
+    }
+  }
+
+  activate (force) {
+    if (force || !this._active) {
+      this._active = true
+      this.initListeners()
+    }
+  }
+
+  deactivate (force) {
+    if (force || this._active) {
+      this._active = false
+      this.removeListeners()
+    }
   }
 
   initListeners () {
-    if (this._active && this._dom) {
-      this._dom.addEventListener('click', this.toggleStatus.bind(this))
-      this._dom.addEventListener(EVENT_STATUS_CHANGE, this.applyStyle.bind(this))
+    if (this._dom) {
+      this._dom.addEventListener('click', this.toggleStatus)
+      this._dom.addEventListener(EVENT_STATUS_CHANGE, this.applyStyle)
     }
-    document.addEventListener(EVENT_RESET, (e) => {
-      this._status = false
-      this.dispatchStatusUpdate()
-    })
-
-    if (this._editable && this._captionSelector) {
-      this._captionSelector.addEventListener('input', (e) => {
-        this._caption = removeHtml(this._captionSelector.innerHTML)
-      })
-    }
+    document.addEventListener(EVENT_RESET, this.resetStatus)
   }
 
-  toggleStatus (event) {
+  removeListeners () {
+    if (this._dom) {
+      this._dom.removeEventListener('click', this.toggleStatus)
+      this._dom.removeEventListener(EVENT_STATUS_CHANGE, this.applyStyle)
+    }
+    document.removeEventListener(EVENT_RESET, this.resetStatus)
+  }
+
+  resetStatus () {
+    this._status = false
+    this.dispatchStatusUpdate()
+  }
+
+  toggleStatus () {
     this._status = !this._status
     this.dispatchStatusUpdate()
+  }
+
+  updateCaption () {
+    if (this._captionSelector) {
+      this._caption = removeHtml(this._captionSelector.innerHTML)
+    }
   }
 
   dispatchStatusUpdate (event) {
@@ -112,7 +139,7 @@ class Image {
     if (src) {
       return htmlToElement(`<div class="Image">
         <div class="Image__container">
-          <img class="lazy miniarch" src="/assets/css/loading.gif" data-src="${removeHtml(src)}" data-filename="${removeHtml(filename)}" title="${filename} preview" />
+          <img class="lazy miniarch" src="./assets/css/loading.gif" data-src="${removeHtml(src)}" data-filename="${removeHtml(filename)}" title="${filename} preview" />
         </div>
         <div class="Image__caption"><span contenteditable="true">${removeHtml(caption)}</span></div>
         </div>`)

@@ -38,6 +38,7 @@ if (isset($_SESSION['id'])) {
         }
     }
 }
+unset($_POST);
 ?>
 
 <?php if (false === $access_granted): ?>
@@ -45,7 +46,13 @@ if (isset($_SESSION['id'])) {
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         <meta name="robots" content="noindex, nofollow">
-        <title>Edit</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+        <title><?= translate('editor_title') ?></title>
+        <?php
+        if ($font = getFontByName("Arcadia Textbook")) {
+            echo "<style>" . getFontStyle($font) . "</style>";
+        }
+        ?>
         <link rel="stylesheet" href="<?= url('assets/css/install.css') ?>">
     </head>
     <body>
@@ -58,19 +65,19 @@ if (isset($_SESSION['id'])) {
             <section class="Form">
                 <form class="pure-form pure-form-stacked" action="<?= url('/edit')?>" method="post" accept-charset="utf-8">
                     <fieldset>
-                        <legend>Edit</legend>
+                        <legend><?= translate('editor_title') ?></legend>
                         <div class="pure-control-group">
-                            <label for="email">Email Address *</label>
+                            <label for="email"><?= translate('email_address') ?> *</label>
                             <input id="email" type="email" placeholder="Email Address" required="true" name="email" autofocus="true" autocomplete="on">
                         </div>
 
                         <div class="pure-control-group">
-                            <label for="password">Password *</label>
+                            <label for="password"><?= translate('password') ?> *</label>
                             <input id="password" type="password" placeholder="Password" required="true" name="password">
                         </div>
 
                         <input type="hidden" name="csrf_token" value="<?= get_token('edit') ?>" />
-                        <button type="submit" class="pure-button pure-button-primary">Submit</button>
+                        <button type="submit" class="pure-button pure-button-primary"><?= translate('confirm') ?></button>
                     </fieldset>
                 </form>
             </section>
@@ -94,6 +101,10 @@ $description = array_key_exists('description', $meta) ? $meta['description'] : '
 $socialimage = array_key_exists('socialimage', $meta) && $meta['socialimage'] ? 'assets/images/' . $meta['socialimage'] : '';
 $favicon = array_key_exists('favicon', $meta)  && $meta['favicon'] ? 'assets/images/' . $meta['favicon'] : '';
 $note = array_key_exists('note', $meta) ? $meta['note'] : '';
+$bgcolor = array_key_exists('bgcolor', $meta) && $meta['bgcolor'] ? $meta['bgcolor'] : '#c0c0c0';
+$textcolor = array_key_exists('textcolor', $meta) && $meta['textcolor'] ? $meta['textcolor'] : '#333';
+$fontfamily = array_key_exists('fontfamily', $meta) && $meta['fontfamily'] ? $meta['fontfamily'] : '"Arcadia Textbook", "SF Mono", "Arcadia", "Zwizz", "Fira Code", "IBM Plex Mono", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;';
+$fonts = getFontsInFolder('assets/fonts');
 
 $error = null;
 try {
@@ -108,8 +119,23 @@ try {
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         <title>Edit - <?= $title; ?></title>
         <meta name="robots" content="noindex, nofollow">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
         <link rel="icon" type="image/png" href="<?= url($favicon) ?>"/>
         <link rel="stylesheet" href="<?= url('assets/css/edit.css') ?>" type="text/css" media="screen"/>
+        <?php
+        if ($fonts && count($fonts)) {
+            echo "<style>" . getFontsStylesheet($fonts) . "</style>";
+        }
+        ?>
+        <?php
+            echo "<style>
+                body {
+                    background-color: ${bgcolor};
+                    color: ${textcolor};
+                    font-family: ${fontfamily};
+                }
+                </style>";
+        ?>
     </head>
     <body>
         <?php
@@ -124,7 +150,7 @@ try {
                 <input type="hidden" name="csrf_token" value="<?= get_token('upload') ?>" />
             </form>
         </div>
-        <input class="modal-state" id="modal-1" type="checkbox" checked />
+
         <aside class="modal">
             <label class="modal__bg" for="modal-1"></label>
             <div class="modal__inner">
@@ -132,9 +158,17 @@ try {
                 <h1><?= translate('edit_mode_welcome') ?></h1>
                 <p>
                     <ul>
-                        <li>📝 All the text is editable, just click on the text to change it.</li>
-                        <li>🖼 To add an image, just drag and drop it on the screen.</li>
-                        <li>🔁 Reorder the images by renaming them.</li>
+                        <li>
+                            <div class="icon">📝</div>
+                            <div>All the text is editable, just click on the text to change it.<div></li>
+                        <li>
+                            <div class="icon">🖼</div>
+                            <div>To add an image, just drag and drop it on the screen.<div>
+                        </li>
+                        <li>
+                            <div class="icon">🔁</div>
+                            <div>Reorder the images by renaming them.<div>
+                        </li>
                     </ul>
 
                     <br/>
@@ -142,22 +176,120 @@ try {
             </div>
         </aside>
 
+        <input type="checkbox" class="controls__toggle" id="toggle" />
+        <label for="toggle">
+            <div class="controls__mobile-toggle">
+                <div class="pure-button controls__mobile-toggle--open">⚙️ <?= translate('controls_open') ?></div>
+                <div class="pure-button controls__mobile-toggle--close">⚙️ <?= translate('controls_close') ?></div>
+            </div>
+        </label>
         <aside class="controls">
-            <div class="editbutton preview pure-button">
-                <span><?= translate('exit') ?></span>
+            <div class="controls__title"><?= translate('editor_title') ?></div>
+            <!-- Buttons -->
+            <div class="controls__buttons">
+                <div class="editbutton upload">
+                    <div class="editbutton__icon">
+                        <span class="icon">⏫</span>
+                    </div>
+                    <div class="editbutton__content">
+                        <input type="hidden" name="csrf_token" value="<?= get_token('upload') ?>" />
+                        <div class="editbutton__label">
+                            <span><?= translate('add_images') ?></span>
+                        </div>
+                        <input id="file-input" type="file" name="image_upload" multiple accept='image/*'/>
+                    </div>
+                </div>
+
+                <div class="editbutton bgcolor">
+                    <div class="editbutton__icon">
+                        <span class="icon">🌄</span>
+                    </div>
+                    <div class="editbutton__content">
+                        <div class="editbutton__label">
+                            <span><?= translate('background_color') ?></span>
+                        </div>
+                        <div class="editbutton__submenu">
+                            <input type="color" id="bg_color" name="bg_color" value="<?= $bgcolor ?>"><label for="bg_color"><?= $bgcolor ?></label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="editbutton text">
+                    <div class="editbutton__icon">
+                        <span class="icon">🔤</span>
+                    </div>
+                    <div class="editbutton__content">
+                        <div class="editbutton__label">
+                            <span><?= translate('font_family') ?></span>
+                        </div>
+                        <div class="editbutton__submenu">
+                            <div>
+                                <input type="color" id="text_color" name="text_color" value="<?= $textcolor ?>"><label for="text_color"><?= $textcolor ?></label>
+                            </div>
+                            <div>
+                                <select name="font_family" id="font_family">
+            <?php
+            $i = -1;
+            while (++$i < count($fonts)) {
+                $selected = $fontfamily == $fonts[$i]['name'];
+                echo "<option value='" . $fonts[$i]['name']. "' " . ($selected ? "selected='selected'" : '') . ">" . $fonts[$i]['name']. "</option>";
+            } ?>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="editbutton save pure-button">
-                <input type="hidden" name="csrf_token" value="<?= get_token('save') ?>" />
-                <span><?= translate('save') ?></span>
-            </div>
-            <div class="editbutton cancel pure-button">
-                <span><?= translate('cancel') ?></span>
+            <!-- /Buttons -->
+
+            <div class="controls__footer">
+                <div class="controls__footer__note">
+                    <span><?= translate('tip') ?>: </span><?= translate('instructions_add_pic') ?>
+                </div>
+                <div class="controls__footer__buttons">
+                    <div class="editbutton save">
+                        <div class="editbutton__icon">
+                            <span class="icon">✍️</span>
+                        </div>
+                        <div class="editbutton__content">
+                            <input type="hidden" name="csrf_token" value="<?= get_token('save') ?>" />
+                            <div class="editbutton__label">
+                                <span><?= translate('save') ?></span>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="editbutton cancel">
+                        <div class="editbutton__icon">
+                            <span class="icon">🙅</span>
+                        </div>
+                        <div class="editbutton__content">
+                            <div class="editbutton__label">
+                                <span><?= translate('cancel') ?></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="editbutton preview">
+                        <div class="editbutton__icon">
+                            <span class="icon">🏃</span>
+                        </div>
+                        <div class="editbutton__content">
+                            <div class="editbutton__label">
+                                <span><?= translate('exit') ?></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </aside>
-        <header>
-            <section class="title" contenteditable='true'><?= $title ?></section>
-        </header>
         <main>
+
+            <header>
+                <section class="title" contenteditable='true'><?= $title ?></section>
+            </header>
+
             <section class="Gallery">
                 <?php
                 foreach ($images as $image) {
@@ -170,13 +302,13 @@ try {
                     echo $output;
                 } ?>
             </section>
-            <span id="breaker"></span>
+
+            <footer>
+                <section class="note" contenteditable='true'>
+                    <?= $note ?>
+                </section>
+            </footer>
         </main>
-        <footer>
-            <section class="note" contenteditable='true'>
-                <?= $note ?>
-            </section>
-        </footer>
         <?php
         }
         ?>

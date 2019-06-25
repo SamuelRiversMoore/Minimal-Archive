@@ -10,94 +10,108 @@ import {
   basename,
   htmlToElement,
   isDomNode,
+  mergeSettings,
   scrollTo,
   stripExtension
 } from './Helpers.js'
 
-const mergeSettings = (options) => {
-  const settings = {
-    gallerySelector: '.Gallery',
-    imageSelector: '.Image',
-    lazyloadSelector: '.lazy',
-    active: true
-  }
-
-  for (const attrName in options) {
-    settings[attrName] = options[attrName]
-  }
-
-  return settings
-}
-
 class Gallery {
   constructor (options) {
-    this.config = mergeSettings(options)
-    this.init()
-  }
-
-  init () {
+    const defaults = {
+      gallerySelector: '.Gallery',
+      imageSelector: '.Image',
+      lazyloadSelector: '.lazy',
+      active: true
+    }
     const {
       gallerySelector,
       imageSelector,
       lazyloadSelector,
       active
-    } = this.config
-    const images = document.querySelectorAll(imageSelector)
+    } = mergeSettings(options, defaults)
 
     this.keyHandler = this.keyHandler.bind(this)
     this.updateImage = this.updateImage.bind(this)
-    this.gallery = document.querySelector(gallerySelector)
-    this._current = null
+    this.getInitializedImages = this.getInitializedImages.bind(this)
 
-    if (!this.gallery) {
+    this._active = active
+    this._current = null
+    this._gallery = document.querySelector(gallerySelector)
+    if (!this._gallery) {
       console.warn(`\nModule: Gallery.js\nWarning: No Gallery dom node found in document.\nCause: No gallerySelector provided.\nResult: Adding images may fail.`)
     }
-
-    let i = -1
-    this._images = []
-    while (++i < images.length) {
-      const image = this.getNewImage(images[i], this.active)
-      if (image) {
-        this._images.push(image)
-      }
-    }
+    this._imageSelector = imageSelector
+    this._images = this.getInitializedImages(imageSelector, active)
     this._imagesBackup = this._images
-
-    this.lazyload = new LazyLoad({
+    this._lazyload = new LazyLoad({
       elements_selector: lazyloadSelector
     })
 
     if (active) {
-      this.activate()
+      this.activate(true)
+    } else {
+      this.deactivate(true)
     }
   }
 
-  activate () {
-    this.active = true
-    this.gallery.classList.remove('Gallery--inactive')
-    this.gallery.classList.add('Gallery--active')
-    this.initListeners()
+  activate (force) {
+    if (force || !this._active) {
+      this._active = true
+      this._gallery.classList.remove('Gallery--inactive')
+      this._gallery.classList.add('Gallery--active')
+      this.initListeners()
+    }
   }
 
-  deactivate () {
-    this.active = false
-    this.gallery.classList.remove('Gallery--active')
-    this.gallery.classList.add('Gallery--inactive')
-    this.removeListeners()
+  deactivate (force) {
+    if (force || this._active) {
+      this._active = false
+      this._gallery.classList.remove('Gallery--active')
+      this._gallery.classList.add('Gallery--inactive')
+      this.removeListeners()
+      this.deactivateImages()
+    }
   }
 
   toggleActive () {
-    this.active = !this.active
+    this._active = !this._active
+  }
+
+  getInitializedImages (selector, active) {
+    const images = document.querySelectorAll(selector)
+    const result = []
+    let i = -1
+    while (++i < images.length) {
+      const image = this.getNewImage(images[i], active)
+      if (image) {
+        result.push(image)
+      }
+    }
+    return result
   }
 
   initListeners () {
     document.addEventListener(EVENT_IMAGE_UPDATE, this.updateImage)
     document.addEventListener('keyup', this.keyHandler)
+    this.activateImages()
   }
 
   removeListeners () {
     document.removeEventListener(EVENT_IMAGE_UPDATE, this.updateImage)
     document.removeEventListener('keyup', this.keyHandler)
+    this.deactivateImages()
+  }
+
+  activateImages () {
+    this._images.map(image => {
+      image.activate()
+    })
+  }
+
+  deactivateImages () {
+    this._images.map(image => {
+      image.deactivate()
+    })
   }
 
   updateImage (e) {
@@ -169,7 +183,7 @@ class Gallery {
     if (!images || !images.length) {
       return
     }
-    this.gallery.innerHTML = null
+    this._gallery.innerHTML = null
     this.images = []
     let i = -1
     while (++i < images.length) {
@@ -180,20 +194,20 @@ class Gallery {
   }
 
   addImage (dom) {
-    const image = this.getNewImage(dom, this.active)
+    const image = this.getNewImage(dom, this._active)
     if (dom && document.body.contains(dom)) {
       this._images.push(image)
     } else if (dom && !document.body.contains(dom)) {
-      const images = document.querySelectorAll(this.config.imageSelector)
+      const images = document.querySelectorAll(this._imageSelector)
       if (images.length) {
         images[images.length - 1].parentNode.insertBefore(dom, images[images.length - 1].nextSibling)
       } else {
-        this.gallery.appendChild(dom)
+        this._gallery.appendChild(dom)
       }
       this._images.push(image)
     }
     this._imagesBackup = this._images
-    this.lazyload.update()
+    this._lazyload.update()
     return image
   }
 
@@ -221,7 +235,7 @@ class Gallery {
     if (src) {
       return htmlToElement(`<div class="Image">
         <div class="Image__container">
-          <img class="lazy miniarch" src="/assets/css/loading.gif" data-src="${src}" data-filename="${filename}" title="${filename} preview" />
+          <img class="lazy miniarch" src="./assets/css/loading.gif" data-src="${src}" data-filename="${filename}" title="${filename} preview" />
         </div>
         <div class="Image__caption"><span contenteditable="true">${stripExtension(filename)}</span></div>
         </div>`)

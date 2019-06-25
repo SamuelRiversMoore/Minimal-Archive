@@ -2,28 +2,19 @@ import {
   EVENT_LOADING,
   EVENT_LOADED
 } from './Constants.js'
-
-const mergeSettings = (options) => {
-  const settings = {
-    selector: 'Loader'
-  }
-
-  for (const attrName in options) {
-    settings[attrName] = options[attrName]
-  }
-
-  return settings
-}
+import {
+  mergeSettings
+} from './Helpers.js'
 
 class Loader {
   constructor (options) {
-    this.config = mergeSettings(options)
+    this.config = mergeSettings(options, { loaderClass: 'Loader' })
     this.init()
   }
 
   init () {
     const {
-      selector
+      loaderClass
     } = this.config
     const content = document.createElement('div')
 
@@ -31,7 +22,7 @@ class Loader {
     content.innerHTML = 'Loading...'
 
     this.dom = document.createElement('aside')
-    this.dom.classList.add(selector)
+    this.dom.classList.add(loaderClass)
     this.dom.appendChild(content)
 
     document.body.appendChild(this.dom)

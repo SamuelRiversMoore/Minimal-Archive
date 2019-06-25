@@ -430,12 +430,22 @@
     autoInitialize(LazyLoad, window.lazyLoadOptions);
   }
 
-  const uuidv4 = () => {
-    return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c =>
-      (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
-    )
+  /* global crypto, fetch, performance, requestAnimationFrame, window, Element, HTMLDocument */
+
+  /**
+   * Returns url basename
+   * @param  {string} url
+   * @return {string}
+   */
+  const basename = (url) => {
+    return url.split(/[\\/]/).pop()
   };
 
+  /**
+   * Returns the base url for a specified url part
+   * @param  {string} segment
+   * @return {string}
+   */
   const baseUrl = (segment) => {
     // get the segments
     const pathArray = window.location.pathname.split('/');
@@ -445,14 +455,57 @@
     return window.location.origin + pathArray.slice(0, indexOfSegment).join('/') + '/'
   };
 
-  const isDomNode = (element) => {
-    return element instanceof Element || element instanceof HTMLDocument
+  /**
+   * Converts html string to dom node
+   * @param  {string} html HTML string to be processed
+   * @return {DOMNode}      valid DOMNode
+   */
+  const htmlToElement = (html) => {
+    const template = document.createElement('template');
+
+    // removing extra white spaces
+    html = html.trim();
+    template.innerHTML = html;
+    return template.content.firstChild
   };
 
+  /**
+   * Tests if input is a DOMNode
+   * @param  {any} input input
+   * @return {Boolean}
+   */
+  const isDomNode = (input) => {
+    return input instanceof Element || input instanceof HTMLDocument
+  };
+
+  /**
+   * Removes HTML content from string
+   * @param  {String} str input
+   * @return {String}     output
+   */
+  const removeHtml = (str) => {
+    const tmp = document.createElement('div');
+    tmp.innerHTML = str;
+    return tmp.textContent || tmp.innerText
+  };
+
+  /**
+   * Removes extension from filename
+   * @param  {String} str input
+   * @return {String}     output
+   */
   const stripExtension = str => {
     return str.replace(/\.[^/.]+$/, '')
   };
 
+  /**
+   * Scrolls to location
+   * @param  {Number | DOMNode}   destination Number or domnode
+   * @param  {Number}   duration
+   * @param  {String}   easing      linear only
+   * @param  {Function} callback    callback function to call after scroll
+   * @return {null}               no return
+   */
   const scrollTo = (destination, duration = 200, easing = 'linear', callback) => {
     const easings = {
       linear (t) {
@@ -495,88 +548,136 @@
     scroll();
   };
 
-  const htmlToElement = (html) => {
-    const template = document.createElement('template');
-    html = html.trim(); // Never return a text node of whitespace as the result
-    template.innerHTML = html;
-    return template.content.firstChild
+  /**
+   * Merges an option object values with a default one if key exists in default
+   * @param  {Object} options
+   * @return {Object}
+   */
+  const mergeSettings = (options, defaults = {}) => {
+    if (!options) {
+      return defaults
+    }
+    for (const attrName in options) {
+      defaults[attrName] = options[attrName];
+    }
+
+    return defaults
+  };
+
+  /**
+   * Returns a UUIDv4 string
+   * @return {String}
+   */
+  const uuidv4 = () => {
+    return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c =>
+      (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+    )
   };
 
   const API_URL = baseUrl() + '/api';
 
-  const EVENT_RESET = 'reset';
-  const EVENT_STATUS_CHANGE = 'status-change';
   const EVENT_IMAGE_UPDATE = 'image-update';
+  const EVENT_STATUS_CHANGE = 'status-change';
+  const EVENT_RESET = 'reset';
 
-  const mergeSettings = (options) => {
-    const settings = {
-      dom: null,
-      filename: null,
-      active: true,
-      url: null,
-      caption: null,
-      imageSelector: '.Image',
-      lazyloadSelector: '.lazy'
-    };
-
-    for (const attrName in options) {
-      settings[attrName] = options[attrName];
-    }
-
-    return settings
-  };
+  /* global CustomEvent, Event */
 
   class Image {
     constructor (options) {
-      this.config = mergeSettings(options);
-      this.dispatchStatusUpdate = this.dispatchStatusUpdate.bind(this);
-
+      const defaults = {
+        dom: null,
+        filename: null,
+        active: true,
+        url: null,
+        caption: null,
+        imageSelector: '.Image',
+        lazyloadSelector: '.lazy',
+        editable: false
+      };
       const {
         url,
         filename,
         caption,
         dom,
-        active
-      } = this.config;
+        active,
+        editable
+      } = mergeSettings(options, defaults);
 
+      // Binding functions to this
+      this.dispatchStatusUpdate = this.dispatchStatusUpdate.bind(this);
+      this.toggleStatus = this.toggleStatus.bind(this);
+      this.applyStyle = this.applyStyle.bind(this);
+      this.resetStatus = this.resetStatus.bind(this);
+      this.updateCaption = this.updateCaption.bind(this);
+
+      // Setting state
       this._id = uuidv4();
       this._dom = isDomNode(dom) ? dom : this.generateDom(url, filename, caption);
       if (!this._dom) {
         console.warn('%o is not a dom element. Can\'t get image dom.', dom);
       }
       this._src = url;
-      this._caption = caption;
+      this._caption = removeHtml(caption);
       this._filename = filename;
       this._captionSelector = this._dom && this._dom.querySelector('[contenteditable]');
       this._active = active;
       this._status = false;
+      this._editable = editable;
 
+      // Initializing style and initial listeners
       this.applyStyle();
-      this.initListeners();
+      if (this._active) {
+        this.activate(true);
+      }
+      if (this._editable && this._captionSelector) {
+        this._captionSelector.addEventListener('input', this.updateCaption);
+      }
+    }
+
+    activate (force) {
+      if (force || !this._active) {
+        this._active = true;
+        this.initListeners();
+      }
+    }
+
+    deactivate (force) {
+      if (force || this._active) {
+        this._active = false;
+        this.removeListeners();
+      }
     }
 
     initListeners () {
-      if (this._active && this._dom) {
-        this._dom.addEventListener('click', this.toggleStatus.bind(this));
-        this._dom.addEventListener(EVENT_STATUS_CHANGE, this.applyStyle.bind(this));
+      if (this._dom) {
+        this._dom.addEventListener('click', this.toggleStatus);
+        this._dom.addEventListener(EVENT_STATUS_CHANGE, this.applyStyle);
       }
-      document.addEventListener(EVENT_RESET, (e) => {
-        this._status = false;
-        this.dispatchStatusUpdate();
-      });
-
-      if (this._captionSelector) {
-        // 1. Listen for changes of the contenteditable element
-        this._captionSelector.addEventListener('input', (e) => {
-          // 2. Retrive the text from inside the element
-          this._caption = this._captionSelector.innerHTML;
-        });
-      }
+      document.addEventListener(EVENT_RESET, this.resetStatus);
     }
 
-    toggleStatus (event) {
+    removeListeners () {
+      if (this._dom) {
+        this._dom.removeEventListener('click', this.toggleStatus);
+        this._dom.removeEventListener(EVENT_STATUS_CHANGE, this.applyStyle);
+      }
+      document.removeEventListener(EVENT_RESET, this.resetStatus);
+    }
+
+    resetStatus () {
+      this._status = false;
+      this.dispatchStatusUpdate();
+    }
+
+    toggleStatus () {
       this._status = !this._status;
       this.dispatchStatusUpdate();
+    }
+
+    updateCaption () {
+      if (this._captionSelector) {
+        this._caption = removeHtml(this._captionSelector.innerHTML);
+      }
     }
 
     dispatchStatusUpdate (event) {
@@ -606,12 +707,10 @@
       if (src) {
         return htmlToElement(`<div class="Image">
         <div class="Image__container">
-          <img class="lazy miniarch" src="/assets/css/loading.gif" data-src="${src}" data-filename="${filename}" title="${filename} preview" />
+          <img class="lazy miniarch" src="./assets/css/loading.gif" data-src="${removeHtml(src)}" data-filename="${removeHtml(filename)}" title="${filename} preview" />
         </div>
-        <div class="Image__caption"><span contenteditable="true">${caption}</span></div>
+        <div class="Image__caption"><span contenteditable="true">${removeHtml(caption)}</span></div>
         </div>`)
-      } else {
-        return null
       }
     }
 
@@ -642,122 +741,119 @@
     }
 
     set filename (filename) {
-      this._filename = filename;
+      this._filename = removeHtml(filename);
     }
     get filename () {
       return this._filename
     }
 
     set src (src) {
-      this._src = src;
+      this._src = removeHtml(src);
     }
     get src () {
       return this._src
     }
   }
 
-  const mergeSettings$1 = (options) => {
-    const settings = {
-      gallerySelector: '.Gallery',
-      imageSelector: '.Image',
-      lazyloadSelector: '.lazy',
-      active: true
-    };
-
-    for (const attrName in options) {
-      settings[attrName] = options[attrName];
-    }
-
-    return settings
-  };
+  /* global Event */
 
   class Gallery {
     constructor (options) {
-      this.config = mergeSettings$1(options);
-      this.init();
-    }
-
-    init () {
+      const defaults = {
+        gallerySelector: '.Gallery',
+        imageSelector: '.Image',
+        lazyloadSelector: '.lazy',
+        active: true
+      };
       const {
         gallerySelector,
         imageSelector,
         lazyloadSelector,
         active
-      } = this.config;
-      const images = document.querySelectorAll(imageSelector);
+      } = mergeSettings(options, defaults);
 
       this.keyHandler = this.keyHandler.bind(this);
       this.updateImage = this.updateImage.bind(this);
-      this.gallery = document.querySelector(gallerySelector);
-      this._current = null;
+      this.getInitializedImages = this.getInitializedImages.bind(this);
 
-      if (!this.gallery) {
+      this._active = active;
+      this._current = null;
+      this._gallery = document.querySelector(gallerySelector);
+      if (!this._gallery) {
         console.warn(`\nModule: Gallery.js\nWarning: No Gallery dom node found in document.\nCause: No gallerySelector provided.\nResult: Adding images may fail.`);
       }
-
-      let i = -1;
-      this._images = [];
-      while (++i < images.length) {
-        const image = this.getNewImage(images[i], this.active);
-        if (image) {
-          this._images.push(image);
-        }
-      }
-
-      this.lazyload = new LazyLoad({
+      this._imageSelector = imageSelector;
+      this._images = this.getInitializedImages(imageSelector, active);
+      this._imagesBackup = this._images;
+      this._lazyload = new LazyLoad({
         elements_selector: lazyloadSelector
       });
 
       if (active) {
-        this.activate();
+        this.activate(true);
+      } else {
+        this.deactivate(true);
       }
     }
 
-    getNewImage (dom, active) {
-      if (!dom || !isDomNode(dom)) {
-        return null
+    activate (force) {
+      if (force || !this._active) {
+        this._active = true;
+        this._gallery.classList.remove('Gallery--inactive');
+        this._gallery.classList.add('Gallery--active');
+        this.initListeners();
       }
-      const url = dom.querySelector('img') ? dom.querySelector('img').src : null;
-      const datafilename = dom.querySelector('img') && dom.querySelector('img').getAttribute('data-filename') ? dom.querySelector('img').getAttribute('data-filename') : null;
-      const filename = datafilename ? datafilename.substring(datafilename.lastIndexOf('/') + 1) : dom.querySelector('img') ? dom.querySelector('img').src.substring(dom.querySelector('img').src.lastIndexOf('/') + 1) : null;
-      const caption = dom.querySelector('.Image__caption span') ? dom.querySelector('.Image__caption span').innerHTML : null;
-
-      return new Image(
-        {
-          url: url,
-          filename: filename,
-          caption: caption,
-          dom: dom,
-          active: active
-        })
     }
 
-    activate () {
-      this.active = true;
-      this.gallery.classList.remove('Gallery--inactive');
-      this.gallery.classList.add('Gallery--active');
-      this.initListeners();
-    }
-
-    deactivate () {
-      this.active = false;
-      this.gallery.classList.remove('Gallery--active');
-      this.gallery.classList.add('Gallery--inactive');
-      this.removeListeners();
+    deactivate (force) {
+      if (force || this._active) {
+        this._active = false;
+        this._gallery.classList.remove('Gallery--active');
+        this._gallery.classList.add('Gallery--inactive');
+        this.removeListeners();
+        this.deactivateImages();
+      }
     }
 
     toggleActive () {
-      this.active = !this.active;
+      this._active = !this._active;
+    }
+
+    getInitializedImages (selector, active) {
+      const images = document.querySelectorAll(selector);
+      const result = [];
+      let i = -1;
+      while (++i < images.length) {
+        const image = this.getNewImage(images[i], active);
+        if (image) {
+          result.push(image);
+        }
+      }
+      return result
     }
 
     initListeners () {
       document.addEventListener(EVENT_IMAGE_UPDATE, this.updateImage);
       document.addEventListener('keyup', this.keyHandler);
+      this.activateImages();
     }
 
     removeListeners () {
       document.removeEventListener(EVENT_IMAGE_UPDATE, this.updateImage);
       document.removeEventListener('keyup', this.keyHandler);
+      this.deactivateImages();
+    }
+
+    activateImages () {
+      this._images.map(image => {
+        image.activate();
+      });
+    }
+
+    deactivateImages () {
+      this._images.map(image => {
+        image.deactivate();
+      });
     }
 
     updateImage (e) {
@@ -766,6 +862,30 @@
       } else {
         this.updateCurrentImage(null);
       }
+    }
+
+    removeImageById (id) {
+      let target = null;
+      this._images = this._images.filter(image => {
+        if (image.getId() === id) {
+          target = image;
+          return false
+        }
+        return true
+      });
+      if (target) {
+        target.dom.classList.add('Image--markedfordeletion');
+      }
+      return this._images
+    }
+
+    revertRemoveImageById (id) {
+      const match = this._imagesBackup.find(image => image.getId() === id);
+      if (match) {
+        match.dom.classList.remove('Image--markedfordeletion');
+        this._images.push(match);
+      }
+      return this._images
     }
 
     updateCurrentImage (image) {
@@ -801,53 +921,63 @@
       }
     }
 
-    addImage (dom) {
-      if (dom && document.body.contains(dom)) {
-        this._images.push(this.getNewImage(dom, this.active));
-      } else if (dom && !document.body.contains(dom)) {
-        const images = document.querySelectorAll(this.config.imageSelector);
-        if (images.length) {
-          images[images.length - 1].parentNode.insertBefore(dom, images[images.length - 1].nextSibling);
-        } else {
-          this.gallery.appendChild(dom);
-        }
-        this._images.push(this.getNewImage(dom, this.active));
-      }
-      this.lazyload.update();
-    }
-
-    set current (image) {
-      this.updateCurrentImage(image);
-    }
-    get current () {
-      return this._current
-    }
-
-    get images () {
-      return this._images
-    }
-
-    set images (images) {
-      this._images = images;
-    }
-
     setImages (images) {
       if (!images || !images.length) {
         return
       }
-      this.gallery.innerHTML = null;
+      this._gallery.innerHTML = null;
       this.images = [];
       let i = -1;
       while (++i < images.length) {
-        this.addImage(this.getImageDom(images[i].src, images[i].filename));
+        if ('src' in images[i] && 'filename' in images[i]) {
+          this.addImage(this.getImageDom(images[i].src, images[i].filename));
+        }
       }
+    }
+
+    addImage (dom) {
+      const image = this.getNewImage(dom, this._active);
+      if (dom && document.body.contains(dom)) {
+        this._images.push(image);
+      } else if (dom && !document.body.contains(dom)) {
+        const images = document.querySelectorAll(this._imageSelector);
+        if (images.length) {
+          images[images.length - 1].parentNode.insertBefore(dom, images[images.length - 1].nextSibling);
+        } else {
+          this._gallery.appendChild(dom);
+        }
+        this._images.push(image);
+      }
+      this._imagesBackup = this._images;
+      this._lazyload.update();
+      return image
+    }
+
+    getNewImage (dom, active) {
+      if (!dom || !isDomNode(dom)) {
+        return null
+      }
+      const url = dom.querySelector('img') && dom.querySelector('img').src;
+      const datafilename = dom.querySelector('img') && dom.querySelector('img').getAttribute('data-filename');
+      const filename = datafilename ? basename(datafilename) : dom.querySelector('img') ? basename(dom.querySelector('img').src) : null;
+      const caption = dom.querySelector('.Image__caption span') && dom.querySelector('.Image__caption span').innerHTML;
+
+      return new Image(
+        {
+          url: url,
+          filename: filename,
+          caption: caption,
+          dom: dom,
+          active: active,
+          editable: !active
+        })
     }
 
     getImageDom (src, filename) {
       if (src) {
         return htmlToElement(`<div class="Image">
         <div class="Image__container">
-          <img class="lazy miniarch" src="/assets/css/loading.gif" data-src="${src}" data-filename="${filename}" title="${filename} preview" />
+          <img class="lazy miniarch" src="./assets/css/loading.gif" data-src="${src}" data-filename="${filename}" title="${filename} preview" />
         </div>
         <div class="Image__caption"><span contenteditable="true">${stripExtension(filename)}</span></div>
         </div>`)
@@ -874,6 +1004,21 @@
 
     reset () {
       document.dispatchEvent(new Event(EVENT_RESET));
+    }
+
+    set current (image) {
+      this.updateCurrentImage(image);
+    }
+    get current () {
+      return this._current
+    }
+
+    get images () {
+      return this._images
+    }
+
+    set images (images) {
+      this._images = images;
     }
   }
 

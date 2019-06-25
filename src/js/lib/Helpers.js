@@ -7,23 +7,23 @@
  * @return {Boolean}
  */
 export const areObjectsEqual = (a, b) => {
-  // Get the a type
   const type = Object.prototype.toString.call(a)
 
-  // If the two objects are not the same type, return false
-  if (type !== Object.prototype.toString.call(b)) return false
+  if (type !== Object.prototype.toString.call(b)) {
+    return false
+  }
 
-  // If items are not an object or array, return false
-  if (['[object Array]', '[object Object]'].indexOf(type) < 0) return false
+  if (['[object Array]', '[object Object]'].indexOf(type) < 0) {
+    return false
+  }
 
-  // Compare the length of the length of the two items
   const aLen = type === '[object Array]' ? a.length : Object.keys(a).length
   const bLen = type === '[object Array]' ? b.length : Object.keys(b).length
-  if (aLen !== bLen) return false
+  if (aLen !== bLen) {
+    return false
+  }
 
-  // Compare two items
   const compare = function (item1, item2) {
-    // Get the object type
     const itemType = Object.prototype.toString.call(item1)
 
     // If an object or array, compare recursively
@@ -32,13 +32,13 @@ export const areObjectsEqual = (a, b) => {
         return false
       }
     } else {
-      // If the two items are not the same type, return false
-      if (itemType !== Object.prototype.toString.call(item2)) return false
-
-      // Else if it's a function, convert to a string and compare
-      // Otherwise, just compare
+      if (itemType !== Object.prototype.toString.call(item2)) {
+        return false
+      }
       if (itemType === '[object Function]') {
-        if (item1.toString() !== item2.toString()) return false
+        if (item1.toString() !== item2.toString()) {
+          return false
+        }
       } else {
         if (item1 !== item2) {
           return false
@@ -50,24 +50,37 @@ export const areObjectsEqual = (a, b) => {
   // Compare properties
   if (type === '[object Array]') {
     for (var i = 0; i < aLen; i++) {
-      if (compare(a[i], b[i]) === false) return false
+      if (compare(a[i], b[i]) === false) {
+        return false
+      }
     }
   } else {
     for (var key in a) {
       if (a.hasOwnProperty(key)) {
-        if (compare(a[key], b[key]) === false) return false
+        if (compare(a[key], b[key]) === false) {
+          return false
+        }
       }
     }
   }
 
-  // If nothing failed, return true
   return true
 }
 
+/**
+ * Returns url basename
+ * @param  {string} url
+ * @return {string}
+ */
 export const basename = (url) => {
   return url.split(/[\\/]/).pop()
 }
 
+/**
+ * Returns the base url for a specified url part
+ * @param  {string} segment
+ * @return {string}
+ */
 export const baseUrl = (segment) => {
   // get the segments
   const pathArray = window.location.pathname.split('/')
@@ -77,6 +90,11 @@ export const baseUrl = (segment) => {
   return window.location.origin + pathArray.slice(0, indexOfSegment).join('/') + '/'
 }
 
+/**
+ * Interface to fetch api
+ * methods:
+ *   newRequest -> takes a url with data, credentials and headers and executes request
+ */
 export class Fetch {
   newRequest (url, request, credentials = 'same-origin', headers = { 'Content-Type': 'application/x-www-form-urlencoded' }) {
     function processResponse (response) {
@@ -146,8 +164,13 @@ export const isFunction = (input) => {
   return input instanceof Function
 }
 
+export const isHexColor = (input) => {
+  const regex = new RegExp(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/)
+  return regex.test(input)
+}
+
 /**
- * Provides shorthand
+ * Provides preventDefault shorthand
  * @param  {event} event
  * @return {[type]}       [description]
  */
@@ -226,6 +249,22 @@ export const scrollTo = (destination, duration = 200, easing = 'linear', callbac
   }
 
   scroll()
+}
+
+/**
+ * Merges an option object values with a default one if key exists in default
+ * @param  {Object} options
+ * @return {Object}
+ */
+export const mergeSettings = (options, defaults = {}) => {
+  if (!options) {
+    return defaults
+  }
+  for (const attrName in options) {
+    defaults[attrName] = options[attrName]
+  }
+
+  return defaults
 }
 
 /**
