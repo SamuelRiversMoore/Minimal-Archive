@@ -21,13 +21,11 @@ A minimal tool (javascript with no dependencies, php) to display images on a web
 1. Upload the contents of `./www` folder to your web space. Make sure the folder is writable.
 2. Head to `{your-url}/install`.
 3. Enjoy `{your-url}` on any device (+ keyboard navigation).
-4. Uninstall using `{your-url}/uninstall`. This will remove the account and the meta file but keep the images.
+4. Uninstall using `{your-url}/uninstall`.
 
 ## Usage
 1. Head to `{your-url}/edit` with your email and password.
-2. Edit the title and the note.
-3. Add, rename or delete a bunch of images.
-4. Save or cancel your changes.
+2. Edit everything.
 
 ## Project structure
 
@@ -35,7 +33,7 @@ A minimal tool (javascript with no dependencies, php) to display images on a web
 Minimal-Archive/
 │
 ├── src/
-│   # sources
+│   # sources for development
 │
 └── www/
    # This folder is all you need to deploy to your server
@@ -53,11 +51,10 @@ Minimal-Archive/
 ## Translation
 
 The translation file is located in `www/minimalarchive/engine/translations.php`.
-It's a simple array where the key is the language code.
 
 ## Development
 
-If you plan to edit the javascript, you need to compile it to iife. A simple way to do this would be to use `rollup` via `npx` (if you have `npm` installed, just update to a recent version and you should have nothing to worry about).
+If you plan to edit the javascript, you may have to compile it. A simple way to do this would be to use `rollup` via `npx` (if you have `npm` installed, just update to a recent version and you should have nothing to worry about).
 
 ```sh
 # js files
