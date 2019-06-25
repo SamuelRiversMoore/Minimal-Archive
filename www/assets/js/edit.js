@@ -196,6 +196,19 @@
   };
 
   /**
+   * Replace content editable entities by better ones
+   * @param  {string} str [description]
+   * @return {string}     [description]
+   */
+  const processContentEditable = (str) => {
+    let processed = str.trim();
+    processed = processed.replace(/(<div><br>)*<\/div>/g, '<br/>');
+    processed = processed.replace(/<div>/g, '');
+
+    return processed
+  };
+
+  /**
    * Removes extension from filename
    * @param  {String} str input
    * @return {String}     output
@@ -1745,7 +1758,9 @@
         document.querySelector(SELECTOR_TITLE).innerHTML = title;
       }
       if (note) {
-        document.querySelector(SELECTOR_NOTE).innerHTML = note;
+        const html = htmlToElement('<div>' + note + '</div>');
+        document.querySelector(SELECTOR_NOTE).innerHTML = '';
+        document.querySelector(SELECTOR_NOTE).appendChild(html);
       }
       if (bgcolor && isHexColor(bgcolor)) {
         this.bgColor = bgcolor;
@@ -1782,7 +1797,7 @@
         result.title = removeHtml(title.innerHTML);
       }
       if (note) {
-        result.note = removeHtml(note.innerHTML);
+        result.note = processContentEditable(note.innerHTML);
       }
       if (bgColor && isHexColor(bgColor)) {
         result.bgcolor = bgColor;

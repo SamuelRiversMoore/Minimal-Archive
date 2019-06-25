@@ -193,6 +193,19 @@ export const removeHtml = (str) => {
 }
 
 /**
+ * Replace content editable entities by better ones
+ * @param  {string} str [description]
+ * @return {string}     [description]
+ */
+export const processContentEditable = (str) => {
+  let processed = str.trim()
+  processed = processed.replace(/(<div><br>)*<\/div>/g, '<br/>')
+  processed = processed.replace(/<div>/g, '')
+
+  return processed
+}
+
+/**
  * Removes extension from filename
  * @param  {String} str input
  * @return {String}     output

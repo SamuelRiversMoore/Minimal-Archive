@@ -20,6 +20,7 @@ import {
   isHexColor,
   mergeSettings,
   preventDefaults,
+  processContentEditable,
   stripExtension,
   removeHtml,
   Fetch
@@ -332,7 +333,9 @@ class Editor {
       document.querySelector(SELECTOR_TITLE).innerHTML = title
     }
     if (note) {
-      document.querySelector(SELECTOR_NOTE).innerHTML = note
+      const html = htmlToElement('<div>' + note + '</div>')
+      document.querySelector(SELECTOR_NOTE).innerHTML = ''
+      document.querySelector(SELECTOR_NOTE).appendChild(html)
     }
     if (bgcolor && isHexColor(bgcolor)) {
       this.bgColor = bgcolor
@@ -369,7 +372,7 @@ class Editor {
       result.title = removeHtml(title.innerHTML)
     }
     if (note) {
-      result.note = removeHtml(note.innerHTML)
+      result.note = processContentEditable(note.innerHTML)
     }
     if (bgColor && isHexColor(bgColor)) {
       result.bgcolor = bgColor
