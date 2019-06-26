@@ -547,9 +547,7 @@ function clean_installation()
 
 function uninstall(bool $deleteimages = false)
 {
-    if (file_exists(DEFAULT_METAFILE)) {
-        $meta = textFileToArray(DEFAULT_METAFILE);
-    }
+    $meta = file_exists(DEFAULT_METAFILE) ? textFileToArray(DEFAULT_METAFILE) : null;
     $files = glob(VAR_FOLDER . DS . '{,.}[!.,!..]*', GLOB_MARK|GLOB_BRACE);
     foreach ($files as $file) {
         unlink($file);
@@ -564,7 +562,9 @@ function uninstall(bool $deleteimages = false)
         }
     }
 
-    unlink(DEFAULT_METAFILE);
+    if ($meta) {
+        unlink(DEFAULT_METAFILE);
+    }
 }
 
 function put_error(string $message)
