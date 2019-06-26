@@ -18,14 +18,15 @@ A minimal tool (javascript with no dependencies, php) to display images on a web
 - `php` >= 7.0
 
 ## Installation
-1. Upload the contents of `./www` folder to your web space. Make sure the folder is writable.
-2. Head to `{your-url}/install`.
-3. Enjoy `{your-url}` on any device (+ keyboard navigation).
-4. Uninstall using `{your-url}/uninstall`.
+1. Either clone the repository or download the zipped release from the [release page](https://github.com/tasinttttttt/Minimal-Archive/releases/).
+2. Upload the contents of the folder (or the `./www` folder if you chose to clone the project) to your web space. Make sure the folder is writable.
+3. Head to `{your-url}/install`.
+4. Enjoy `{your-url}` on any device (+ keyboard navigation).
 
 ## Usage
 1. Head to `{your-url}/edit` with your email and password.
 2. Edit everything.
+3. Uninstall using `{your-url}/uninstall`.
 
 ## Project structure
 
