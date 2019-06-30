@@ -1,263 +1,198 @@
 @font-face {
-  font-family: "Aileron-Black";
-  src: url("../fonts/Aileron-Black.otf") format("opentype");
-}
+  font-family: 'Aileron-Black';
+  src: url("../fonts/Aileron-Black.otf") format("opentype"); }
 .aileron_black {
-  font-family: "Aileron-Black";
-}
+  font-family: 'Aileron-Black'; }
 
 @font-face {
-  font-family: "Aileron-UltraLight";
-  src: url("../fonts/Aileron-UltraLight.otf") format("opentype");
-}
+  font-family: 'Aileron-UltraLight';
+  src: url("../fonts/Aileron-UltraLight.otf") format("opentype"); }
 .aileron_ultralight {
-  font-family: "Aileron-UltraLight";
-}
+  font-family: 'Aileron-UltraLight'; }
 
 @font-face {
-  font-family: "Arcadia Textbook";
-  src: url("../fonts/Arcadia Textbook.otf") format("opentype");
-}
+  font-family: 'Arcadia Textbook';
+  src: url("../fonts/Arcadia Textbook.otf") format("opentype"); }
 .arcadia_textbook {
-  font-family: "Aileron-Black";
-}
+  font-family: 'Aileron-Black'; }
 
 @font-face {
-  font-family: "ArchivoBlack";
-  src: url("../fonts/ArchivoBlack.otf") format("opentype");
-}
+  font-family: 'ArchivoBlack';
+  src: url("../fonts/ArchivoBlack.otf") format("opentype"); }
 .archivo_black {
-  font-family: "ArchivoBlack";
-}
+  font-family: 'ArchivoBlack'; }
 
 @font-face {
-  font-family: "ArchivoNarrow-Regular";
-  src: url("../fonts/ArchivoNarrow-Regular.otf") format("opentype");
-}
+  font-family: 'ArchivoNarrow-Regular';
+  src: url("../fonts/ArchivoNarrow-Regular.otf") format("opentype"); }
 .archivo_narrow_regular {
-  font-family: "ArchivoNarrow-Regular";
-}
+  font-family: 'ArchivoNarrow-Regular'; }
 
 @font-face {
-  font-family: "Bagnard";
-  src: url("../fonts/Bagnard.otf") format("opentype");
-}
+  font-family: 'Bagnard';
+  src: url("../fonts/Bagnard.otf") format("opentype"); }
 .bagnard_regular {
-  font-family: "Bagnard";
-}
+  font-family: 'Bagnard'; }
 
 @font-face {
-  font-family: "BagnardSans";
-  src: url("../fonts/BagnardSans.otf") format("opentype");
-}
+  font-family: 'BagnardSans';
+  src: url("../fonts/BagnardSans.otf") format("opentype"); }
 .bagnard_sans_regular {
-  font-family: "BagnardSans";
-}
+  font-family: 'BagnardSans'; }
 
 @font-face {
-  font-family: "BluuNext-Bold";
-  src: url("../fonts/BluuNext-Bold.otf") format("opentype");
-}
+  font-family: 'BluuNext-Bold';
+  src: url("../fonts/BluuNext-Bold.otf") format("opentype"); }
 .bluu_next_bold {
-  font-family: "BluuNext-Bold";
-}
+  font-family: 'BluuNext-Bold'; }
 
 @font-face {
-  font-family: "CooperHewitt-Heavy";
-  src: url("../fonts/CooperHewitt-Heavy.otf") format("opentype");
-}
+  font-family: 'CooperHewitt-Heavy';
+  src: url("../fonts/CooperHewitt-Heavy.otf") format("opentype"); }
 .cooper_hewitt_heavy {
-  font-family: "CooperHewitt-Heavy";
-}
+  font-family: 'CooperHewitt-Heavy'; }
 
 @font-face {
-  font-family: "CothamSans";
-  src: url("../fonts/CothamSans.otf") format("opentype");
-}
+  font-family: 'CothamSans';
+  src: url("../fonts/CothamSans.otf") format("opentype"); }
 .cotham_regular {
-  font-family: "CothamSans";
-}
+  font-family: 'CothamSans'; }
 
 @font-face {
-  font-family: "EBGaramond12-Regular";
-  src: url("../fonts/EBGaramond12-Regular.otf") format("opentype");
-}
+  font-family: 'EBGaramond12-Regular';
+  src: url("../fonts/EBGaramond12-Regular.otf") format("opentype"); }
 .eb_garamond_regular {
-  font-family: "EBGaramond12-Regular";
-}
+  font-family: 'EBGaramond12-Regular'; }
 
 @font-face {
-  font-family: "GapSansBold";
-  src: url("../fonts/GapSansBold.ttf") format("truetype");
-}
+  font-family: 'GapSansBold';
+  src: url("../fonts/GapSansBold.ttf") format("truetype"); }
 .gap_sans_bold {
-  font-family: "GapSansBold";
-}
+  font-family: 'GapSansBold'; }
 
 @font-face {
-  font-family: "Junicode-BoldCondensed";
-  src: url("../fonts/Junicode-BoldCondensed.ttf") format("truetype");
-}
+  font-family: 'Junicode-BoldCondensed';
+  src: url("../fonts/Junicode-BoldCondensed.ttf") format("truetype"); }
 .junicode_bold_condensed {
-  font-family: "Junicode-BoldCondensed";
-}
+  font-family: 'Junicode-BoldCondensed'; }
 
 @font-face {
-  font-family: "LeagueGothic-Italic";
-  src: url("../fonts/LeagueGothic-Italic.otf") format("opentype");
-}
+  font-family: 'LeagueGothic-Italic';
+  src: url("../fonts/LeagueGothic-Italic.otf") format("opentype"); }
 .league_gothic_italic {
-  font-family: "LeagueGothic-Italic";
-}
+  font-family: 'LeagueGothic-Italic'; }
 
 @font-face {
-  font-family: "LiberationSans-Bold";
-  src: url("../fonts/LiberationSans-Bold.otf") format("opentype");
-}
+  font-family: 'LiberationSans-Bold';
+  src: url("../fonts/LiberationSans-Bold.otf") format("opentype"); }
 .liberation_sans_bold {
-  font-family: "LiberationSans-Bold";
-}
+  font-family: 'LiberationSans-Bold'; }
 
 @font-face {
-  font-family: "LibreBaskerville-Regular";
-  src: url("../fonts/LibreBaskerville-Regular.otf") format("opentype");
-}
+  font-family: 'LibreBaskerville-Regular';
+  src: url("../fonts/LibreBaskerville-Regular.otf") format("opentype"); }
 .libre_baskerville_regular {
-  font-family: "LibreBaskerville-Regular";
-}
+  font-family: 'LibreBaskerville-Regular'; }
 
 @font-face {
-  font-family: "mplus-1m-light";
-  src: url("../fonts/mplus-1m-light.otf") format("opentype");
-}
+  font-family: 'mplus-1m-light';
+  src: url("../fonts/mplus-1m-light.otf") format("opentype"); }
 .mplus_mtype_1_light {
-  font-family: "mplus-1m-light";
-}
+  font-family: 'mplus-1m-light'; }
 
 @font-face {
-  font-family: "nimbus-sans-l_bold";
-  src: url("../fonts/nimbus-sans-l_bold.otf") format("opentype");
-}
+  font-family: 'nimbus-sans-l_bold';
+  src: url("../fonts/nimbus-sans-l_bold.otf") format("opentype"); }
 .nimbus_sans_l_bold {
-  font-family: "nimbus-sans-l_bold";
-}
+  font-family: 'nimbus-sans-l_bold'; }
 
 @font-face {
-  font-family: "OfficeCodePro-Light";
-  src: url("../fonts/OfficeCodePro-Light.otf") format("opentype");
-}
+  font-family: 'OfficeCodePro-Light';
+  src: url("../fonts/OfficeCodePro-Light.otf") format("opentype"); }
 .office_code_pro_light {
-  font-family: "OfficeCodePro-Light";
-}
+  font-family: 'OfficeCodePro-Light'; }
 
 @font-face {
-  font-family: "OstrichSans-Heavy";
-  src: url("../fonts/OstrichSans-Heavy.otf") format("opentype");
-}
+  font-family: 'OstrichSans-Heavy';
+  src: url("../fonts/OstrichSans-Heavy.otf") format("opentype"); }
 .ostrich_sans_heavy {
-  font-family: "OstrichSans-Heavy";
-}
+  font-family: 'OstrichSans-Heavy'; }
 
 @font-face {
-  font-family: "Oswald-Bold";
-  src: url("../fonts/Oswald-Bold.otf") format("opentype");
-}
+  font-family: 'Oswald-Bold';
+  src: url("../fonts/Oswald-Bold.otf") format("opentype"); }
 .oswald_bold {
-  font-family: "Oswald-Bold";
-}
+  font-family: 'Oswald-Bold'; }
 
 @font-face {
-  font-family: "Poppins-Medium";
-  src: url("../fonts/Poppins-Medium.otf") format("opentype");
-}
+  font-family: 'Poppins-Medium';
+  src: url("../fonts/Poppins-Medium.otf") format("opentype"); }
 .poppins_medium {
-  font-family: "Poppins-Medium";
-}
+  font-family: 'Poppins-Medium'; }
 
 @font-face {
-  font-family: "Reglo-Bold";
-  src: url("../fonts/Reglo-Bold.otf") format("opentype");
-}
+  font-family: 'Reglo-Bold';
+  src: url("../fonts/Reglo-Bold.otf") format("opentype"); }
 .reglo_bold {
-  font-family: "Reglo-Bold";
-}
+  font-family: 'Reglo-Bold'; }
 
 @font-face {
-  font-family: "Roboto-BlackItalic";
-  src: url("../fonts/Roboto-BlackItalic.otf") format("opentype");
-}
+  font-family: 'Roboto-BlackItalic';
+  src: url("../fonts/Roboto-BlackItalic.otf") format("opentype"); }
 .roboto_black_italic {
-  font-family: "Roboto-BlackItalic";
-}
+  font-family: 'Roboto-BlackItalic'; }
 
 @font-face {
-  font-family: "Roboto-Thin";
-  src: url("../fonts/Roboto-Thin.otf") format("opentype");
-}
+  font-family: 'Roboto-Thin';
+  src: url("../fonts/Roboto-Thin.otf") format("opentype"); }
 .roboto_thin {
-  font-family: "Roboto-Thin";
-}
+  font-family: 'Roboto-Thin'; }
 
 @font-face {
-  font-family: "terminal-grotesque_open";
-  src: url("../fonts/terminal-grotesque_open.otf") format("opentype");
-}
+  font-family: 'terminal-grotesque_open';
+  src: url("../fonts/terminal-grotesque_open.otf") format("opentype"); }
 .terminal_grotesque_open {
-  font-family: "terminal-grotesque_open";
-}
+  font-family: 'terminal-grotesque_open'; }
 
 @font-face {
-  font-family: "texgyreheros-bolditalic";
-  src: url("../fonts/texgyreheros-bolditalic.otf") format("opentype");
-}
+  font-family: 'texgyreheros-bolditalic';
+  src: url("../fonts/texgyreheros-bolditalic.otf") format("opentype"); }
 .tex_gyre_heros_bold_italic {
-  font-family: "texgyreheros-bolditalic";
-}
+  font-family: 'texgyreheros-bolditalic'; }
 
 @font-face {
-  font-family: "texgyreheroscn-regular";
-  src: url("../fonts/texgyreheroscn-regular.otf") format("opentype");
-}
+  font-family: 'texgyreheroscn-regular';
+  src: url("../fonts/texgyreheroscn-regular.otf") format("opentype"); }
 .tex_gyre_heros_condensed_regular {
-  font-family: "texgyreheroscn-regular";
-}
+  font-family: 'texgyreheroscn-regular'; }
 
 @font-face {
-  font-family: "WorkSans-ExtraBold";
-  src: url("../fonts/WorkSans-ExtraBold.otf") format("opentype");
-}
+  font-family: 'WorkSans-ExtraBold';
+  src: url("../fonts/WorkSans-ExtraBold.otf") format("opentype"); }
 .work_sans_extra_bold {
-  font-family: "WorkSans-ExtraBold";
-}
+  font-family: 'WorkSans-ExtraBold'; }
 
 @font-face {
-  font-family: "WorkSans-Light";
-  src: url("../fonts/WorkSans-Light.otf") format("opentype");
-}
+  font-family: 'WorkSans-Light';
+  src: url("../fonts/WorkSans-Light.otf") format("opentype"); }
 .work_sans_light {
-  font-family: "WorkSans-Light";
-}
+  font-family: 'WorkSans-Light'; }
 
 @font-face {
-  font-family: "YoungSerif-Regular";
-  src: url("../fonts/YoungSerif-Regular.otf") format("opentype");
-}
+  font-family: 'YoungSerif-Regular';
+  src: url("../fonts/YoungSerif-Regular.otf") format("opentype"); }
 .young_serif_regular {
-  font-family: "YoungSerif-Regular";
-}
+  font-family: 'YoungSerif-Regular'; }
 
 * {
-  box-sizing: border-box;
-}
+  box-sizing: border-box; }
 
 *:focus {
   outline: none !important;
-  box-sizing: border-box;
-}
+  box-sizing: border-box; }
 
 html {
-  min-height: 100%;
-}
+  min-height: 100%; }
 
 body {
   margin: 0;
@@ -268,18 +203,15 @@ body {
   overflow-x: hidden;
   color: #333;
   min-height: 100%;
-  min-width: 320px;
-}
+  min-width: 320px; }
 
 main {
   min-width: 320px;
   padding: 0;
-  box-sizing: border-box;
-}
+  box-sizing: border-box; }
 
 p {
-  margin: 0px;
-}
+  margin: 0px; }
 
 .Image {
   display: flex;
@@ -288,70 +220,55 @@ p {
   height: 150px;
   padding: 2em 1em 1em 1em;
   overflow: hidden;
-  transition: all 0.2s;
   cursor: zoom-in;
   cursor: -moz-zoom-in;
   cursor: -webkit-zoom-in;
   border-radius: 3px;
-  position: relative;
-}
-@media screen and (max-width: 550px) {
-  .Image {
-    flex: 100%;
-    width: auto;
-    height: auto;
-    max-height: calc(100vh - 250px);
-  }
+  position: relative; }
+  @media screen and (max-width: 550px) {
+    .Image {
+      flex: 100%;
+      width: auto;
+      height: auto;
+      max-height: calc(100vh - 250px); }
+      .Image img {
+        max-width: 100% !important;
+        max-height: 100% !important;
+        height: auto !important; } }
   .Image img {
-    max-width: 100% !important;
-    max-height: 100% !important;
-    height: auto !important;
-  }
-}
-.Image img {
-  max-width: 100%;
-  max-height: 90vh;
-  height: auto;
-  border-radius: 1px;
-}
-.Image.Image--inactive {
-  cursor: zoom-in;
-  cursor: -moz-zoom-in;
-  cursor: -webkit-zoom-in;
-}
+    max-width: 100%;
+    max-height: 90vh;
+    height: auto;
+    border-radius: 1px; }
+  .Image.Image--inactive {
+    cursor: zoom-in;
+    cursor: -moz-zoom-in;
+    cursor: -webkit-zoom-in; }
 
 .Image__container {
   overflow: hidden;
   text-align: center;
-  flex: 2;
-}
-.Image__container img {
-  max-height: 100%;
-  max-width: 80%;
-}
+  flex: 2; }
+  .Image__container img {
+    max-height: 100%;
+    max-width: 80%; }
 
 .Image:hover .Image__controls {
-  display: block;
-}
+  display: block; }
 
 .Image__controls {
   display: none;
   position: absolute;
   top: 5px;
-  right: 5px;
-}
-.Image__controls .button--delete {
-  display: block;
-}
-.Image__controls .button--revert {
-  display: none;
-}
-.Image__controls .button--on {
-  display: block;
-}
-.Image__controls .button--off {
-  display: none;
-}
+  right: 5px; }
+  .Image__controls .button--delete {
+    display: block; }
+  .Image__controls .button--revert {
+    display: none; }
+  .Image__controls .button--on {
+    display: block; }
+  .Image__controls .button--off {
+    display: none; }
 
 .Image--active {
   cursor: zoom-out;
@@ -361,63 +278,51 @@ p {
   height: auto;
   max-height: calc(100vh - 250px);
   flex: 100%;
-  min-height: 180px;
-}
-.Image--active img {
-  max-width: 100%;
-  max-height: 100%;
-  height: auto;
-}
-.Image--active .Image__container img {
-  max-height: auto;
-  max-width: auto;
-}
+  min-height: 180px; }
+  .Image--active img {
+    max-width: 100%;
+    max-height: 100%;
+    height: auto; }
+  .Image--active .Image__container img {
+    max-height: auto;
+    max-width: auto; }
 
 .Image--markedfordeletion .Image__container {
-  opacity: 0.3;
-}
+  opacity: 0.3; }
 
 .Image__caption {
   height: 20px;
   display: flex;
   justify-content: center;
-  align-items: flex-end;
-}
-.Image__caption span {
-  padding: 1em 0 0 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+  align-items: flex-end; }
+  .Image__caption span {
+    padding: 1em 0 0 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; }
 
 .Gallery {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
-  width: 100%;
-}
+  width: 100%; }
 
 .Gallery--inactive .Image {
-  cursor: default !important;
-}
+  cursor: default !important; }
 
 .breaker {
   width: 0px;
   height: 0px;
-  display: block !important;
-}
+  display: block !important; }
 
 .title {
   font-size: 32px;
-  padding: 20px;
-}
+  padding: 20px; }
 
 .note {
-  padding: 40px 20px;
-}
+  padding: 40px 20px; }
 
 body {
-  background: silver;
-}
+  background: silver; }
 
 /*# sourceMappingURL=index.css.map */
