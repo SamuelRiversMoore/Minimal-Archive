@@ -84,13 +84,13 @@
    * @param  {string} segment
    * @return {string}
    */
-  const baseUrl = (segment) => {
+  const baseUrl = (segment = '') => {
     // get the segments
     const pathArray = window.location.pathname.split('/');
     // find where the segment is located
     const indexOfSegment = pathArray.indexOf(segment);
     // make base_url be the origin plus the path to the segment
-    return window.location.origin + pathArray.slice(0, indexOfSegment).join('/') + '/'
+    return window.location.origin + pathArray.slice(0, indexOfSegment).join('/')
   };
 
   /**
