@@ -98,7 +98,7 @@ function create_metafile($args)
         foreach ($args as $key => $value) {
             if (!in_array($key, $exclusion)) {
                 if (in_array($key, $images) && $args[$key]) {
-                    fwrite($file, "${key}: " . $key . "." . pathinfo($args[$key]['name'], PATHINFO_EXTENSION)."\n");
+                    fwrite($file, $key . ": " . $key . "." . pathinfo($args[$key]['name'], PATHINFO_EXTENSION)."\n");
                 } else {
                     fwrite($file, "${key}: ${value}\n");
                 }
@@ -123,22 +123,18 @@ function create_imagefolder()
     }
 }
 
-function save_uploadedfiles($args)
-{
-    try {
-        save_file($args['favicon'], 'favicon.' . pathinfo($args['favicon']['name'], PATHINFO_EXTENSION), ASSETS_FOLDER . DS . 'images');
-        save_file($args['socialimage'], 'socialimage.' . pathinfo($args['socialimage']['name'], PATHINFO_EXTENSION), ASSETS_FOLDER . DS . 'images');
-    } catch (Exception $e) {
-        throw $e;
-    }
-}
-
 function process_form($args)
 {
     try {
         $form = get_sanitizedform($args);
         check_form($form);
-        save_uploadedfiles($form);
+        $files = array('favicon', 'socialimage');
+        foreach ($files as $file) {
+            if (null !== $form[$file]) {
+                $correctFilename = save_file($form[$file], $file . "." . pathinfo($form[$file]['name'], PATHINFO_EXTENSION), ASSETS_FOLDER . DS . 'images', true);
+                $form[$file]['name'] = $correctFilename ? $correctFilename : $form[$file]['name'];
+            }
+        }
         create_accountfile($form['email'], $form['password']);
         create_metafile($form);
         create_imagefolder();

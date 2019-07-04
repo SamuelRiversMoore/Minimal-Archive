@@ -267,9 +267,10 @@ function check_uploadedfile($file, $uploadfolder = VAR_FOLDER, $max_filesize = 2
  * @param  array $file
  * @param  string $name   desired filename
  * @param  string $folder destination folder
+ * @param  boolean $overwrite
  * @return string         saved file name
  */
-function save_file($file, $name = null, $folder = VAR_FOLDER)
+function save_file($file, $name = null, $folder = VAR_FOLDER, $overwrite = false)
 {
     if ($file) {
         $filename = $name ? $name : $file['name'];
@@ -279,11 +280,15 @@ function save_file($file, $name = null, $folder = VAR_FOLDER)
         $basename = basename($filename);
         $extension = pathinfo($basename, PATHINFO_EXTENSION);
         $name = pathinfo($basename, PATHINFO_FILENAME);
-        $correctFilename = "";
-        if (file_exists($folder . DS. $basename)) {
-            $correctFilename = sanitize_filename($name) . '_' . bin2hex(random_bytes(4)) . '.' . $extension;
+        if ($overwrite) {
+            $correctFilename = $filename;
         } else {
-            $correctFilename = sanitize_filename(basename($filename));
+            $correctFilename = "";
+            if (file_exists($folder . DS. $basename)) {
+                $correctFilename = sanitize_filename($name) . '_' . bin2hex(random_bytes(4)) . '.' . $extension;
+            } else {
+                $correctFilename = sanitize_filename(basename($filename));
+            }
         }
         if (!move_uploaded_file($file['tmp_name'], $folder . DS. $correctFilename)) {
             throw new Exception("file_upload_error", 1);
