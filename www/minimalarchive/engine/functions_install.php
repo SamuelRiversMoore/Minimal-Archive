@@ -144,7 +144,7 @@ function process_form($args)
         create_imagefolder();
     } catch (Exception $e) {
         uninstall(true);
+        clean_installation();
         throw $e;
     }
-    clean_installation();
 }
