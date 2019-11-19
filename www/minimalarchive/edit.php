@@ -160,14 +160,14 @@ try {
                     <ul>
                         <li>
                             <div class="icon">📝</div>
-                            <div>All the text is editable, just click on the text to change it.<div></li>
+                            <div><?= translate('welcome_edit_notice') ?><div></li>
                         <li>
                             <div class="icon">🖼</div>
-                            <div>To add an image, just drag and drop it on the screen.<div>
+                            <div><?= translate('welcome_add_image_notice')?><div>
                         </li>
                         <li>
                             <div class="icon">🔁</div>
-                            <div>Reorder the images by renaming them.<div>
+                            <div><?= translate('welcome_reorder_notice')?><div>
                         </li>
                     </ul>
 

@@ -44,5 +44,8 @@
   "uninstall": "Uninstall",
   "uninstall_complete": "✅ Successfully uninstalled the project",
   "view_page": "View page",
+  "welcome_edit_notice": "All the text is editable, just click on the text to change it.",
+  "welcome_add_image_notice": "To add an image, just drag and drop it on the screen.",
+  "welcome_reorder_notice": "Reorder the images by renaming them.",
   "yes": "Yes"
 }
