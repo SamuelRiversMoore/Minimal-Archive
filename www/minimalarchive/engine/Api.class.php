@@ -17,6 +17,11 @@ class Api
         $this->rootFolder = $rootFolder;
     }
 
+    /**
+     * Upload operation handle
+     * @param  array  $files
+     * @return void
+     */
     public function upload(array $files = [])
     {
         try {
@@ -42,6 +47,11 @@ class Api
         }
     }
 
+    /**
+     * Save data to files
+     * @param  array|null $data
+     * @return void
+     */
     public function save(array $data = null)
     {
         if (!$data || !count($data)) {
@@ -74,6 +84,12 @@ class Api
         }
     }
 
+    /**
+     * Delete all files except provided list
+     * @param  array|null $data exceptions
+     * @return array deleted images filenames list
+     * @throws Exception
+     */
     private function delete_all_files_except(array $data = null)
     {
         try {
@@ -100,6 +116,11 @@ class Api
         }
     }
 
+    /**
+     * Update filenames for given images list
+     * @param  array|null $images
+     * @return array modified images filenames list
+     */
     private function update_filenames(array $images = null)
     {
         try {

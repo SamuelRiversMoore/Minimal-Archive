@@ -3,9 +3,14 @@ if (!defined('minimalarchive')) {
     redirect('/');
 }
 
+/**
+ * Return sanitized form array
+ * @param  array $args
+ * @return array
+ */
 function get_sanitizedform($args)
 {
-    return array(
+    return (is_array($args) && count($args)) ? array(
         'email' => isset($args['email']) ? sanitize_email($args['email']) : null,
         'password' => isset($args['password']) ? sanitize_password($args['password']) : null,
         'title' => isset($args['title']) ? sanitize_text($args['title']) : null,
@@ -14,9 +19,15 @@ function get_sanitizedform($args)
         'note' => isset($args['note']) ? sanitize_text($args['note']) : null,
         'favicon' => isset($_FILES['favicon']) && strlen($_FILES['favicon']['name'])? $_FILES['favicon'] : null,
         'socialimage' => isset($_FILES['socialimage']) && $_FILES['socialimage']['name'] ? $_FILES['socialimage'] : null,
-    );
+    ) : array();
 }
 
+/**
+ * Check mandatory form fields
+ * @param  array $args
+ * @return void
+ * @throws Exception
+ */
 function check_form($args)
 {
     $required = array(
@@ -55,6 +66,13 @@ function check_form($args)
     }
 }
 
+/**
+ * Create account on file
+ * @param  string $email
+ * @param  string $password
+ * @return boolean
+ * @throws Exception
+ */
 function create_accountfile($email, $password)
 {
     try {
@@ -78,6 +96,12 @@ function create_accountfile($email, $password)
     }
 }
 
+/**
+ * Create metafile with data
+ * @param  array $args
+ * @return boolean
+ * @throws Exception
+ */
 function create_metafile($args)
 {
     try {
@@ -111,6 +135,11 @@ function create_metafile($args)
     }
 }
 
+/**
+ * Create image folder
+ * @return void
+ * @throws Exception
+ */
 function create_imagefolder()
 {
     try {
@@ -123,6 +152,13 @@ function create_imagefolder()
     }
 }
 
+/**
+ * Process installation form, creating folders and files.
+ * Deletes created files on failure.
+ * @param  array $args
+ * @return void
+ * @throws Exception
+ */
 function process_form($args)
 {
     try {
