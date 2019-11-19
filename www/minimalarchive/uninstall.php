@@ -56,6 +56,7 @@ if (isset($_POST['email']) && isset($_POST['password']) && check_token($_POST['c
             <?php
             if (strlen($success)) {
                 put_success($success);
+                echo "<p><a href=\"" . url('/') . "\">" . translate('gotohomepage') . "</a></p>";
             }
             ?>
 

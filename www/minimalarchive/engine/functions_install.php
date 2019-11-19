@@ -3,9 +3,14 @@ if (!defined('minimalarchive')) {
     redirect('/');
 }
 
+/**
+ * Return sanitized form array
+ * @param  array $args
+ * @return array
+ */
 function get_sanitizedform($args)
 {
-    return array(
+    return (is_array($args) && count($args)) ? array(
         'email' => isset($args['email']) ? sanitize_email($args['email']) : null,
         'password' => isset($args['password']) ? sanitize_password($args['password']) : null,
         'title' => isset($args['title']) ? sanitize_text($args['title']) : null,
@@ -14,9 +19,15 @@ function get_sanitizedform($args)
         'note' => isset($args['note']) ? sanitize_text($args['note']) : null,
         'favicon' => isset($_FILES['favicon']) && strlen($_FILES['favicon']['name'])? $_FILES['favicon'] : null,
         'socialimage' => isset($_FILES['socialimage']) && $_FILES['socialimage']['name'] ? $_FILES['socialimage'] : null,
-    );
+    ) : array();
 }
 
+/**
+ * Check mandatory form fields
+ * @param  array $args
+ * @return void
+ * @throws Exception
+ */
 function check_form($args)
 {
     $required = array(
@@ -55,6 +66,13 @@ function check_form($args)
     }
 }
 
+/**
+ * Create account on file
+ * @param  string $email
+ * @param  string $password
+ * @return boolean
+ * @throws Exception
+ */
 function create_accountfile($email, $password)
 {
     try {
@@ -78,6 +96,12 @@ function create_accountfile($email, $password)
     }
 }
 
+/**
+ * Create metafile with data
+ * @param  array $args
+ * @return boolean
+ * @throws Exception
+ */
 function create_metafile($args)
 {
     try {
@@ -98,7 +122,7 @@ function create_metafile($args)
         foreach ($args as $key => $value) {
             if (!in_array($key, $exclusion)) {
                 if (in_array($key, $images) && $args[$key]) {
-                    fwrite($file, "${key}: " . $key . "." . pathinfo($args[$key]['name'], PATHINFO_EXTENSION)."\n");
+                    fwrite($file, $key . ": " . $key . "." . pathinfo($args[$key]['name'], PATHINFO_EXTENSION)."\n");
                 } else {
                     fwrite($file, "${key}: ${value}\n");
                 }
@@ -111,6 +135,11 @@ function create_metafile($args)
     }
 }
 
+/**
+ * Create image folder
+ * @return void
+ * @throws Exception
+ */
 function create_imagefolder()
 {
     try {
@@ -123,28 +152,31 @@ function create_imagefolder()
     }
 }
 
-function save_uploadedfiles($args)
-{
-    try {
-        save_file($args['favicon'], 'favicon.' . pathinfo($args['favicon']['name'], PATHINFO_EXTENSION), ASSETS_FOLDER . DS . 'images');
-        save_file($args['socialimage'], 'socialimage.' . pathinfo($args['socialimage']['name'], PATHINFO_EXTENSION), ASSETS_FOLDER . DS . 'images');
-    } catch (Exception $e) {
-        throw $e;
-    }
-}
-
+/**
+ * Process installation form, creating folders and files.
+ * Deletes created files on failure.
+ * @param  array $args
+ * @return void
+ * @throws Exception
+ */
 function process_form($args)
 {
     try {
         $form = get_sanitizedform($args);
         check_form($form);
-        save_uploadedfiles($form);
+        $files = array('favicon', 'socialimage');
+        foreach ($files as $file) {
+            if (null !== $form[$file]) {
+                $correctFilename = save_file($form[$file], $file . "." . pathinfo($form[$file]['name'], PATHINFO_EXTENSION), ASSETS_FOLDER . DS . 'images', true);
+                $form[$file]['name'] = $correctFilename ? $correctFilename : $form[$file]['name'];
+            }
+        }
         create_accountfile($form['email'], $form['password']);
         create_metafile($form);
         create_imagefolder();
     } catch (Exception $e) {
         uninstall(true);
+        clean_installation();
         throw $e;
     }
-    clean_installation();
 }

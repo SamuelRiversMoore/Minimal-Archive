@@ -76,6 +76,7 @@ if (!has_meta()) {
                 <?php
                 if (strlen($success)) {
                     put_success($success);
+                    echo "<p><a href=\"" . url('/') . "\">" . translate('gotohomepage') . "</a></p>";
                 }
                 ?>
 

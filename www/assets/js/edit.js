@@ -84,13 +84,13 @@
    * @param  {string} segment
    * @return {string}
    */
-  const baseUrl = (segment) => {
+  const baseUrl = (segment = '') => {
     // get the segments
     const pathArray = window.location.pathname.split('/');
     // find where the segment is located
     const indexOfSegment = pathArray.indexOf(segment);
     // make base_url be the origin plus the path to the segment
-    return window.location.origin + pathArray.slice(0, indexOfSegment).join('/') + '/'
+    return window.location.origin + pathArray.slice(0, indexOfSegment).join('/')
   };
 
   /**
@@ -193,6 +193,19 @@
     const tmp = document.createElement('div');
     tmp.innerHTML = str;
     return tmp.textContent || tmp.innerText
+  };
+
+  /**
+   * Replace content editable entities by better ones
+   * @param  {string} str [description]
+   * @return {string}     [description]
+   */
+  const processContentEditable = (str) => {
+    let processed = str.trim();
+    processed = processed.replace(/(<div><br>)*<\/div>/g, '<br/>');
+    processed = processed.replace(/<div>/g, '');
+
+    return processed
   };
 
   /**
@@ -1600,8 +1613,8 @@
      * @param {Image} image
      */
     addControlsToImage (image) {
-      const deleteButton = this.getImageButton('Delete', 'button--delete', image.getId());
-      const revertButton = this.getImageButton('Revert', 'button--revert', image.getId());
+      const deleteButton = this.getImageButton('╳', 'button--delete', image.getId());
+      const revertButton = this.getImageButton('⏪', 'button--revert', image.getId());
       const imageControls = htmlToElement('<div class="Image__controls"></div>');
 
       imageControls.appendChild(deleteButton);
@@ -1745,7 +1758,9 @@
         document.querySelector(SELECTOR_TITLE).innerHTML = title;
       }
       if (note) {
-        document.querySelector(SELECTOR_NOTE).innerHTML = note;
+        const html = htmlToElement('<div>' + note + '</div>');
+        document.querySelector(SELECTOR_NOTE).innerHTML = '';
+        document.querySelector(SELECTOR_NOTE).appendChild(html);
       }
       if (bgcolor && isHexColor(bgcolor)) {
         this.bgColor = bgcolor;
@@ -1782,7 +1797,7 @@
         result.title = removeHtml(title.innerHTML);
       }
       if (note) {
-        result.note = removeHtml(note.innerHTML);
+        result.note = processContentEditable(note.innerHTML);
       }
       if (bgColor && isHexColor(bgColor)) {
         result.bgcolor = bgColor;

@@ -81,13 +81,13 @@ export const basename = (url) => {
  * @param  {string} segment
  * @return {string}
  */
-export const baseUrl = (segment) => {
+export const baseUrl = (segment = '') => {
   // get the segments
   const pathArray = window.location.pathname.split('/')
   // find where the segment is located
   const indexOfSegment = pathArray.indexOf(segment)
   // make base_url be the origin plus the path to the segment
-  return window.location.origin + pathArray.slice(0, indexOfSegment).join('/') + '/'
+  return window.location.origin + pathArray.slice(0, indexOfSegment).join('/')
 }
 
 /**
@@ -190,6 +190,19 @@ export const removeHtml = (str) => {
   const tmp = document.createElement('div')
   tmp.innerHTML = str
   return tmp.textContent || tmp.innerText
+}
+
+/**
+ * Replace content editable entities by better ones
+ * @param  {string} str [description]
+ * @return {string}     [description]
+ */
+export const processContentEditable = (str) => {
+  let processed = str.trim()
+  processed = processed.replace(/(<div><br>)*<\/div>/g, '<br/>')
+  processed = processed.replace(/<div>/g, '')
+
+  return processed
 }
 
 /**

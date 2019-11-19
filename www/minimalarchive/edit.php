@@ -100,7 +100,7 @@ $title = array_key_exists('title', $meta) ? $meta['title'] : '';
 $description = array_key_exists('description', $meta) ? $meta['description'] : '';
 $socialimage = array_key_exists('socialimage', $meta) && $meta['socialimage'] ? 'assets/images/' . $meta['socialimage'] : '';
 $favicon = array_key_exists('favicon', $meta)  && $meta['favicon'] ? 'assets/images/' . $meta['favicon'] : '';
-$note = array_key_exists('note', $meta) ? $meta['note'] : '';
+$note = array_key_exists('note', $meta) ? html_entity_decode($meta['note']) : '';
 $bgcolor = array_key_exists('bgcolor', $meta) && $meta['bgcolor'] ? $meta['bgcolor'] : '#c0c0c0';
 $textcolor = array_key_exists('textcolor', $meta) && $meta['textcolor'] ? $meta['textcolor'] : '#333';
 $fontfamily = array_key_exists('fontfamily', $meta) && $meta['fontfamily'] ? $meta['fontfamily'] : '"Arcadia Textbook", "SF Mono", "Arcadia", "Zwizz", "Fira Code", "IBM Plex Mono", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;';
@@ -160,14 +160,14 @@ try {
                     <ul>
                         <li>
                             <div class="icon">📝</div>
-                            <div>All the text is editable, just click on the text to change it.<div></li>
+                            <div><?= translate('welcome_edit_notice') ?><div></li>
                         <li>
                             <div class="icon">🖼</div>
-                            <div>To add an image, just drag and drop it on the screen.<div>
+                            <div><?= translate('welcome_add_image_notice')?><div>
                         </li>
                         <li>
                             <div class="icon">🔁</div>
-                            <div>Reorder the images by renaming them.<div>
+                            <div><?= translate('welcome_reorder_notice')?><div>
                         </li>
                     </ul>
 

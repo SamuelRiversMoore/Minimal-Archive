@@ -13,6 +13,10 @@ class Router
         $this->start();
     }
 
+    /**
+     * Starts routing
+     * @return void
+     */
     public function start()
     {
         // Grabs the URI and breaks it apart in case we have querystring stuff
@@ -37,15 +41,26 @@ class Router
         exit();
     }
 
-    public function addRoute(string $route, string $script, string $name = null)
+    /**
+     * Add route to routes array
+     * @param string      $match  regular expression string
+     * @param string      $script file to load
+     * @param string|null $name   optional name to ease retrieval
+     */
+    public function addRoute(string $match, string $script, string $name = null)
     {
         $this->routes[] = array(
-            'name' => null === $name ? random_bytes('4') : $name,
+            'name' => null === $name ? random_bytes(4) : $name,
             'match' => $match,
             'script' => $script
         );
     }
 
+    /**
+     * Retrieve route by provided name
+     * @param  string $name
+     * @return array|null
+     */
     public function getRouteByName(string $name)
     {
         $i = -1;
@@ -57,7 +72,12 @@ class Router
         return null;
     }
 
-    public function getRoutes () {
+    /**
+     * Get all routes
+     * @return array
+     */
+    public function getRoutes()
+    {
         return $this->routes;
     }
 }

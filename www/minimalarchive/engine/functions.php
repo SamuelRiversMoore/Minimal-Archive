@@ -267,9 +267,10 @@ function check_uploadedfile($file, $uploadfolder = VAR_FOLDER, $max_filesize = 2
  * @param  array $file
  * @param  string $name   desired filename
  * @param  string $folder destination folder
+ * @param  boolean $overwrite
  * @return string         saved file name
  */
-function save_file($file, $name = null, $folder = VAR_FOLDER)
+function save_file($file, $name = null, $folder = VAR_FOLDER, $overwrite = false)
 {
     if ($file) {
         $filename = $name ? $name : $file['name'];
@@ -279,11 +280,15 @@ function save_file($file, $name = null, $folder = VAR_FOLDER)
         $basename = basename($filename);
         $extension = pathinfo($basename, PATHINFO_EXTENSION);
         $name = pathinfo($basename, PATHINFO_FILENAME);
-        $correctFilename = "";
-        if (file_exists($folder . DS. $basename)) {
-            $correctFilename = sanitize_filename($name) . '_' . bin2hex(random_bytes(4)) . '.' . $extension;
+        if ($overwrite) {
+            $correctFilename = $filename;
         } else {
-            $correctFilename = sanitize_filename(basename($filename));
+            $correctFilename = "";
+            if (file_exists($folder . DS. $basename)) {
+                $correctFilename = sanitize_filename($name) . '_' . bin2hex(random_bytes(4)) . '.' . $extension;
+            } else {
+                $correctFilename = sanitize_filename(basename($filename));
+            }
         }
         if (!move_uploaded_file($file['tmp_name'], $folder . DS. $correctFilename)) {
             throw new Exception("file_upload_error", 1);
@@ -382,6 +387,11 @@ function check_credentials(string $email, string $password)
     return password_verify(sanitize_email($email), $credentials['email']) && password_verify(sanitize_password($password), $credentials['password']);
 }
 
+/**
+ * Checks whether password string passes certain criteria
+ * @param  mixed $password
+ * @return boolean
+ */
 function check_password($password)
 {
     if (strlen($password) < 8) {
@@ -395,9 +405,9 @@ function check_password($password)
     return true;
 }
 
-function get_token($form_name)
+function get_token($form_name, $filename = '.token')
 {
-    $file = VAR_FOLDER . DS . '.token';
+    $file = VAR_FOLDER . DS . $filename;
     if (file_exists($file)) {
         $lines = explode("\n", file_get_contents($file));
         if (is_array($lines) && count($lines)) {
@@ -407,16 +417,30 @@ function get_token($form_name)
     return false;
 }
 
+/**
+ * Compares provided token with token on file
+ * @param  string $token
+ * @param  string $form_name
+ * @return boolean
+ */
 function check_token($token, $form_name)
 {
+    if (is_bool($token)) {
+        return false;
+    }
     return $token === get_token($form_name);
 }
 
-function create_token()
+/**
+ * Generate token and save it on file
+ * @param  string $filename
+ * @return void
+ * @throws Exception
+ */
+function create_token($filename = '.token')
 {
     try {
         $dir = VAR_FOLDER . DS;
-        $filename = ".token";
         if (!file_exists($dir)) {
             mkdir($dir, 0755, true);
         }
@@ -428,9 +452,14 @@ function create_token()
     }
 }
 
+/**
+ * Parses sessions file content
+ * @param  mixed $content json string, anything would return an empty array
+ * @return array
+ */
 function parse_sessions($content)
 {
-    if (!$content) {
+    if (!$content || !is_string($content)) {
         return [];
     }
     $json = json_decode($content);
@@ -440,6 +469,12 @@ function parse_sessions($content)
     return [];
 }
 
+/**
+ * Invalidates session on file
+ * @param  mixed $id  session id
+ * @param  mixed $key session id key
+ * @return void
+ */
 function invalidate_session($id, $key)
 {
     session_destroy();
@@ -467,6 +502,12 @@ function invalidate_session($id, $key)
     }
 }
 
+/**
+ * Validates session on file
+ * @param  mixed $id  session id
+ * @param  mixed $key session key
+ * @return boolean
+ */
 function validate_session($id, $key)
 {
     $dir = VAR_FOLDER;
@@ -486,6 +527,13 @@ function validate_session($id, $key)
     return false;
 }
 
+/**
+ * Returns session index provided a valid id/key pair
+ * @param  mixed $id
+ * @param  mixed $key
+ * @param  array $sessions
+ * @return int  > 0 if valid, -1 if not
+ */
 function getindex_sessionbykey($id, $key, $sessions)
 {
     if (!$sessions) {
@@ -499,8 +547,14 @@ function getindex_sessionbykey($id, $key, $sessions)
             }
         }
     }
+    return $i;
 }
 
+/**
+ * Append new session to file
+ * @param mixed $id
+ * @param mixed $key
+ */
 function add_session($id, $key)
 {
     try {
@@ -535,6 +589,10 @@ function add_session($id, $key)
     }
 }
 
+/**
+ * Deletes everything in the var folder except defaults
+ * @return void
+ */
 function clean_installation()
 {
     $files = glob(VAR_FOLDER . DS . '*');
@@ -545,11 +603,14 @@ function clean_installation()
     }
 }
 
+/**
+ * Delete metafiles, var folder content, with an option to delete images
+ * @param  boolean $deleteimages
+ * @return void
+ */
 function uninstall(bool $deleteimages = false)
 {
-    if (file_exists(DEFAULT_METAFILE)) {
-        $meta = textFileToArray(DEFAULT_METAFILE);
-    }
+    $meta = file_exists(DEFAULT_METAFILE) ? textFileToArray(DEFAULT_METAFILE) : null;
     $files = glob(VAR_FOLDER . DS . '{,.}[!.,!..]*', GLOB_MARK|GLOB_BRACE);
     foreach ($files as $file) {
         unlink($file);
@@ -564,19 +625,37 @@ function uninstall(bool $deleteimages = false)
         }
     }
 
-    unlink(DEFAULT_METAFILE);
+    if ($meta) {
+        unlink(DEFAULT_METAFILE);
+    }
 }
 
+/**
+ * Output a stylized error html
+ * @param  string $message
+ * @return void
+ */
 function put_error(string $message)
 {
     echo "<aside class=\"notice error\">${message}</aside>";
 }
 
+/**
+ * Output a stylized success html
+ * @param  string $message
+ * @return void
+ */
 function put_success(string $message)
 {
     echo "<aside class=\"notice success\">${message}</aside>";
 }
 
+/**
+ * Applies sanitization rules to filename string
+ * @param  string|null $str
+ * @param  string      $replace
+ * @return string
+ */
 function sanitize_filename(string $str = null, string $replace = '-')
 {
     if (!$str) {
@@ -589,51 +668,106 @@ function sanitize_filename(string $str = null, string $replace = '-')
     return $str;
 }
 
-function sanitize_email($text)
+/**
+ * Apply sanitization rules to email string
+ * @param  string $text
+ * @return string
+ */
+function sanitize_email(string $text = '')
 {
     return filter_var(strtolower(trim($text)), FILTER_SANITIZE_EMAIL);
 }
 
-function sanitize_password($text)
+/**
+ * Apply sanitization rules to password string
+ * @param  string $text
+ * @return string
+ */
+function sanitize_password(string $text = '')
 {
     return filter_var($text, FILTER_SANITIZE_STRING);
 }
 
-function sanitize_text($text)
+/**
+ * Apply sanitization rules to text string
+ * @param  string $text
+ * @return string
+ */
+function sanitize_text(string $text = '')
 {
     return filter_var(trim($text), FILTER_SANITIZE_FULL_SPECIAL_CHARS);
 }
 
+/**
+ * Test if default account file exists
+ * @return boolean
+ */
 function has_account()
 {
     return file_exists(DEFAULT_ACCOUNTFILE);
 }
 
+/**
+ * Test if default metafile file exists and contains data
+ * @return boolean
+ */
 function has_meta()
 {
     return file_exists(DEFAULT_METAFILE) && ($meta = textFileToArray(DEFAULT_METAFILE)) && count($meta);
 }
 
+/**
+ * Test if installation files exist
+ * @return boolean
+ */
 function is_installed()
 {
     return has_account() && has_meta();
 }
 
-function translate($string, $extra = "", $language = 'en')
+/**
+ * Perform stranslation on given string
+ * @param  mixed $string
+ * @param  string $extra    extra content to append to translation
+ * @return string
+ */
+function translate($string, $extra = "", $language = '')
 {
-    $translations = require 'translations.php';
-    if (!array_key_exists($language, $translations)) {
-        $language = 'en';
+    $translation = loadTranslation(!$language ? substr($_SERVER['HTTP_ACCEPT_LANGUAGE'], 0, 2) : $language);
+    if ($translation && count($translation)) {
+        $translated = '';
+        if (array_key_exists($string, $translation)) {
+            $translated = $translation[$string];
+            $translated .= strlen($extra) ? "<br/>" . $extra : "";
+        } else {
+            return $translated = $language != "en" ? translate($string, $extra, 'en') : '';
+        }
+        return $translated;
+    } else {
+        return '';
     }
-    $mediaTranslation = $translations[$language];
-
-    if (array_key_exists($string, $mediaTranslation)) {
-        $string = $mediaTranslation[$string];
-    }
-    $string .= strlen($extra) ? "<br/>" . $extra : "";
-    return $string;
 }
 
+/**
+ * Load translation from file
+ * @param  string $language
+ * @return array
+ */
+function loadTranslation($language = 'en')
+{
+    $content = json_decode(file_get_contents(TRANSLATIONS_FOLDER . DS . $language . '.json'), true);
+    if ($content && count($content)) {
+        return $content;
+    } else {
+        return $language == 'en' ? array() : loadTranslation('en');
+    }
+}
+
+/**
+ * Build absolute url from provided path
+ * @param  string $path
+ * @return string
+ */
 function url(string $path = '')
 {
     // server protocol
@@ -650,6 +784,13 @@ function url(string $path = '')
     return "${protocol}://${domain}${disp_port}" . (!ROOT_URL ? '' : DS . ROOT_URL) . ($path && $path[0] !== '/' ? '/' : '') . ($path ? htmlspecialchars($path) : '');
 }
 
+/**
+ * Output json formatted response with http response code
+ * @param  string  $message
+ * @param  integer $code    html code, defaults to server error
+ * @param  mixed  $data     content
+ * @return void
+ */
 function json_response($message = 'Error', $code = 500, $data = null)
 {
     header('Content-Type: application/json');
