@@ -11,7 +11,7 @@ A minimal php/javascript tool to display images on a web page.
 - Mobile friendly
 - Customize title, note, image captions, fonts, colors.
 - Easy installation (basically uploading the folder or starting a local php server).
-- Hackable and extendable (php and javascript with no dependencies).
+- Hackable and extendable.
 - No database, only files.
 
 ## Table of Contents
