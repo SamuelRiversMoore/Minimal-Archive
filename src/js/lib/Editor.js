@@ -188,8 +188,8 @@ class Editor {
    * @param {Image} image
    */
   addControlsToImage (image) {
-    const deleteButton = this.getImageButton('Delete', 'button--delete', image.getId())
-    const revertButton = this.getImageButton('Revert', 'button--revert', image.getId())
+    const deleteButton = this.getImageButton('╳', 'button--delete', image.getId())
+    const revertButton = this.getImageButton('⏪', 'button--revert', image.getId())
     const imageControls = htmlToElement('<div class="Image__controls"></div>')
 
     imageControls.appendChild(deleteButton)
