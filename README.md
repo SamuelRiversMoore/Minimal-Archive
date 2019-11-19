@@ -1,7 +1,18 @@
 Minimal-Archive
 ===============
 
-A minimal tool (javascript with no dependencies, php) to display images on a web page.
+A minimal php/javascript tool to display images on a web page.
+
+![screenshot.png](./doc/screenshot.png)
+
+**Features**
+
+- Lightweight
+- Mobile friendly
+- Customize title, note, image captions, fonts, colors.
+- Easy installation (basically uploading the folder or starting a local php server).
+- Hackable and extendable (php and javascript with no dependencies).
+- No database, only files.
 
 ## Table of Contents
 
@@ -15,7 +26,15 @@ A minimal tool (javascript with no dependencies, php) to display images on a web
 
 ## Prerequisites
 
-- `php` >= 7.0
+```
+Production:
+php >= 7.0
+
+Developpement:
+node
+sass
+php server
+```
 
 ## Installation
 1. Either clone the repository or download the zipped release from the [release page](https://github.com/tasinttttttt/Minimal-Archive/releases/).
@@ -51,7 +70,24 @@ Minimal-Archive/
 
 ## Translation
 
-The translation file is located in `www/minimalarchive/engine/translations.php`.
+The translation files are located in `www/minimalarchive/translations`.
+
+To update translations, just edit the corresponding file.
+
+To add a translation, add a `json` file to the folder. With the requirement that the name of the file is a two letter language code, for example, spanish would be `es.json`
+
+```
+Minimal-Archive/
+│
+├── ...
+└── minimalarchive/
+	│
+	├── ...
+	└── translations/
+		├── en.json
+		├── fr.json
+		└── [two-letters-language-code].json
+```
 
 ## Development
 
